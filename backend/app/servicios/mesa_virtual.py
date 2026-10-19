@@ -1,4 +1,4 @@
-"""MESA DE PARTES VIRTUAL (2026-10-12): lo que una persona o una entidad presenta al despacho
+"""MESA DE PARTES VIRTUAL (2026-10-12): lo que una persona o una entidad presenta a la entidad
 por la página pública `/mesa-de-partes`, sin cuenta (modelos_mesa.py; docs/arquitectura.md §28).
 
 El pedido (Edison 2026-10-12): escalar Recibidos a una mesa de partes virtual «completa y fácil
@@ -81,7 +81,7 @@ CONFIG_POR_OMISION: dict = {
     # solo lugar de verdad; `cargar_config` pone aquí su valor efectivo y `guardar_config` no lo guarda.
     "activa": False,
     "nombre": "",                 # entidad receptora en el cargo; vacío = el nombre de la entidad del .env
-    "presentacion": "Presente aquí sus documentos dirigidos al despacho, a cualquier hora. Recibirá un cargo con su código para seguir el trámite.",
+    "presentacion": "Presente aquí sus documentos dirigidos a la entidad, a cualquier hora. Recibirá un cargo con su código para seguir el trámite.",
     # `continua`: recibe y tiene por presentado a toda hora, todos los días (TUO 27444, art. 117.1).
     # inicio, fin y días: el horario de atención si el despacho lo fija (continua = False).
     "horario": {"continua": True, "inicio": "08:30", "fin": "17:30", "dias": [0, 1, 2, 3, 4]},
@@ -679,7 +679,7 @@ async def cargar_config_con(sesion, limpio: dict) -> dict:
 def nombre_receptor(cfg: dict) -> str:
     from app.config import config
 
-    return cfg.get("nombre") or getattr(config, "vite_nombre_despacho", "") or "Despacho parlamentario"
+    return cfg.get("nombre") or getattr(config, "vite_nombre_despacho", "") or "Entidad de demostración"
 
 
 def auditar(sesion, ip: str, accion: str, detalle: str = "", tramite_id: int | None = None, navegador: str = "") -> None:

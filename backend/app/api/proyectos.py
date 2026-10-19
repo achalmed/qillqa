@@ -4,7 +4,7 @@ colaboración (piloto 2026-10-01; primer tipo: proyecto de ley).
 Reglas en `servicios/proyectos.py`; plantillas por tipo en
 `servicios/proyectos_plantillas.py`. Todo cambio deja una línea en
 `proyecto_actividad` (quién, qué, cuándo, en qué parte): esa es la
-trazabilidad del proyecto. Ningún rol ajeno al despacho (invitado) escribe.
+trazabilidad del proyecto. Ningún rol ajeno a la entidad (invitado) escribe.
 """
 
 from __future__ import annotations

@@ -16,14 +16,18 @@ dominio se conservan en alto. El contenido del CUERPO nunca se toca aquí
 
 import re
 
-# Siglas y abreviaturas del dominio que se conservan en mayúsculas.
+from app.config import config
+
+# Siglas y abreviaturas del dominio que se conservan en mayúsculas; las del
+# titular y la bancada llegan del .env (config.siglas, config.siglas_bancada).
 SIGLAS = {
     "SUTEP", "CEN-SUTEP", "MINEDU", "MEF", "MINEM", "INEI", "INGEMMET",
     "REINFO", "MAPE", "FONCOR", "UGEL", "DRE", "DREA", "DIRESA", "GORE",
     "GORESAM", "PCM", "ONU", "GTDA", "SERVIR", "CGP", "CTS", "ATS", "PEIP",
     "EB", "CUI", "SNIP", "PIA", "SPP", "RIM", "DNI", "SITER", "FENATE",
     "FENATEPERÚ", "I.E.", "I.E", "D.S.", "D.L.", "N°", "N.°", "Nº", "S/",
-    "SM/SG", "CER", "ABC-CD/CRP", "OIT", "APAFA", "FREDEPA",
+    "SM/SG", "CER", "OIT", "APAFA", "FREDEPA",
+    config.siglas.upper(), config.siglas_bancada.upper(),
 }
 
 # Partículas que van en minúscula dentro de nombres propios y cargos.

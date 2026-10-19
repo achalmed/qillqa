@@ -20,6 +20,7 @@ from app.modelos import Documento
 from app.servicios.adjuntos import (
     anexos_de,
     combinar_adjuntos,
+    denominar_adjuntos,
     linea_adj,
     nombres_adjuntos,
     nombres_manuales,
@@ -226,9 +227,9 @@ async def compilar(sesion: AsyncSession, doc: Documento, rapido: bool = False, p
     # adjuntos (Edison 2026-09-05): primero los escritos sin archivo
     # (campos.anexo, un adjunto físico) y luego los archivos cargados.
     campos = dict(doc.campos or {})
-    campos["anexo"] = linea_adj(
+    campos["anexo"] = linea_adj(denominar_adjuntos(
         combinar_adjuntos(nombres_manuales(campos), await nombres_adjuntos(sesion, doc.id))
-    )
+    ))
     # NO se genera la página «RELACIÓN DE DOCUMENTOS ADJUNTOS»: no es formato
     # de un oficio formal (pedido de Edison 2026-09-01). Los adjuntos siguen
     # pegados al documento y se fusionan en el expediente (expediente.py); solo

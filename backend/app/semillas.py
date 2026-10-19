@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import config, raiz_documentos
 from app.tipos import TIPOS
-from app.modelos import Contador, Institucion, Persona, ReglaCopia, Usuario
+from app.modelos import Contador, Usuario
 from app.seguridad import hashear_clave
 
 # Series reales del registro de tipos (OF, OM, OMB, OB, CARTA, MEM, INF, SOL, ACT…):
@@ -59,51 +59,6 @@ async def _asegurar_usuario(
         )
 
 
-async def _asegurar_copia_mesa_directiva(sesion: AsyncSession) -> None:
-    """La Secretaría General (autoridad ficticia de la demo), en el
-    directorio, y la regla que lo sugiere como copia en todos los documentos."""
-    # Grafía de la casa: es la mayoritaria en los oficios ya enviados (15 de
-    # 25) y la correcta —«Óscar» lleva tilde y la partícula «de» va en
-    # minúscula—. Los documentos viejos conservan la suya; los nuevos toman
-    # esta. Si el despacho prefiere otra, se edita en el directorio.
-    NOMBRE = "Elena Gutiérrez Salas"
-    CARGO = "Secretaria General"
-    persona = (
-        await sesion.execute(select(Persona).where(Persona.nombre == NOMBRE))
-    ).scalar_one_or_none()
-    if persona is None:
-        camara = (
-            await sesion.execute(
-                select(Institucion.id).where(Institucion.siglas == "CD").limit(1)
-            )
-        ).scalar_one_or_none()
-        persona = Persona(
-            nombre=NOMBRE, cargo=CARGO, tratamiento="Señora:", institucion_id=camara
-        )
-        sesion.add(persona)
-        await sesion.flush()
-    ya = (
-        await sesion.execute(
-            select(ReglaCopia.id).where(ReglaCopia.persona_id == persona.id)
-        )
-    ).first()
-    if not ya:
-        sesion.add(
-            ReglaCopia(
-                tipos="",  # todos los tipos de documento
-                persona_id=persona.id,
-                tratamiento="Señora:",
-                nombre=persona.nombre,
-                cargo=persona.cargo,
-                motivo=(
-                    "Copia de rigor: la Secretaría General toma "
-                    "conocimiento de lo que sale de la oficina."
-                ),
-                orden=0,
-            )
-        )
-
-
 async def sembrar(sesion: AsyncSession) -> None:
     # Cuenta administradora inicial (DOC7, 2026-09-20): usuario y clave por entorno
     # (config.admin_usuario / admin_clave); sin clave, la inicial es el propio usuario y el
@@ -126,12 +81,9 @@ async def sembrar(sesion: AsyncSession) -> None:
     if viejo is not None and viejo.activo:
         viejo.activo = False
 
-    # --- Copia que va SIEMPRE (regla de ejemplo; se cambia en Administración) ---
-    # Regla de Edison (2026-09-05). Se siembra ligada al DIRECTORIO, no como
-    # texto suelto: así, el día que cambie la autoridad, se actualiza la
-    # persona y el sistema avisa en cada documento que el cargo cambió (ver
-    # servicios/copias.py). Idempotente: si ya existen, no se duplican.
-    await _asegurar_copia_mesa_directiva(sesion)
+    # La copia de rigor (regla de Edison, 2026-09-05) ya no se siembra: la persona y su regla viven en
+    # la base y se administran en Administración → Reglas de copia (D13: ningún nombre de la entidad en
+    # el código). Una instalación nueva arranca sin reglas de copia.
 
     # Contadores: continuar la numeracion real del framework
     hay_contadores = (await sesion.execute(select(Contador.serie))).first()

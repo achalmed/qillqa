@@ -37,7 +37,7 @@ MENSAJE_MESA_VIRTUAL = (
 # id (el mismo de frontend/src/navegacion.ts), nombre, qué es, prefijos de su API y de qué otro
 # módulo depende. `activo` es el valor de fábrica.
 CATALOGO: list[dict] = [
-    {"id": "recibidos", "nombre": "Mesa de Partes", "que": "Lo que llega al despacho: ficha, responsable, plazo y respuesta.",
+    {"id": "recibidos", "nombre": "Mesa de Partes", "que": "Lo que llega a la entidad: ficha, responsable, plazo y respuesta.",
      "rutas": ["/api/entradas", "/api/mesa-virtual"], "activo": True},
     # De fábrica APAGADA (Edison 2026-10-18: «la mesa de partes virtual debe quedar desactivada»).
     {"id": "mesa_virtual", "nombre": "Mesa de partes virtual", "que": "La página pública para presentar documentos sin cuenta.",

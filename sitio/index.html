@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Qillqa — gestión documental para entidades</title>
+<meta name="description" content="Qillqa redacta, numera, revisa, firma, envía y archiva documentos oficiales desde el navegador, con PDF de calidad tipográfica. Software libre (AGPL-3.0).">
+<meta name="theme-color" content="#eef1f8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0c0e14" media="(prefers-color-scheme: dark)">
+<meta property="og:title" content="Qillqa — gestión documental para entidades">
+<meta property="og:description" content="Redacta, numera sin huecos, revisa, genera el PDF, envía y archiva. Software libre.">
+<meta property="og:image" content="img/inicio.webp">
+<link rel="icon" href="img/icono.svg" type="image/svg+xml">
+<link rel="stylesheet" href="estilos.css">
+<script>
+  // El tema elegido se aplica antes de pintar para que no parpadee.
+  try { const t = localStorage.getItem('qillqa-tema'); if (t) document.documentElement.dataset.theme = t } catch {}
+</script>
+</head>
+<body>
+<a class="saltar" href="#principal">Saltar al contenido</a>
+
+<!-- Barra de menú, como la de macOS -->
+<header class="menu" id="menu">
+  <a class="menu-marca" href="#inicio" aria-label="Qillqa, inicio">
+    <img src="img/icono.svg" alt="" width="18" height="18"><b>Qillqa</b>
+  </a>
+  <nav class="menu-nav" aria-label="Secciones">
+    <a href="#escritorio">Recorrido</a>
+    <a href="#tramite">Trámite</a>
+    <a href="#numeracion">Numeración</a>
+    <a href="#tareas">Tareas</a>
+    <a href="#mesa">Mesa de partes</a>
+    <a href="#probar">Probar</a>
+  </nav>
+  <div class="menu-derecha">
+    <button class="menu-boton" id="tema" type="button" aria-label="Cambiar entre tema claro y oscuro" title="Tema claro u oscuro">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="sol" d="M12 4V2m0 20v-2m8-8h2M2 12h2m13.66-5.66 1.41-1.41M4.93 19.07l1.41-1.41m0-11.32L4.93 4.93m14.14 14.14-1.41-1.41M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10Z"/><path class="luna" d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
+    </button>
+    <a class="menu-boton" href="https://github.com/achalmed/qillqa" aria-label="Código en GitHub" title="Código en GitHub">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 7 3.5 12l5 5M15.5 7l5 5-5 5M13.5 4.5l-3 15"/></svg>
+    </a>
+    <time class="menu-hora" id="hora" aria-label="Hora"></time>
+  </div>
+</header>
+
+<main id="principal">
+
+<!-- Portada -->
+<section class="portada" id="inicio">
+  <div class="portada-texto revelar">
+    <p class="sobre">Software libre · AGPL-3.0 · versión de demostración</p>
+    <h1>Los documentos oficiales,<br><span class="tinta">de la idea al archivo.</span></h1>
+    <p class="entrada">Qillqa redacta, numera, revisa, genera el PDF, envía y archiva los documentos de una
+      entidad desde el navegador. Sin cuadernos de numeración, sin carpetas perdidas y sin tocar LaTeX.</p>
+    <div class="acciones">
+      <a class="boton primario" href="#probar">Probar en cinco minutos</a>
+      <a class="boton" href="#escritorio">Ver el recorrido</a>
+    </div>
+    <p class="nota-quechua"><i>Qillqa</i> significa «escritura» en quechua.</p>
+  </div>
+
+  <div class="portada-ventana revelar">
+    <figure class="ventana ventana-flota">
+      <div class="ventana-barra"><span class="semaforo"><i></i><i></i><i></i></span><span class="ventana-titulo">Qillqa — Inicio</span></div>
+      <img src="img/inicio.webp" alt="Pantalla de inicio de Qillqa: pendientes del día, documentos por firmar y agenda" width="1600" height="1000" data-ampliar fetchpriority="high">
+    </figure>
+    <div class="ficha ficha-a vidrio" aria-hidden="true">
+      <span class="ficha-icono verde">✓</span>
+      <div><b>Oficio N.° 0142-2026</b><small>Numerado y firmado · hace 2 min</small></div>
+    </div>
+    <div class="ficha ficha-b vidrio" aria-hidden="true">
+      <span class="ficha-icono azul">⇄</span>
+      <div><b>3 personas editando</b><small>Proyecto de reglamento · parte 2</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- Cifras -->
+<section class="cifras revelar" aria-label="Qillqa en cifras">
+  <div class="cifra vidrio"><b data-contar="0">0</b><span>huecos en la numeración: el contador es transaccional</span></div>
+  <div class="cifra vidrio"><b data-contar="6">6</b><span>pasos del trámite en un solo lugar: redactar, revisar, numerar, firmar, enviar y archivar</span></div>
+  <div class="cifra vidrio"><b data-contar="10">10</b><span>tipos de documento con su plantilla: oficio, memorando, informe, carta, acta…</span></div>
+  <div class="cifra vidrio"><b data-contar="375" data-sufijo=" px">375 px</b><span>de ancho basta: cada pantalla está pensada primero para el celular</span></div>
+</section>
+
+<!-- Escritorio con Dock -->
+<section class="seccion" id="escritorio">
+  <div class="encabezado revelar">
+    <p class="sobre">Un día de trabajo</p>
+    <h2>Recorre el sistema como si estuvieras dentro.</h2>
+    <p>Las capturas son de la demo con datos ficticios: un mes de oficios, recibidos, tareas, reuniones y conversaciones de un equipo imaginario. Elige un módulo en el Dock.</p>
+  </div>
+
+  <div class="escritorio revelar">
+    <figure class="ventana ventana-grande" id="ventana-modulo">
+      <div class="ventana-barra">
+        <span class="semaforo"><i></i><i></i><i></i></span>
+        <span class="ventana-titulo" id="modulo-titulo">Qillqa — Inicio</span>
+        <span class="ventana-pasos" aria-hidden="true"><button type="button" id="modulo-ant" aria-label="Módulo anterior">‹</button><button type="button" id="modulo-sig" aria-label="Módulo siguiente">›</button></span>
+      </div>
+      <div class="ventana-cuerpo">
+        <img id="modulo-imagen" src="img/inicio.webp" alt="" width="1600" height="1000" data-ampliar loading="lazy">
+      </div>
+    </figure>
+    <aside class="explicacion vidrio" aria-live="polite">
+      <p class="sobre" id="modulo-grupo">Inicio</p>
+      <h3 id="modulo-nombre">Todo el día en una pantalla</h3>
+      <p id="modulo-texto"></p>
+      <ul id="modulo-puntos"></ul>
+    </aside>
+    <nav class="dock vidrio" id="dock" aria-label="Módulos de Qillqa" role="tablist"></nav>
+  </div>
+</section>
+
+<!-- Trámite -->
+<section class="seccion" id="tramite">
+  <div class="encabezado revelar">
+    <p class="sobre">El ciclo completo</p>
+    <h2>Un oficio, seis pasos, ningún papel suelto.</h2>
+    <p>Pulsa cada paso o deja que avance solo. El documento de la derecha cambia como cambia en el sistema.</p>
+  </div>
+  <div class="tramite revelar">
+    <ol class="pasos" id="pasos" role="tablist" aria-label="Pasos del trámite"></ol>
+    <div class="tramite-escena">
+      <article class="hoja" id="hoja" aria-live="polite">
+        <header class="hoja-membrete">
+          <span class="hoja-emblema" aria-hidden="true"></span>
+          <div><b>Entidad de demostración</b><small>Oficina de Coordinación</small></div>
+          <span class="estado" id="hoja-estado">Borrador</span>
+        </header>
+        <p class="hoja-lugar">Lima, 19 de octubre de 2026</p>
+        <p class="hoja-numero" id="hoja-numero">OFICIO N.° ____-2026-ABC</p>
+        <p class="hoja-dest">Señora<br><b>Directora Regional de Educación</b><br>Gobierno Regional de Ejemplo</p>
+        <p class="hoja-asunto"><b>Asunto:</b> Solicita información sobre la ampliación de aulas</p>
+        <div class="hoja-cuerpo"><i></i><i></i><i class="corta"></i><i></i><i class="corta"></i></div>
+        <div class="hoja-pie">
+          <div class="hoja-firma" id="hoja-firma"><span>Firma</span></div>
+          <div class="hoja-sello" id="hoja-sello">RECIBIDO<br><small>Mesa de partes · 10:42</small></div>
+        </div>
+        <div class="hoja-observacion" id="hoja-observacion">✎ «Precisar el plazo legal en el segundo párrafo» — L. Mamani</div>
+      </article>
+      <div class="tramite-detalle vidrio">
+        <h3 id="paso-titulo"></h3>
+        <p id="paso-texto"></p>
+        <div class="tramite-controles">
+          <button class="boton chico" type="button" id="paso-ant">Anterior</button>
+          <button class="boton chico" type="button" id="paso-auto" aria-pressed="true">Pausar</button>
+          <button class="boton chico primario" type="button" id="paso-sig">Siguiente</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Numeración -->
+<section class="seccion" id="numeracion">
+  <div class="encabezado revelar">
+    <p class="sobre">Numeración sin sorpresas</p>
+    <h2>Tres personas piden número a la vez. Nadie repite.</h2>
+    <p>El número oficial lo asigna un contador transaccional por serie y período. Un número intermedio no se borra: se archiva, para que la serie nunca tenga huecos. Pruébalo.</p>
+  </div>
+  <div class="contador revelar">
+    <div class="contador-panel vidrio">
+      <div class="contador-serie">
+        <span>Serie</span>
+        <div class="segmentos" role="radiogroup" aria-label="Serie" id="series">
+          <button type="button" role="radio" aria-checked="true" data-serie="OFICIO">Oficio</button>
+          <button type="button" role="radio" aria-checked="false" data-serie="MEMORANDO">Memorando</button>
+          <button type="button" role="radio" aria-checked="false" data-serie="INFORME">Informe</button>
+        </div>
+      </div>
+      <div class="contador-actual"><small>Último número de la serie</small><b id="contador-ultimo">0141</b></div>
+      <div class="contador-acciones">
+        <button class="boton primario" type="button" id="contador-tres">Tres pedidos a la vez</button>
+        <button class="boton" type="button" id="contador-uno">Pedir un número</button>
+      </div>
+      <p class="contador-ayuda">Pulsa «Retirar» en un número: el sistema decide si se elimina o se archiva.</p>
+    </div>
+    <div class="contador-lista vidrio">
+      <ol id="contador-lista" aria-live="polite"></ol>
+      <p class="contador-aviso" id="contador-aviso" role="status"></p>
+    </div>
+  </div>
+</section>
+
+<!-- Tareas: tablero arrastrable -->
+<section class="seccion" id="tareas">
+  <div class="encabezado revelar">
+    <p class="sobre">Tareas y agenda</p>
+    <h2>El trabajo del equipo, a la vista y en movimiento.</h2>
+    <p>Arrastra las tarjetas entre columnas, con el ratón o con el dedo. Con el teclado: enfoca una tarjeta y usa ← →. En Qillqa cada tarjeta se liga a su documento, su plazo y su responsable.</p>
+  </div>
+  <div class="tablero revelar" id="tablero">
+    <section class="columna vidrio" data-columna="pendiente"><h3>Por hacer <span></span></h3><ul></ul></section>
+    <section class="columna vidrio" data-columna="curso"><h3>En curso <span></span></h3><ul></ul></section>
+    <section class="columna vidrio" data-columna="revision"><h3>En revisión <span></span></h3><ul></ul></section>
+    <section class="columna vidrio" data-columna="hecho"><h3>Hecho <span></span></h3><ul></ul></section>
+  </div>
+  <p class="tablero-progreso revelar" id="tablero-progreso" role="status"></p>
+</section>
+
+<!-- Mesa de partes virtual -->
+<section class="seccion" id="mesa">
+  <div class="encabezado revelar">
+    <p class="sobre">Mesa de partes virtual</p>
+    <h2>La ciudadanía presenta, el sistema registra y entrega el cargo.</h2>
+    <p>Una página pública recibe el escrito y devuelve un cargo con número de expediente, fecha y hora. Aquí es una simulación: nada sale de tu navegador.</p>
+  </div>
+  <div class="mesa revelar">
+    <form class="formulario vidrio" id="mesa-form" novalidate>
+      <label>Nombre o razón social<input name="nombre" autocomplete="off" required value="Asociación de Padres de Familia Ejemplo"></label>
+      <label>Correo para la respuesta<input name="correo" type="email" autocomplete="off" required value="apafa@ejemplo.org"></label>
+      <label>Asunto<input name="asunto" autocomplete="off" required value="Solicito mantenimiento del local escolar"></label>
+      <label>Documento (PDF)
+        <span class="archivo"><span aria-hidden="true">📎</span> solicitud-mantenimiento.pdf <small>· 284 KB</small></span>
+      </label>
+      <button class="boton primario" type="submit">Presentar</button>
+      <p class="formulario-error" id="mesa-error" role="alert"></p>
+    </form>
+    <div class="cargo-escena">
+      <article class="cargo" id="cargo" aria-live="polite" hidden>
+        <header><span class="hoja-emblema" aria-hidden="true"></span><div><b>Cargo de recepción</b><small>Entidad de demostración · Mesa de partes virtual</small></div></header>
+        <dl>
+          <dt>Expediente</dt><dd id="cargo-exp"></dd>
+          <dt>Fecha y hora</dt><dd id="cargo-fecha"></dd>
+          <dt>Remitente</dt><dd id="cargo-nombre"></dd>
+          <dt>Asunto</dt><dd id="cargo-asunto"></dd>
+          <dt>Folios</dt><dd>3</dd>
+        </dl>
+        <footer><svg class="cargo-codigo" id="cargo-codigo" viewBox="0 0 21 21" aria-hidden="true"></svg><p>La respuesta llegará a <b id="cargo-correo"></b>. Consulta el estado con tu número de expediente.</p></footer>
+      </article>
+      <div class="cargo-vacio" id="cargo-vacio">El cargo aparecerá aquí.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Celular -->
+<section class="seccion" id="celular">
+  <div class="encabezado revelar">
+    <p class="sobre">En el bolsillo</p>
+    <h2>Cada módulo funciona como una aplicación del celular.</h2>
+    <p>Se instala como aplicación (PWA) y sigue redactando sin conexión: lo escrito espera en una cola hasta que vuelve el servidor.</p>
+  </div>
+  <div class="carrusel revelar">
+    <div class="carrusel-pista" id="carrusel" tabindex="0" aria-label="Capturas en el celular">
+      <figure class="telefono"><img src="img/movil-inicio.webp" alt="Inicio en el celular" width="600" height="1298" loading="lazy" data-ampliar><figcaption>Inicio</figcaption></figure>
+      <figure class="telefono"><img src="img/movil-bandeja.webp" alt="Bandeja de documentos en el celular" width="600" height="1298" loading="lazy" data-ampliar><figcaption>Documentos</figcaption></figure>
+      <figure class="telefono"><img src="img/movil-chat.webp" alt="Chat del equipo en el celular" width="600" height="1298" loading="lazy" data-ampliar><figcaption>Chat</figcaption></figure>
+      <figure class="telefono"><img src="img/movil-agenda.webp" alt="Agenda en el celular" width="600" height="1298" loading="lazy" data-ampliar><figcaption>Agenda</figcaption></figure>
+    </div>
+    <div class="carrusel-puntos" id="carrusel-puntos" aria-hidden="true"></div>
+  </div>
+</section>
+
+<!-- Funciones -->
+<section class="seccion" id="funciones">
+  <div class="encabezado revelar">
+    <p class="sobre">Todo en un lugar</p>
+    <h2>Lo que hace una oficina, sin cambiar de programa.</h2>
+  </div>
+  <div class="rejilla revelar" id="rejilla"></div>
+  <p class="integraciones revelar">Integraciones opcionales, que se apagan solas si no se configuran: OpenProject, Zotero, Calibre y Telegram.</p>
+</section>
+
+<!-- PDF -->
+<section class="seccion pdf" id="pdf">
+  <div class="pdf-texto revelar">
+    <p class="sobre">Calidad tipográfica</p>
+    <h2>El PDF sale compuesto con LuaLaTeX.</h2>
+    <p>Membrete, firma, pie, copias, anexos e iniciales de responsabilidad, en el orden y la forma de la casa. Quien redacta solo llena el formulario y escribe el cuerpo: el sistema compone el documento cada vez que se guarda, y la firma nunca queda sola en una hoja.</p>
+    <ul class="lista-check">
+      <li>Una plantilla por tipo: oficio, oficio múltiple, memorando, informe, carta, acta, comunicado…</li>
+      <li>Nombres de archivo uniformes: <code>SERIE-NÚMERO-PERIODO_Asunto.pdf</code></li>
+      <li>El perfil de cada entidad (membrete, sello, siglas) vive fuera del código.</li>
+    </ul>
+  </div>
+  <figure class="pdf-hoja revelar"><img src="img/oficio-pdf.webp" alt="Oficio generado en PDF con membrete neutro" width="745" height="1053" loading="lazy" data-ampliar></figure>
+</section>
+
+<!-- Probar -->
+<section class="seccion" id="probar">
+  <div class="encabezado revelar">
+    <p class="sobre">Probar la demo</p>
+    <h2>En tu computadora, en cinco minutos.</h2>
+    <p>Requisitos: Docker con Docker Compose. La primera vez descarga la imagen de TeX Live (varios GB): tómalo con calma.</p>
+  </div>
+  <div class="probar revelar">
+    <figure class="ventana terminal">
+      <div class="ventana-barra"><span class="semaforo"><i></i><i></i><i></i></span><span class="ventana-titulo">Terminal — qillqa</span>
+        <button class="copiar" type="button" data-copiar="comandos">Copiar</button></div>
+      <pre id="comandos"><code><span class="c"># descarga y configura</span>
+git clone https://github.com/achalmed/qillqa.git
+cd qillqa
+cp .env.example .env            <span class="c"># cambia POSTGRES_PASSWORD y JWT_SECRET</span>
+<span class="c"># base de datos, API con LuaLaTeX y web</span>
+docker compose up -d --build
+<span class="c"># datos ficticios de demostración</span>
+docker compose run --rm siembra</code></pre>
+    </figure>
+    <div class="cuentas vidrio">
+      <h3>Abre <code>localhost:5173</code> y entra con</h3>
+      <table>
+        <thead><tr><th>usuario</th><th>papel en la demo</th></tr></thead>
+        <tbody>
+          <tr><td><code>administrador</code></td><td>administración</td></tr>
+          <tr><td><code>ana.torres</code></td><td>asesoría (redacta)</td></tr>
+          <tr><td><code>luis.mamani</code></td><td>coordinación (revisa)</td></tr>
+          <tr><td><code>rosa.quispe</code></td><td>secretaría (mesa de partes)</td></tr>
+        </tbody>
+      </table>
+      <p>Clave de todas: <code>qillqa-demo</code>. Cámbialas antes de abrir la demo a otras personas.</p>
+      <a class="boton primario" href="https://github.com/achalmed/qillqa">Ver el código en GitHub</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="pie">
+  <p><b>Qillqa</b> · gestión documental para entidades públicas y privadas · <a href="https://github.com/achalmed/qillqa/blob/main/LICENSE">AGPL-3.0</a></p>
+  <p>Todas las personas, números y documentos de esta página son ficticios.</p>
+</footer>
+
+<!-- Visor de capturas -->
+<dialog class="visor" id="visor" aria-label="Captura ampliada">
+  <button class="visor-cerrar" type="button" id="visor-cerrar" aria-label="Cerrar">✕</button>
+  <img id="visor-imagen" alt="">
+</dialog>
+
+<script src="app.js" defer></script>
+</body>
+</html>

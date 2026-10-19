@@ -98,6 +98,24 @@ def base_de(serie: str, numero: int | None, periodo: str) -> str:
     return f"{(serie or 'DOC').upper()}-{parte}-{periodo}"
 
 
+# Lo inverso de `base_de` con su prefijo de derivado: «FIRM-OF-0152-2026-2027_Asunto» →
+# («FIRM», «OF», 152, «2026-2027»). Tolera el prefijo «ADJ-<serie>-<n>-<periodo>_» que el
+# sistema antepone al subir un archivo como adjunto de otro documento (2026-10-19).
+_RE_PROPIO = re.compile(
+    r"^(?:ADJ-[A-Z]+-(?:\d{1,5}|SN)-\d{4}(?:-\d{4})?[_-])?"
+    r"(?:(?P<prefijo>FIRM|CR|RESP|ADJ)-)?(?P<serie>[A-Z]{2,6})-(?P<numero>\d{1,5})-(?P<periodo>\d{4}(?:-\d{4})?)(?:[_\s-]|$)"
+)
+
+
+def leer(nombre: str) -> tuple[str, str, int, str] | None:
+    """(prefijo, serie, número, periodo) de un nombre de la convención, o None si no lo es.
+    Pura."""
+    m = _RE_PROPIO.match(Path(nombre or "").stem if "." in (nombre or "")[-6:] else (nombre or "").strip())
+    if not m:
+        return None
+    return m["prefijo"] or "", m["serie"], int(m["numero"]), m["periodo"]
+
+
 def asunto_breve(doc, maximo: int) -> str:
     """El texto que hace reconocible al documento. Se prefiere la SUMILLA
     —existe justo para esto: corta y distintiva— y, si no hay, el asunto."""

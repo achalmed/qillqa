@@ -1239,7 +1239,7 @@ class Relacion(Base):
 class Entrada(Base):
     """Documento RECIBIDO en la bandeja de entrada (2026-10-06; servicios/entradas.py).
 
-    Lo que llega al despacho sin que el despacho lo haya pedido o en respuesta a un
+    Lo que llega a la entidad sin que el despacho lo haya pedido o en respuesta a un
     oficio propio: cartas de gremios, pedidos de municipios, invitaciones, citaciones,
     respuestas de entidades. Es una entidad APARTE de `Documento` (docs/decisiones.md,
     2026-10-06): no se numera ni pasa por el flujo de redacción y firma; tiene su propio

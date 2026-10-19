@@ -137,6 +137,161 @@ EQUIPO = [
 ]
 
 
+MAS_INSTITUCIONES = [
+    # nombre, siglas, tipo, nivel, persona, cargo, tratamiento
+    ("Gobierno Regional de Ejemplo", "GRE", "region", "regional", "Andrés Villanueva Castro", "Gobernador Regional", "Señor:"),
+    ("Hospital Regional de Ejemplo", "HRE", "organismo", "regional", "Mariela Chávez Ortiz", "Directora General", "Señora:"),
+    ("Instituto Tecnológico de Ejemplo", "ITE", "universidad", "regional", "Ricardo Benites Lozano", "Director", "Señor:"),
+    ("Órgano de Control de Ejemplo", "OCE", "autonomo", "nacional", "Silvia Mendoza Prado", "Jefa del Órgano de Control", "Señora:"),
+    ("Asociación de Productores de Ejemplo", "APE", "otro", "local", "Teodoro Huamaní Ccori", "Presidente", "Señor:"),
+    ("Colegio Profesional de Ejemplo", "CPE", "otro", "nacional", "Gabriela Núñez Ríos", "Decana", "Señora:"),
+]
+ASUNTOS = [
+    ("oficio", "Solicito información sobre la ejecución presupuestal del presente año"),
+    ("oficio", "Remito propuesta de convenio de cooperación interinstitucional"),
+    ("oficio", "Solicito audiencia para tratar el plan de mejoramiento de servicios"),
+    ("carta", "Agradecimiento por la participación en la mesa de trabajo"),
+    ("oficio", "Traslado de pedido ciudadano sobre el estado de la carretera vecinal"),
+    ("memorando", "Designación de responsables del archivo central"),
+    ("oficio", "Solicito copia del expediente técnico de la obra de saneamiento"),
+    ("informe", "Informe de seguimiento de los pedidos atendidos en el trimestre"),
+    ("oficio", "Invitación a la presentación del plan anual de trabajo"),
+    ("carta", "Respuesta a la consulta sobre requisitos de la mesa de partes"),
+    ("oficio", "Solicito información sobre el abastecimiento de medicamentos"),
+    ("memorando", "Cronograma de vacaciones del personal"),
+    ("oficio", "Remito informe de la visita de trabajo realizada"),
+    ("informe", "Informe sobre el estado del archivo de gestión"),
+    ("oficio", "Solicito acciones de supervisión en la obra de infraestructura educativa"),
+    ("oficio", "Pedido de asistencia técnica para la digitalización de expedientes"),
+    ("carta", "Confirmación de asistencia a la ceremonia institucional"),
+    ("oficio", "Solicito información sobre el padrón de beneficiarios del programa social"),
+]
+RECIBIDOS_EXTRA = [
+    ("Gobierno Regional de Ejemplo", "OFICIO N.° 210-2026-GRE/GR", "Remite cronograma de obras priorizadas"),
+    ("Hospital Regional de Ejemplo", "OFICIO N.° 088-2026-HRE/DG", "Informa sobre el abastecimiento de medicamentos"),
+    ("Instituto Tecnológico de Ejemplo", "CARTA N.° 015-2026-ITE/D", "Propone convenio de prácticas profesionales"),
+    ("Órgano de Control de Ejemplo", "OFICIO N.° 301-2026-OCE", "Solicita información para una acción de control"),
+    ("Asociación de Productores de Ejemplo", "SOLICITUD", "Pide apoyo para la feria agropecuaria"),
+    ("Colegio Profesional de Ejemplo", "INVITACIÓN", "Invita al foro sobre gestión pública digital"),
+    ("Municipalidad Distrital de Villa Ejemplo", "OFICIO N.° 052-2026-MDVE/A", "Responde el pedido sobre agua potable"),
+]
+
+
+def volumen(adm, ids, tokens):
+    """Lo que hace que la demo parezca un mes de trabajo real: más instituciones, documentos en todos los
+    estados, recibidos, tareas en curso, una agenda de dos semanas y conversación del equipo."""
+    print("· Volumen de un mes de trabajo")
+    personas = []
+    for nombre, siglas, tipo, nivel, persona, cargo, trat in MAS_INSTITUCIONES:
+        i = pedir("POST", "/api/directorio/instituciones",
+                  {"nombre": nombre, "siglas": siglas, "tipo": tipo, "nivel_gobierno": nivel,
+                   "email": f"mesadepartes@{siglas.lower()}.ejemplo.pe", "notas": "Institución ficticia de la demostración."},
+                  token=adm)["id"]
+        pedir("POST", "/api/directorio/personas", {"nombre": persona, "cargo": cargo, "tratamiento": trat,
+                                                   "institucion_id": i}, token=adm)
+        personas.append((persona, cargo, trat, nombre))
+    autores = ["ana.torres", "luis.mamani", "ana.torres", "rosa.quispe"]
+    generados, borradores = [], []
+    for n, (tipo, asunto) in enumerate(ASUNTOS):
+        persona, cargo, trat, inst = personas[n % len(personas)]
+        autor = autores[n % len(autores)]
+        tok = tokens[autor]
+        fecha = (HOY - dt.timedelta(days=28 - n * 1.5)).isoformat()
+        if tipo in ("memorando", "informe"):
+            campos = {"para": "Carmen Vargas Ríos — Administración", "de": "Luis Mamani Quispe — Coordinación", "asunto": asunto}
+        else:
+            campos = {"destinatario_tratamiento": trat, "destinatario_nombre": persona, "destinatario_cargo": cargo,
+                      "destinatario_institucion": inst, "asunto": asunto}
+        parrafos = [f"Me dirijo a usted con relación al asunto, a fin de {asunto[0].lower() + asunto[1:]}.",
+                    "Quedo atento a su respuesta y le reitero las muestras de mi especial consideración."]
+        try:
+            d_id = pedir("POST", "/api/documentos", {"tipo": tipo}, token=tok)["id"]
+            actual = pedir("GET", f"/api/documentos/{d_id}", token=tok)
+            cuerpo = {"campos": {**actual.get("campos", {}), **campos, "fecha": fecha}, "cuerpo": doc(tipo, parrafos),
+                      "version_base": actual.get("version")}
+            if n % 5 == 4:                                   # uno de cada cinco queda en borrador
+                pedir("PUT", f"/api/documentos/{d_id}", cuerpo, token=tok, tiempo=600)
+                borradores.append((d_id, autor))
+            else:
+                pedir("POST", f"/api/documentos/{d_id}/generar", {**cuerpo, "copias_verificadas": True}, token=tok, tiempo=600)
+                generados.append(d_id)
+        except ErrorApi as e:
+            print(f"    [aviso] {tipo}: {e.estado}")
+    print(f"    {len(generados)} documentos con número y {len(borradores)} borradores más")
+    for k, (d_id, autor) in enumerate(borradores):
+        estado = "EN_REVISION" if k % 2 == 0 else "OBSERVADO"
+        try:
+            pedir("PUT", f"/api/documentos/{d_id}/estado", {"estado": "EN_REVISION", "comentario": "Para revisión",
+                                                            "responsable_id": ids["luis.mamani"]}, token=tokens[autor])
+            if estado == "OBSERVADO":
+                pedir("PUT", f"/api/documentos/{d_id}/estado", {"estado": "OBSERVADO",
+                      "comentario": "Precisar el plazo de respuesta y adjuntar el anexo", "responsable_id": ids[autor]},
+                      token=tokens["luis.mamani"])
+        except ErrorApi as e:
+            print(f"    [aviso] estado: {e.estado}")
+
+    archivos = [("archivos", (f"RECIBIDO-{k + 4:02d}.pdf",
+                              pdf_minimo(doc_, [f"Registro de prueba {uuid.uuid4().hex[:8]}", "", inst, f"Asunto: {asunto}", "",
+                                                "Sin otro particular, quedo de usted.", "", "Atentamente,"]),
+                              "application/pdf")) for k, (inst, doc_, asunto) in enumerate(RECIBIDOS_EXTRA)]
+    try:
+        r = pedir("POST", "/api/entradas/subir", multipart=archivos + [("via", "std")], token=tokens["rosa.quispe"])
+        print(f"    {len(r.get('creadas', []))} recibidos más")
+    except ErrorApi as e:
+        print(f"    [aviso] recibidos: {e.estado}")
+
+    tareas = [
+        ("Consolidar las respuestas del Gobierno Regional", "ana.torres", "alta", 2, "en_curso"),
+        ("Escanear los cargos de recepción pendientes", "rosa.quispe", "normal", 1, "en_curso"),
+        ("Coordinar la visita al Hospital Regional", "luis.mamani", "alta", 4, "por_hacer"),
+        ("Preparar el informe trimestral de seguimiento", "ana.torres", "normal", 9, "por_hacer"),
+        ("Esperar la respuesta del Órgano de Control", "luis.mamani", "normal", 6, "en_espera"),
+        ("Registrar los documentos de la mesa virtual", "rosa.quispe", "urgente", 0, "en_curso"),
+        ("Revisar el convenio con el Instituto Tecnológico", "ana.torres", "normal", 11, "por_hacer"),
+        ("Enviar la invitación al Colegio Profesional", "rosa.quispe", "baja", -2, "hecha"),
+        ("Actualizar el organigrama de la Municipalidad", "rosa.quispe", "baja", -1, "hecha"),
+        ("Responder la solicitud de la Asociación de Productores", "luis.mamani", "alta", 3, "por_hacer"),
+    ]
+    for titulo, resp, prioridad, dias, estado in tareas:
+        try:
+            pedir("POST", "/api/tareas", {"titulo": titulo, "responsable_id": ids[resp], "prioridad": prioridad, "estado": estado,
+                                          "importante": prioridad in ("alta", "urgente"),
+                                          "vence_fecha": (HOY + dt.timedelta(days=dias)).isoformat()}, token=adm)
+        except ErrorApi as e:
+            print(f"    [aviso] tarea: {e.estado}")
+    lunes = HOY - dt.timedelta(days=HOY.weekday())
+    eventos = [
+        ("Revisión de documentos observados", 1, "11:00", "12:00", "despacho", "confirmado", "Sala de reuniones"),
+        ("Reunión con el Gobierno Regional", 1, "15:00", "16:30", "externa", "confirmado", "Sede regional"),
+        ("Atención al público", 3, "09:00", "12:00", "despacho", "confirmado", "Mesa de partes"),
+        ("Visita al Hospital Regional", 7, "08:30", "12:00", "externa", "confirmado", "Hospital Regional de Ejemplo"),
+        ("Foro sobre gestión pública digital", 9, "17:00", "19:00", "externa", "propuesto", "Colegio Profesional de Ejemplo"),
+        ("Reunión de coordinación semanal", 7, "09:00", "10:00", "despacho", "confirmado", "Sala de reuniones"),
+        ("Entrevista en la radio local", 10, "07:30", "08:00", "medio", "confirmado", "Radio de Ejemplo"),
+        ("Capacitación: firma y envío de documentos", 11, "15:00", "16:30", "despacho", "propuesto", "Virtual"),
+    ]
+    for titulo, dia, ini, fin, tipo, estado, lugar in eventos:
+        f = (lunes + dt.timedelta(days=dia)).isoformat()
+        try:
+            pedir("POST", "/api/agenda/eventos", {"titulo": titulo, "inicio": f"{f}T{ini}:00", "fin": f"{f}T{fin}:00",
+                                                  "tipo": tipo, "estado": estado, "lugar": lugar,
+                                                  "modalidad": "virtual" if lugar == "Virtual" else "presencial"}, token=adm)
+        except ErrorApi as e:
+            print(f"    [aviso] evento: {e.estado}")
+    try:
+        canales = pedir("GET", "/api/chat/canales", token=adm)
+        canales = canales.get("canales", canales) if isinstance(canales, dict) else canales
+        grupo = next(c for c in canales if c.get("nombre") == "Equipo de demostración")
+        for quien, texto in [("ana.torres", "Ya generé los oficios al Gobierno Regional; quedan en la bandeja para firma."),
+                             ("luis.mamani", "Observé dos borradores: falta el plazo de respuesta. Les dejé la nota."),
+                             ("rosa.quispe", "Entraron siete documentos por la mesa; asigné responsables y plazos."),
+                             ("ana.torres", "Mañana a las 11 revisamos los observados en la sala de reuniones."),
+                             ("luis.mamani", "Perfecto. Agendé también la visita al Hospital Regional del lunes.")]:
+            pedir("POST", f"/api/chat/canales/{grupo['id']}/mensajes", {"texto": texto}, token=tokens[quien])
+    except (ErrorApi, StopIteration) as e:
+        print(f"    [aviso] chat: {e}")
+
+
 def main() -> int:
     esperar_api()
     adm = entrar(ADMIN, ADMIN_CLAVE, DEMO_CLAVE if ADMIN_CLAVE == ADMIN else ADMIN_CLAVE + "-1",
@@ -262,13 +417,16 @@ def main() -> int:
     print("· Mesa de partes: documentos recibidos")
     recibidos = [
         ("OFICIO-0045-MDVE.pdf", "OFICIO N.° 045-2026-MDVE/A", ["Municipalidad Distrital de Villa Ejemplo",
-         "Asunto: Remito información sobre el sistema de agua potable", "Firmado: Jorge Salazar Medina, Alcalde"]),
+         "Asunto: Remito información sobre el sistema de agua potable", "",
+         "Es grato dirigirme a usted para remitir la información solicitada.", "", "Jorge Salazar Medina", "Alcalde"]),
         ("CARTA-012-ARESA.pdf", "CARTA N.° 012-2026-ARESA/GG", ["Empresa de Agua Río Ejemplo S.A.",
-         "Asunto: Plan de inversiones del presente año", "Firmado: Lucía Fernández Rojas, Gerenta General"]),
+         "Asunto: Plan de inversiones del presente año", "",
+         "Adjuntamos el plan de inversiones aprobado por el directorio.", "", "Lucía Fernández Rojas", "Gerenta General"]),
         ("INVITACION-UNE.pdf", "INVITACIÓN", ["Universidad Nacional de Ejemplo",
-         "Asunto: Ceremonia de inauguración del año académico", "Fecha: el próximo viernes a las 10:00"]),
+         "Asunto: Ceremonia de inauguración del año académico", "",
+         "Tenemos el agrado de invitarle el próximo viernes a las 10:00.", "", "Miguel Ángel Paredes Soto", "Rector"]),
     ]
-    archivos = [("archivos", (n, pdf_minimo(t, l + [f"Documento ficticio de demostración · {uuid.uuid4().hex[:8]}"]), "application/pdf"))
+    archivos = [("archivos", (n, pdf_minimo(t, [f"Registro de prueba {uuid.uuid4().hex[:8]}", ""] + l), "application/pdf"))
                 for n, t, l in recibidos]
     try:
         r = pedir("POST", "/api/entradas/subir", multipart=archivos + [("via", "mesa_partes")], token=tokens["rosa.quispe"])
@@ -327,6 +485,8 @@ def main() -> int:
                   {"contenido": doc("", texto), "version_base": 0, "nota": "Texto de demostración", "soltar": True}, token=adm)
     except ErrorApi as e:
         print(f"    [aviso] proyecto: {e.estado}")
+
+    volumen(adm, ids, tokens)
 
     print(f"[ok] Demo sembrada. Entre en la web con «{ADMIN}» o con ana.torres, luis.mamani o rosa.quispe "
           f"(clave de las cuentas de demostración: {DEMO_CLAVE}).")

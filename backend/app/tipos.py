@@ -157,7 +157,7 @@ _CAMPOS_INFORME_SR = [
     {"clave": "fecha", "etiqueta": "Fecha", "tipo": "fecha", "ancho": "corto"},
 ]
 
-# Documento RECIBIDO (M10 D5): lo que llega al despacho por mesa de partes, correo
+# Documento RECIBIDO (M10 D5): lo que llega a la entidad por mesa de partes, correo
 # institucional, STD o entrega en mano. Sustituye a la carpeta de expedientes de
 # correo (la antigua 06_gestion_correo, disuelta en M10 D4): un documento recibido es un registro con serie de
 # ENTRADA (REC), su escaneo entra por «incorporar» y las respuestas se enlazan por
@@ -235,7 +235,7 @@ TIPOS: dict[str, dict] = {
     # `contadores`), así el simple arranca en «N.° 001» sin chocar con el OMB.
     # Misma identidad visual de bancada (siglas «BANCADA REGIONAL-CR», «N.° »
     # de 3 dígitos, «/» ante las siglas -> «OFICIO N.° 001-2026-2027/BANCADA
-    # AYACUCHO-CR», caja del membrete «BANCADA REGIONAL» sin cargo, sin
+    # REGIONAL-CR», caja del membrete «BANCADA REGIONAL» sin cargo, sin
     # normalizar) y misma personalización A MANO + origen 'framework' tras
     # generar (§5/§7). Distinción pedida por Edison 2026-08-24: el oficio
     # simple de bancada numera aparte del oficio múltiple.

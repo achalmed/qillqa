@@ -431,7 +431,7 @@ async def respuesta(datos: Acceso, peticion: Request, sesion: AsyncSession = Dep
         raise HTTPException(404, "Ese archivo no está disponible.", headers=SIN_CACHE)
     ruta = mv.absoluta(a.archivo)
     if ruta is None:
-        raise HTTPException(404, "El archivo de la respuesta no está en el archivo documental: avise al despacho.", headers=SIN_CACHE)
+        raise HTTPException(404, "El archivo de la respuesta no está en el archivo documental: avise a la entidad.", headers=SIN_CACHE)
     mv.auditar(sesion, ip, "descarga", f"respuesta {t.expediente} · {a.nombre}", t.id, nav)
     await sesion.commit()
     return _archivo_sin_cache(ruta, f"Respuesta-{t.expediente}.{a.tipo}", mv.TIPOS_ARCHIVO.get(a.tipo, "application/octet-stream"), peticion)

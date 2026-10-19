@@ -112,7 +112,7 @@ def ve_autoria(usuario_o_rol) -> bool:
     Todos los roles de trabajo de la entidad, no solo el administrador (Edison
     2026-10-01: «forma parte de la información necesaria para conocer quién
     está haciendo y el recorrido del expediente»). El invitado no: es una
-    cuenta de consulta, a menudo de alguien ajeno al despacho.
+    cuenta de consulta, a menudo de alguien ajeno a la entidad.
     """
     rol = getattr(usuario_o_rol, "rol", usuario_o_rol)
     return rol != "invitado"

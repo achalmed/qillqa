@@ -130,6 +130,12 @@ corrección se revierte desde la web sin perder el número.
   fecha, sin «y anexos» y sin páginas ni folios (Edison, 2026-10-18). La
   fecha solo se queda cuando el documento no tiene número (un memorial s/n).
   Es la misma regla que aplica el pegado (`referencias.cita_documento`).
+- Un documento propio que se adjunta se cita por su **denominación**, nunca por
+  el nombre de su archivo: «Copia del Oficio N°0152-2026-2027-SIGLAS, con su
+  cargo de recepción», el oficio y su cargo en **una sola línea** (Edison,
+  2026-10-19, OF-0160). El sistema lo arma solo al compilar
+  (`adjuntos.denominar_adjuntos`); un adjunto con descripción escrita por una
+  persona se imprime tal cual.
 
 ## 9. Errores tipográficos o de digitación
 

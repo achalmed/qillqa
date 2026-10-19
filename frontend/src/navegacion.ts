@@ -139,7 +139,7 @@ export const MODULOS: Modulo[] = [
     corto: 'Mesa de Partes',
     ruta: '/recibidos',
     icono: MoveToInboxOutlinedIcon,
-    descripcion: 'Lo que llega al despacho, también por la mesa de partes virtual: ficha, responsable, plazo y respuesta.',
+    descripcion: 'Lo que llega a la entidad, también por la mesa de partes virtual: ficha, responsable, plazo y respuesta.',
     opciones: [
       { etiqueta: 'Pendientes', ruta: '/recibidos?estado=nueva', icono: MoveToInboxOutlinedIcon, ayuda: 'Documentos sin atender todavía' },
       { etiqueta: 'En atención', ruta: '/recibidos?estado=en_atencion', icono: PendingActionsOutlinedIcon, ayuda: 'Con responsable y en trámite' },

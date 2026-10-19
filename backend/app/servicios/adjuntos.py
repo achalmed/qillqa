@@ -522,3 +522,62 @@ def linea_adj(nombres: list[str]) -> str:
     ya no lleva el sufijo «(N documentos)»: la numeración dice cuántos son
     (2026-10-01)."""
     return "; ".join(n.strip() for n in nombres if n and n.strip())
+
+
+# --- La línea «Adj.» con la denominación documental (Edison 2026-10-19, OF-0160) ------------
+# Se adjuntaron los PDF firmados de siete oficios y sus cargos sin escribir descripción, y el
+# «Adj.» imprimió los nombres de archivo («FIRM-OF-0152-2026-2027_Informacion-…», «cargo»)
+# en catorce renglones. Un adjunto se cita por su denominación: «Copia del Oficio N°0152-
+# 2026-2027-SIGLAS, con su cargo de recepción», el cargo en la misma línea de su documento.
+_CARGOS = {"cargo", "cargo de recepcion", "cargo recepcion", "constancia de recepcion", "cr"}
+_FEMENINOS = {"carta", "solicitud", "acta", "mocion", "agenda", "nota"}
+_ANTEPUESTO = {"": "Copia", "FIRM": "Copia", "ADJ": "Copia", "CR": "Cargo de recepción", "RESP": "Respuesta"}
+
+
+def _plano(texto: str) -> str:
+    t = unicodedata.normalize("NFKD", texto or "").encode("ascii", "ignore").decode().lower()
+    return " ".join(re.sub(r"[^a-z]+", " ", t).split())
+
+
+def es_cargo(nombre: str) -> bool:
+    """«cargo», «Cargo-2», «constancia de recepción»…: el cargo de recepción del documento
+    adjuntado justo antes. Pura."""
+    return _plano(nombre) in _CARGOS
+
+
+def denominacion_de_archivo(nombre: str) -> str | None:
+    """«FIRM-OF-0152-2026-2027_Informacion-…» → «Copia del Oficio N°0152-2026-2027-SIGLAS»;
+    None si el nombre no es de la convención del sistema o su serie no es un tipo propio."""
+    from app.config import config
+    from app.latex.generador import numero_completo
+    from app.tipos import TIPOS
+
+    leido = nombres.leer(nombre)
+    if not leido:
+        return None
+    prefijo, serie, numero, periodo = leido
+    cfg = next((t for t in TIPOS.values() if (t.get("serie") or "").upper() == serie and not t.get("externo")), None)
+    if cfg is None:
+        return None
+    tipodoc = cfg.get("tipodoc") or cfg.get("nombre") or serie
+    denominacion = numero_completo(numero, periodo, cfg.get("siglas") or config.siglas, tipodoc, cfg)
+    articulo = "de la" if _plano(tipodoc).split(" ")[0] in _FEMENINOS else "del"
+    if prefijo == "RESP":
+        articulo = "a la" if articulo == "de la" else "al"
+    return f"{_ANTEPUESTO[prefijo]} {articulo} {denominacion}"
+
+
+def denominar_adjuntos(nombres_adj: list[str]) -> list[str]:
+    """Los nombres de la línea «Adj.» como se citan en un documento oficial: un nombre de
+    archivo del sistema pasa a su denominación y un «cargo» se une al documento anterior
+    («…, con su cargo de recepción»). Lo que escribió una persona queda como está. Pura."""
+    salida: list[str] = []
+    for nombre in nombres_adj:
+        if es_cargo(nombre):
+            if salida and "con su cargo" not in salida[-1]:
+                salida[-1] = f"{salida[-1]}, con su cargo de recepción"
+            elif not salida:
+                salida.append("Cargo de recepción")
+            continue
+        salida.append(denominacion_de_archivo(nombre) or nombre)
+    return salida

@@ -1,6 +1,6 @@
 """BANDEJA DE ENTRADA (2026-10-06): documentos RECIBIDOS (modelos.Entrada).
 
-La brecha que cierra: lo que llega al despacho —cartas de gremios, pedidos de
+La brecha que cierra: lo que llega a la entidad —cartas de gremios, pedidos de
 municipios, invitaciones, citaciones, respuestas de entidades— quedaba sin registro,
 sin responsable y sin plazo; el equipo pegaba a mano «fichas» (remitente, fecha, n.º
 STD, asunto) en el chat. Aquí esa ficha sale sola del PDF y queda como un registro con

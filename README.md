@@ -5,6 +5,8 @@ documentos oficiales desde el navegador, con PDF de calidad tipográfica y sin t
 
 *Qillqa* significa «escritura» en quechua.
 
+**Recorrido interactivo:** <https://achalmed.github.io/qillqa/> (el código del sitio está en [`sitio/`](sitio/)).
+
 [![Licencia: AGPL-3.0](https://img.shields.io/badge/licencia-AGPL--3.0-blue.svg)](LICENSE)
 ![Estado: demostración](https://img.shields.io/badge/estado-demostraci%C3%B3n-orange.svg)
 ![FastAPI](https://img.shields.io/badge/backend-FastAPI-009688.svg)
