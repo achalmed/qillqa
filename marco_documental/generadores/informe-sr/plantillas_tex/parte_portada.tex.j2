@@ -1,0 +1,11 @@
+%% parte_00_portada.tex -- GENERADO (portada sobria; ver structures/informe-sr/portada.tex)
+\portadainforme[%
+  kicker={Informe N.º \VAR{'%02d' % inf.numero} · \VAR{mes_nombre} de \VAR{inf.anio}},%
+  titulo={\VAR{inf.titulo_portada|join('\\\\')}},%
+  ambito={\VAR{inf.ambito_texto|tex}},%
+\BLOCK{ if 'portada' in fotos }
+  foto={\VAR{fotos.portada.archivo}},%
+\BLOCK{ else }
+  codigo={\VAR{inf.get('portada_codigo', '')|tex}},%
+\BLOCK{ endif }
+]

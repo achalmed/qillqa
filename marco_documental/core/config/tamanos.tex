@@ -1,0 +1,42 @@
+%% =====================================================================
+%%  core/config/tamanos.tex  --  Escala proporcional del tamaño de letra
+%% ---------------------------------------------------------------------
+%%  \setescala{B}: el cuerpo pasa a B puntos y los tamaños RELATIVOS que
+%%  lo acompañan (\small de tablas y Adj., \footnotesize de notas e
+%%  iniciales, \scriptsize, \large) bajan o suben en la misma proporción
+%%  que en la escala de 11 pt de article (10/11, 9/11, 8/11, 12/11). Lo
+%%  que se fija en puntos (destinatario y copias con fmt_*_tamano, el pie
+%%  institucional en \fontsize{7.5}) NO cambia: Edison 2026-10-08, «cuando
+%%  quiero bajar un punto en el cuerpo, los demás deberían bajar
+%%  proporcionalmente, con excepción del pie de página y la copia».
+%%
+%%  Pisos de legibilidad: el cuerpo nunca baja de 10 pt (lo valida el
+%%  generador) y lo derivado tampoco de 8,5 pt (\small), 8 pt
+%%  (\footnotesize, notas al pie) ni 7 pt (\scriptsize). Interlineado de
+%%  cada tamaño: 1,2 veces el cuerpo de letra, como \fontsize{N}{1.2N}.
+%%  Sin \setescala rige la opción de clase (10/11/12 pt) de siempre.
+%% =====================================================================
+
+\newcommand{\despacho@tam}[3]{% #1 comando  #2 puntos de la escala 11  #3 piso
+  \edef\despacho@pt{\fpeval{max(#3, round(\despacho@base*#2/11, 2))}}%
+  \edef\despacho@bl{\fpeval{round(\despacho@pt*1.2, 2)}}%
+  % \edef: cada tamaño guarda SUS números (con \def leerían los del último
+  % calculado); \@setfontsize registra además \@currsize, como article.
+  \expandafter\edef\csname despacho@fs@\expandafter\@gobble\string#1\endcsname{%
+    \noexpand\@setfontsize\noexpand#1{\despacho@pt}{\despacho@bl}}%
+}
+
+\newcommand{\setescala}[1]{%
+  \edef\despacho@base{#1}%
+  \despacho@tam{\normalsize}{11}{10}%
+  \despacho@tam{\small}{10}{8.5}%
+  \despacho@tam{\footnotesize}{9}{8}%
+  \despacho@tam{\scriptsize}{8}{7}%
+  \despacho@tam{\large}{12}{10}%
+  \renewcommand{\normalsize}{\csname despacho@fs@normalsize\endcsname}%
+  \renewcommand{\small}{\csname despacho@fs@small\endcsname}%
+  \renewcommand{\footnotesize}{\csname despacho@fs@footnotesize\endcsname}%
+  \renewcommand{\scriptsize}{\csname despacho@fs@scriptsize\endcsname}%
+  \renewcommand{\large}{\csname despacho@fs@large\endcsname}%
+  \normalsize
+}

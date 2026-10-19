@@ -1,0 +1,159 @@
+%% =====================================================================
+%%  informe-sr.tex  --  PLANTILLA/TEST del Informe de Semana de
+%%                      Representacion (tipo informe-sr)
+%% ---------------------------------------------------------------------
+%%  Ejercita los componentes de structures/informe-sr/ con datos de
+%%  muestra: es el "test" del tipo (make plantillas). Primero la EDICION
+%%  PUBLICA (revista: prosa a dos columnas, fotos grandes, sin cajas ni
+%%  tablas) y luego, en paginas aparte, los componentes de la EDICION
+%%  INTERNA (fichas, cajas, matriz). Los informes reales NO se escriben a
+%%  mano: los genera generadores/informe-sr/main.py desde YAML
+%%  y compila con scripts/build.sh.
+%%
+%%  Uso:  scripts/build.sh templates/informe-sr/informe-sr.tex
+%% =====================================================================
+\documentclass{informe-sr}
+\input{metadata.tex}
+
+\begin{document}
+
+%% ---------------------------------------------------------------- PORTADA
+\portadainforme[
+  kicker={Informe N.º 00 · Plantilla},
+  ambito={Provincias de La Mar y Huamanga · Región Ayacucho},
+  codigo={Fotografía de la Semana, 3:2},
+]
+
+%% ------------------------------------------------------- CONTENIDO + FICHA
+\renewcommand{\contentsname}{Contenido}
+\tableofcontents
+\vspace{22pt}
+\noindent\begin{minipage}[t]{0.52\linewidth}\vspace{0pt}
+\isrkicker{Ficha técnica}
+\isrdato{Documento}{Informe de Semana de Representación N.º 00 (plantilla)}
+\isrdato{Código y versión}{ISR-00 · 2026-08 · versión 0.1 (borrador)}
+\isrdato{Equipo}{\meta{autor}, \meta{cargo}\ifmetadef{distrito}{ por \meta{distrito}}{}.\\Coordinación distrital del despacho.}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.40\linewidth}\vspace{0pt}
+\isrkicker{Notas de esta versión}
+{\fontsize{8.6}{11.5}\selectfont\color{colorisrtextosec}Documento de prueba del tipo documental; los textos son de muestra.\par}
+\end{minipage}\par
+
+%% ----------------------------------------------------------- PRESENTACIÓN
+\clearpage
+\membreteinforme
+\seccion{Presentación}
+\noindent\begin{minipage}[t]{0.66\linewidth}\vspace{0pt}
+La Semana de Representación es el periodo en el que el diputado deja el
+Palacio Legislativo para escuchar, verificar y recoger en el territorio
+las demandas de la población que representa. Este informe da cuenta de
+lo actuado y, sobre todo, de lo que sigue: cada pedido recibido tiene
+una entidad competente, una actuación parlamentaria y un responsable de
+seguimiento.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.28\linewidth}\vspace{4pt}
+\includegraphics[width=\linewidth]{\despachoRetratoBusto}\par\vspace{5pt}
+{\isrtxpie Fotografía oficial del diputado.\par}
+\end{minipage}\par
+\vfill
+\bloquefirma[1.6cm]
+
+%% ------------------------------------------------------- RESUMEN + CRÓNICA
+\clearpage
+\seccion{Resumen ejecutivo}
+\noindent
+\isrcifra{31}{actividades en 5 días de trabajo en el territorio}{Relato cronológico}\hfill
+\isrcifra{59}{pedidos y hallazgos con entidad competente}{Matriz de sistematización}\hfill
+\isrcifra{25,8 h}{de actividad con horario registrado}{Relato cronológico}\hfill
+\isrcifra{69}{entidades competentes identificadas}{Matriz de sistematización}\par
+\vspace{16pt}
+\begin{columnas}
+La Semana de Representación de agosto de 2026 recorrió cuatro distritos
+de la provincia de La Mar y la ciudad de Ayacucho. La agenda estuvo
+dominada por la educación: la mayoría de las actividades fueron visitas
+de trabajo a instituciones educativas de inicial, primaria, secundaria,
+educación básica especial y alternativa, muchas de ellas en el valle de
+los ríos Apurímac, Ene y Mantaro.
+
+Los hallazgos se repiten de un colegio a otro: infraestructura precaria
+o sin liquidación de obra, losas deportivas sin techar, falta de
+personal administrativo y de servicio, textos escolares incompletos,
+mobiliario insuficiente y conectividad que no alcanza.
+\end{columnas}
+\isrkicker{La ruta, día por día}
+\begin{isrcrono}
+  \item[24 de agosto] \textbf{Distrito de Ayna – San Francisco, provincia de La Mar.} 8 actividades; 22 pedidos sistematizados.
+  \item[25 de agosto] \textbf{Distrito de Samugari, provincia de La Mar.} 10 actividades; 15 pedidos sistematizados.
+\end{isrcrono}
+
+\clearpage
+\articulo{Día 1 · Lunes 24 de agosto · Ayna – San Francisco}{San Francisco:
+  un hospital de seis años, aulas de triplay y la agenda del VRAEM}{Ocho
+  actividades entre las 9:30 y las 20:40: la fiscalización de la obra del
+  hospital, cuatro instituciones educativas, el juez de paz, los damnificados
+  del huaico y la Federación de Productores de Cacao y Café.}
+\begin{columnas}
+La jornada comenzó con una visita inopinada a la obra del Hospital de
+San Francisco, que lleva más de seis años en ejecución. Los trabajos se
+reiniciaron el 23 de junio de 2026 a cargo del Consorcio Salud La Mar
+II, con entrega prevista para el 19 de marzo de 2027. En la reunión con
+el residente y el supervisor de obra se identificaron dos riesgos
+concretos: el plan de riesgos vigente data de 2016 y no prevé los
+huaicos, y las pruebas de los sistemas de agua y de los equipos
+requieren 0,56 litros por segundo cuando hoy se dispone de 0,11.
+
+El despacho oficiará a la unidad ejecutora para que remita el
+cronograma valorizado, el avance físico-financiero y el plan de riesgos
+actualizado; pedirá control concurrente a la Contraloría y convocará
+una mesa técnica para resolver el abastecimiento de agua.
+\end{columnas}
+\isrcita{Una derivación sin respuesta o sin comunicación al ciudadano no
+  constituye atención concluida.}{Pauta de seguimiento del despacho}{Matriz
+  de sistematización, agosto de 2026}
+\subseccion{Pedidos que el despacho propone atender primero}
+\begin{isrpedidos}
+  \item[P-011] Techado de losa; nueva infraestructura por rajaduras y paredes de triplay; acceso al agua. {\isrtxmeta UGEL La Mar; DRE Ayacucho; PRONIED.}
+  \item[P-027] Falta de medicamentos, especialistas y equipos médicos básicos. {\isrtxmeta DIRESA Ayacucho; Red de Salud San Francisco.}
+\end{isrpedidos}
+
+%% ---------------------------------------------- EDICIÓN INTERNA (componentes)
+\capitulo{Componentes de la edición interna}{Fichas de actividad, cajas y
+  matriz: el documento de trabajo del que nace la prosa del informe público.}
+
+\begin{fichaactividad}{id={A-01}, titulo={Visita inopinada al Hospital de San
+  Francisco}, tipo={Fiscalización}, sector={salud}, hora={09:30–11:30},
+  duracion={2 h}, lugar={Obra del Hospital de San Francisco},
+  ubicacion={San Francisco · Ayna · La Mar},
+  participantes={Residente de obra; supervisor y equipo técnico},
+  resumenpedidos={2 pedidos sistematizados · P-001, P-002},
+  documentos={OF-0040}, foto={slot}}
+  \isrcontexto{La obra lleva más de seis años en ejecución.}
+  \isrsubtitulo{Hallazgos}
+  \begin{isrhallazgos}
+    \item No existe un plan de riesgos actualizado: el vigente data de 2016.
+    \item Para las pruebas se requieren 0,56 L/s; hoy se dispone de 0,11 L/s.
+  \end{isrhallazgos}
+\end{fichaactividad}
+
+\begin{isrcaja}[nota]{Criterio de competencia}
+  El diputado fiscaliza, solicita información, articula y propone
+  normas; no sustituye a las entidades ejecutoras ni interfiere en
+  órganos constitucionalmente autónomos.
+\end{isrcaja}
+
+\isrkicker{Matriz de sistematización (muestra)}
+\begin{isrmatriz}
+  P-001 & Obra con más de seis años de ejecución; sin plan de riesgos
+    actualizado. & Gobierno Regional de Ayacucho; unidad ejecutora;
+    Contraloría/OCI. & Oficiar a la unidad ejecutora por cronograma
+    valorizado, avance y plan de riesgos. & \isrprioridad{alta} &
+    \isrestado{registrado} \\
+  P-027 & Falta de medicamentos, especialistas y equipos médicos básicos.
+    & DIRESA Ayacucho; Red de Salud San Francisco. & Solicitar stock,
+    cartera de servicios y plan de abastecimiento. & \isrprioridad{urgente}
+    & \isrestado{derivado} \\
+\end{isrmatriz}
+\isrfuente{Matriz de sistematización de la Semana de Representación (despacho).}
+
+\contraportadainforme
+\end{document}

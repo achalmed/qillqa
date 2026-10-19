@@ -1,0 +1,109 @@
+# backend/app/esquemas/pegado/agenda-actividades.yml — contrato de pegado: actividades para la Agenda
+# Contrato de pegado: actividades para la Agenda. Lo produce prompts/06 legislativo/prompt_14_agenda_de_actividades.
+tipo: agenda-actividades
+version: 1
+titulo: Actividades de agenda
+modulo: agenda
+prompt: "prompts/06 legislativo/prompt_14_agenda_de_actividades.md"
+campos:
+  actividades:
+    etiqueta: Actividades
+    tipo: lista_bloques
+    esquema: actividad
+    obligatorio: true
+  observaciones:
+    etiqueta: Observaciones del modelo
+    tipo: lista
+    destino: null
+bloques:
+  actividad:
+    titulo:
+      etiqueta: Actividad
+      tipo: texto
+      obligatorio: true
+      destino: titulo
+      cruza: evento
+    tipo:
+      etiqueta: Tipo
+      tipo: opcion
+      valores: [pleno, comision, despacho, externa, semana_representacion, medio, otro]
+      sinonimos: {comision: [comisión, sesión de comisión], externa: [invitación, ceremonia, reunión externa, evento], despacho: [reunión interna, reunión de despacho], medio: [entrevista, prensa, radio, televisión], semana_representacion: [semana de representación, representación]}
+      destino: tipo
+    inicio:
+      etiqueta: Inicio
+      tipo: fecha_hora
+      obligatorio: true
+      destino: inicio
+      ayuda: "AAAA-MM-DD HH:MM; si no hay hora, solo la fecha y todo_el_dia: true"
+    fin:
+      etiqueta: Fin
+      tipo: fecha_hora
+      destino: fin
+    todo_el_dia:
+      etiqueta: Todo el día
+      tipo: booleano
+      destino: todo_el_dia
+    lugar:
+      etiqueta: Lugar
+      tipo: texto
+      destino: lugar
+    modalidad:
+      etiqueta: Modalidad
+      tipo: opcion
+      valores: [presencial, virtual, mixta]
+      sinonimos: {virtual: [remota, en línea, zoom, meet], mixta: [híbrida, semipresencial]}
+      destino: modalidad
+    enlace:
+      etiqueta: Enlace
+      tipo: texto
+      destino: enlace
+    convoca:
+      etiqueta: Convoca
+      tipo: texto
+      destino: null
+      cruza: institucion
+      anexar_a: descripcion
+    participa:
+      etiqueta: Participa
+      tipo: lista
+      destino: participantes
+      cruza: equipo
+      ayuda: quién de la entidad asiste; Qillqa lo casa con el equipo o el directorio
+    responsable:
+      etiqueta: Responsable
+      tipo: texto
+      destino: responsable_id
+      cruza: equipo
+    confirmacion:
+      etiqueta: Confirmación
+      tipo: texto
+      destino: null
+      anexar_a: descripcion
+      ayuda: a quién, cómo y hasta cuándo se confirma la asistencia
+    accion_previa:
+      etiqueta: Acción previa
+      tipo: texto
+      destino: null
+      anexar_a: descripcion
+    documento:
+      etiqueta: Documento que convoca
+      tipo: texto
+      destino: null
+      cruza: entrada
+      ayuda: número del documento recibido; Qillqa vincula el evento al recibido
+    descripcion:
+      etiqueta: Detalle
+      tipo: texto_largo
+      destino: descripcion
+    prioridad:
+      etiqueta: Prioridad
+      tipo: opcion
+      valores: [alta, media, baja]
+      sinonimos: {alta: [urgente], media: [normal]}
+      destino: null
+      anexar_a: descripcion
+    recordatorio:
+      etiqueta: Recordatorio
+      tipo: entero
+      destino: recordatorio_minutos
+      ayuda: minutos antes del inicio; null = el valor por omisión del tipo

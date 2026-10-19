@@ -1,0 +1,56 @@
+# backend/app/esquemas/pegado/proyecto-de-ley.yml — contrato de pegado: ficha de una iniciativa legislativa (Proyectos de ley)
+# Contrato de pegado: ficha de una iniciativa legislativa (Proyectos de ley). Lo produce prompts/06 legislativo/prompt_08_proyecto_de_ley (2.1+).
+# Las partes del texto (fórmula legal, exposición de motivos…) no viajan por aquí: entran por el importador de Word o por el editor.
+tipo: proyecto-de-ley
+version: 1
+titulo: Ficha del proyecto de ley
+modulo: proyectos
+prompt: "prompts/06 legislativo/prompt_08_proyecto_de_ley.md"
+campos:
+  titulo:
+    etiqueta: Título de la ley
+    tipo: texto
+    obligatorio: true
+    destino: titulo
+  sumilla:
+    etiqueta: Sumilla
+    tipo: texto_largo
+    destino: objetivo
+  problema:
+    etiqueta: Problema que atiende
+    tipo: texto_largo
+    destino: problema
+  propuesta:
+    etiqueta: Propuesta
+    tipo: texto_largo
+    destino: propuesta
+  normas_modificadas:
+    etiqueta: Normas que modifica o deroga
+    tipo: lista
+    destino: base_legal_texto
+    ayuda: una por línea, con número y artículos
+  comisiones:
+    etiqueta: Comisiones competentes
+    tipo: lista
+    destino: comisiones
+    ayuda: las del catálogo de Qillqa, por su nombre oficial
+  adherentes:
+    etiqueta: Adherentes propuestos
+    tipo: lista
+    destino: adherentes
+    cruza: persona
+  estado:
+    etiqueta: Estado del trámite
+    tipo: opcion
+    valores: [idea, en_elaboracion, en_revision, listo_para_presentar, presentado, en_comision, dictaminado, en_pleno, aprobado, ley_publicada, archivado, retirado]
+    destino: null
+    ayuda: solo se muestra; el estado lo cambia una persona
+  numero_presentado:
+    etiqueta: Número con que se presentó
+    tipo: texto
+    destino: null
+    anexar_a: observaciones
+  observaciones:
+    etiqueta: Observaciones del modelo
+    tipo: lista
+    destino: null

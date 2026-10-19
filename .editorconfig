@@ -1,0 +1,52 @@
+# .editorconfig — sgdp: convenciones de edición por tipo de archivo (https://editorconfig.org).
+
+# Este archivo manda: el editor no sigue buscando .editorconfig en ~/Documents ni más arriba
+# (el espacio de trabajo tiene repositorios anidados y marco_documental/ es un subtree de este).
+root = true
+
+# ===== Valores por defecto para todo archivo de texto =====
+[*]
+charset = utf-8                 # español con tildes en código, comentarios y documentos
+end_of_line = lf                # Linux; coincide con .gitattributes (eol=lf)
+insert_final_newline = true     # un archivo termina en salto de línea (git y los diffs lo agradecen)
+trim_trailing_whitespace = true # sin espacios colgantes
+indent_style = space
+indent_size = 2                 # el estilo del frontend y de YAML; Python y shell lo cambian abajo
+
+# ===== Python (backend, scripts, generadores del marco): 4 espacios (PEP 8) =====
+[*.py]
+indent_size = 4
+
+# ===== Shell: 2 espacios, como los scripts de la raíz =====
+[*.sh]
+indent_size = 2
+
+# ===== TypeScript, React, JSON, YAML, HTML, CSS: 2 espacios (Prettier/Vite) =====
+[*.{ts,tsx,js,json,yml,yaml,html,css,webmanifest}]
+indent_size = 2
+
+# ===== LaTeX (clases, estructuras, plantillas del marco): 2 espacios =====
+[*.{tex,cls,sty}]
+indent_size = 2
+
+# ===== Plantillas Jinja del informe-sr: 2 espacios; se respetan los espacios finales (son texto) =====
+[*.j2]
+indent_size = 2
+trim_trailing_whitespace = false
+
+# ===== Markdown: dos espacios al final de línea son un salto de línea; no se recortan =====
+[*.md]
+indent_size = 2
+trim_trailing_whitespace = false
+
+# ===== Makefile: las recetas exigen tabulador =====
+[Makefile]
+indent_style = tab
+
+# ===== Dockerfile y compose: 2 espacios =====
+[{Dockerfile,docker-compose.yml}]
+indent_size = 2
+
+# ===== SQL: 2 espacios =====
+[*.sql]
+indent_size = 2

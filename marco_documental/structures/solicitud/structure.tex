@@ -1,0 +1,60 @@
+%% =====================================================================
+%%  structures/solicitud/structure.tex  --  Esqueleto de la SOLICITUD
+%% ---------------------------------------------------------------------
+%%  Norma administrativa peruana (TUO Ley 27444):
+%%
+%%     [sumilla arriba-derecha, negrita]   SOLICITO: ...
+%%     DESTINATARIO (mayusculas)
+%%     Institucion / S.D. / PRESENTE
+%%     ... exordio / exposicion / conclusion (cuerpo libre) ...
+%%     Lugar, fecha (derecha)
+%%     \bloquefirma                (SIN antefirma "Atentamente,")
+%%     Adj. / c.c.
+%%
+%%  OJO: guardia anti-doble-carga; nombres SIN @ (se carga en el
+%%  preambulo del documento). \bloquefirma/\adjunto/\concopia viven en
+%%  core/lib/partes-comunes.tex.
+%% =====================================================================
+\ifcsname despachoEstructuraSolicitud\endcsname
+  \expandafter\endinput
+\fi
+\expandafter\def\csname despachoEstructuraSolicitud\endcsname{cargada}
+
+%% --- Sumilla (arriba a la derecha, en negrita): "SOLICITO: ..." ------
+\newlength{\anchosumillasol}
+\setlength{\anchosumillasol}{7.2cm}
+\newcommand{\setanchosumilla}[1]{\setlength{\anchosumillasol}{#1}}
+\newcommand{\sumillasolicitud}[1]{%
+  \noindent\hfill
+  \begin{minipage}{\anchosumillasol}%
+    \raggedright\textbf{#1}%
+  \end{minipage}%
+  \par\vspace{1.4\baselineskip}%
+}
+
+%% --- Destinatario (izquierda, en mayusculas) -------------------------
+%%  \destinatariosolicitud{TRATAMIENTO Y CARGO}{Institucion}{S.D.}
+%%  El 2.o (institucion) y 3.er (dependencia) argumentos son opcionales:
+%%  vacios = no se imprimen.
+\newcommand{\destinatariosolicitud}[3]{%
+  \noindent
+  \begin{minipage}{\textwidth}%
+    \setlength{\parskip}{2pt}%
+    \despachotamdest
+    \textbf{\MakeUppercase{#1}}\par
+    \if\relax\detokenize{#2}\relax\else \MakeUppercase{#2}\par\fi
+    \if\relax\detokenize{#3}\relax\else \underline{#3}\par\fi
+  \end{minipage}%
+  \par\vspace{1.1\baselineskip}%
+}
+
+%% --- Lugar y fecha (derecha) -----------------------------------------
+%%  Usa \meta{fecha} si existe; si no, la fecha de compilacion.
+\newcommand{\lugaryfecha}{%
+  \par\vspace{0.4\baselineskip}%
+  \noindent{\raggedleft \meta{lugar}, \ifmetadef{fecha}{\meta{fecha}}{\today}\par}%
+  \vspace{0.4\baselineskip}%
+}
+
+%% La solicitud NO lleva antefirma "Atentamente,": la firma va directa
+%% tras el lugar y la fecha (\bloquefirma de core/lib/partes-comunes.tex).

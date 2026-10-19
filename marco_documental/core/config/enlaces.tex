@@ -1,0 +1,32 @@
+%% =====================================================================
+%%  core/config/enlaces.tex  --  Hipervinculos y metadatos del PDF
+%% ---------------------------------------------------------------------
+%%  hyperref se carga al FINAL del nucleo (orden estandar). Los
+%%  metadatos del PDF se toman de \meta{...} al comenzar el documento,
+%%  cuando el documento ya declaro sus datos.
+%% =====================================================================
+
+%% xurl: una URL larga puede partirse en cualquier caracter (en las notas al
+%% pie se salia del margen derecho; revision 2026-10-01). Antes de hyperref.
+\RequirePackage{xurl}
+
+\RequirePackage[
+  colorlinks=true,
+  breaklinks=true,
+]{hyperref}
+
+\hypersetup{
+  linkcolor=colorenlaces,
+  urlcolor=colorenlaces,
+  citecolor=colorenlaces,
+  filecolor=colorenlaces,
+}
+
+\AtBeginDocument{%
+  \hypersetup{
+    pdftitle={\ifmetadef{numerocompleto}{\meta{numerocompleto}}{\meta{tipodoc} N.º \meta{numero}-\meta{anio}/\meta{siglas}}},
+    pdfauthor={\meta{autor} — \meta{cargo}},
+    pdfsubject={\ifmetadef{asunto}{\meta{asunto}}{}},
+    pdflang={es-PE},
+  }%
+}

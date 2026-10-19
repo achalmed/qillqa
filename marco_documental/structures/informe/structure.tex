@@ -1,0 +1,64 @@
+%% =====================================================================
+%%  structures/informe/structure.tex  --  Esqueleto del INFORME
+%% ---------------------------------------------------------------------
+%%  Informe tecnico de despacho:
+%%
+%%     INFORME N° 001-2026/ABC/CR
+%%     A / DE / ASUNTO / FECHA
+%%     I. ANTECEDENTES   II. ANALISIS   III. CONCLUSIONES ...
+%%
+%%  Las secciones se numeran solas en romanos: \seccion{ANTECEDENTES}.
+%% =====================================================================
+\ifcsname despachoEstructuraInforme\endcsname
+  \expandafter\endinput
+\fi
+\expandafter\def\csname despachoEstructuraInforme\endcsname{cargada}
+
+\newcommand{\numerodocumento}{%
+  \begin{center}
+    \ifmetadef{numerocompleto}%
+      {\underline{\seriesemi\MakeUppercase{\meta{numerocompleto}}}}%
+      {\underline{\seriesemi\MakeUppercase{\meta{tipodoc}}\ N°~\meta{numero}-\meta{anio}/\meta{siglas}}}%
+  \end{center}
+  \vspace{0.3\baselineskip}%
+}
+
+%%  \cabecerainforme[referencia]{a}{de}{asunto}
+%%  La REFERENCIA es OPCIONAL (informes que responden a un pedido). El
+%%  \\ de la fila viaja dentro de \despachorefinf para no quedar
+%%  adyacente a un \fi dentro del tabular (gotcha de \@arraycr).
+\newcommand{\cabecerainforme}[4][]{%
+  \def\despachorefinf{}%
+  \if\relax\detokenize{#1}\relax\else
+    \def\despachorefinf{\textbf{REF.} & #1 \\}%
+  \fi
+  \noindent
+  \begin{tabular}{@{}p{1.9cm}@{~:~}p{\dimexpr\textwidth-2.6cm\relax}@{}}
+    \textbf{A}      & #2 \\
+    \textbf{DE}     & #3 \\
+    \textbf{ASUNTO} & #4 \\
+    \despachorefinf
+    \textbf{FECHA}  & \meta{lugar}, \ifmetadef{fecha}{\meta{fecha}}{\today} \\
+  \end{tabular}
+  \par\vspace{2pt}
+  \noindent{\color{neutral500}\rule{\textwidth}{0.5pt}}%
+  \par\espacioantescuerpo{0.8}% aire hasta el primer parrafo (ajustable, 2026-10-01)
+  \setmeta{asunto}{#4}%
+}
+
+%% --- Secciones en romanos (I., II., ...) ------------------------------
+\newcounter{seccioninforme}
+\newcommand{\seccion}[1]{%
+  \stepcounter{seccioninforme}%
+  \vspace{0.9\baselineskip}%
+  \noindent{\fuentedisplaysemi\color{colortitulos}%
+    \Roman{seccioninforme}.\ \MakeUppercase{#1}}%
+  \par\vspace{0.35\baselineskip}\noindent\ignorespaces
+}
+
+\newcommand{\atentamente}[1][Es cuanto informo a usted para los fines pertinentes.]{%
+  \vspace{0.4\baselineskip}%
+  \noindent #1\par
+}
+
+%% (\bloquefirma, \adjunto y \concopia viven en core/lib/partes-comunes.tex)

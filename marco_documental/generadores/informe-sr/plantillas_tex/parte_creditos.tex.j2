@@ -1,0 +1,30 @@
+%% parte_01_creditos.tex -- GENERADO (indice + ficha tecnica en prosa tipografica)
+\renewcommand{\contentsname}{Contenido}
+\tableofcontents
+\vspace{22pt}
+\noindent\begin{minipage}[t]{0.52\linewidth}\vspace{0pt}
+\isrkicker{Ficha técnica}
+\isrdato{Documento}{\VAR{inf.titulo_documento|tex}}
+\isrdato{Código y versión}{\VAR{inf.codigo} · \VAR{inf.anio}-\VAR{'%02d' % inf.mes} · versión \VAR{inf.version} (\VAR{'aprobado' if inf.estado == 'hecho' else inf.estado})}
+\isrdato{Periodo informado}{\VAR{inf.periodo_texto|tex}}
+\isrdato{Ámbito}{\VAR{inf.ambito_texto|tex}}
+\isrdato{Fecha del documento}{\VAR{inf.fecha_documento|fechacorta}}
+\isrdato{Equipo}{\BLOCK{ for e in inf.equipo }\VAR{e.nombre|tex}, \VAR{e.rol|tex}.\BLOCK{ if not loop.last }\\\BLOCK{ endif }\BLOCK{ endfor }}
+\isrdato{Fuentes}{\BLOCK{ for f in inf.fuentes }\VAR{f|tex}\BLOCK{ if not loop.last }; \BLOCK{ endif }\BLOCK{ endfor }.}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.40\linewidth}\vspace{0pt}
+\BLOCK{ if inf.get('pendientes') and inf.estado in ('borrador', 'revision') and not inf.get('ficha_sin_notas') }
+\isrkicker{Notas de esta versión}
+{\fontsize{8.6}{11.5}\selectfont\color{colorisrtextosec}\setlength{\parskip}{0pt}
+\begin{itemize}[leftmargin=1em, itemsep=2pt, label={\textcolor{colorisrtextosec}{\rule[0.1em]{0.32em}{0.32em}}}]
+\BLOCK{ for p in inf.pendientes }
+  \item \VAR{p|tex}
+\BLOCK{ endfor }
+\end{itemize}\par}
+\vspace{8pt}
+\BLOCK{ endif }
+\BLOCK{ if not inf.get('ficha_sin_notas') }
+\isrkicker{Registro fotográfico}
+{\fontsize{8.6}{11.5}\selectfont\color{colorisrtextosec}Las fotografías son del registro de la Semana de Representación y muestran el territorio, la ciudadanía y las actividades; no se publican imágenes de menores identificables. Los retratos del diputado son sus fotografías oficiales.\par}
+\BLOCK{ endif }
+\end{minipage}\par

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Qillqa">
+  <!-- Versión «maskable» (Android recorta la forma): fondo a sangre y la hoja dentro de la zona
+       segura (círculo central del 80 %). -->
+  <defs>
+    <linearGradient id="fondo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6E0F22"/>
+      <stop offset="1" stop-color="#4E0A18"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#fondo)"/>
+  <g transform="translate(256 256) scale(0.9) translate(-256 -256)">
+    <path d="M160 108h140l72 72v204a20 20 0 0 1-20 20H160a20 20 0 0 1-20-20V128a20 20 0 0 1 20-20z" fill="#F5F1EC"/>
+    <path d="M300 108v52a20 20 0 0 0 20 20h52z" fill="#C99614"/>
+    <rect x="188" y="222" width="136" height="24" rx="12" fill="#4E0A18"/>
+    <rect x="188" y="274" width="136" height="16" rx="8" fill="#4E0A18" opacity="0.32"/>
+    <rect x="188" y="314" width="92" height="16" rx="8" fill="#4E0A18" opacity="0.32"/>
+  </g>
+</svg>

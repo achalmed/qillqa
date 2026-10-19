@@ -1,0 +1,58 @@
+%% =====================================================================
+%%  membretes/congreso/membrete.tex  --  Membrete oficial (machote)
+%% ---------------------------------------------------------------------
+%%  Encabezado del despacho:
+%%
+%%    [escudo del Peru] [logo Congreso]      [caja guinda: NOMBRE ]
+%%                                           [       CARGO        ]
+%%                                             "lema del anio"
+%%    ------------------------- filete -------------------------
+%%
+%%  - Nombre y cargo en SELAWIK (clon libre de Segoe UI).
+%%  - El lema va debajo de la caja, CENTRADO respecto a ella
+%%    (\despachoAnchoCaja) y en tono sutil (gris calido, cursiva).
+%%  Solo consume \meta{autor}, \meta{cargo} y \meta{lema}. NO definir
+%%  aqui macros nuevas: este archivo debe poder cargarse varias veces.
+%%  El pie institucional vive en core/config/membrete.tex.
+%% =====================================================================
+
+\fancyhead[C]{%
+  \begin{minipage}[b]{\textwidth}%
+    % --- Fila unica: logos a la izquierda | nombre + lema a la derecha
+    \begin{minipage}[c]{0.44\textwidth}%
+      \raggedright
+      \includegraphics[height=1.50cm]{escudo-peru.png}%
+      \hspace{0.30cm}%
+      \includegraphics[height=1.50cm]{logo-congreso.png}%
+    \end{minipage}%
+    \hfill
+    \begin{minipage}[c]{0.54\textwidth}%
+      \raggedleft
+      \setlength{\fboxsep}{0pt}%
+      \colorbox{colormembrete}{%
+        \begin{minipage}[c][1.30cm][c]{\despachoAnchoCaja}%
+          \centering\color{white}%
+          {\fuentemembretesemi\fontsize{10.5}{13}\selectfont
+            \MakeUppercase{\meta{autor}}}%
+          % Cargo vacio -> caja de UNA linea (p. ej. «BANCADA REGIONAL»,
+          % \setmeta{cargo}{} en su metadata; pedido Edison 2026-08-23).
+          \ifmetadef{cargo}{\\[2.5pt]
+          {\fuentemembrete\fontsize{9}{11}\selectfont
+            \MakeUppercase{\meta{cargo}}}}{}%
+        \end{minipage}%
+      }\\[4.5pt]
+      % --- Lema del decenio (opcional, 2026-10-01: la Camara de Diputados
+      %     lleva dos lemas) y lema del anio: centrados respecto a la caja.
+      \ifmetadef{decenio}{\makebox[\despachoAnchoCaja][c]{%
+        {\itshape\fontsize{7.5}{9}\selectfont\color{neutral700}%
+          ``\meta{decenio}''}}\\[1pt]}{}%
+      \makebox[\despachoAnchoCaja][c]{%
+        {\itshape\fontsize{7.5}{9}\selectfont\color{neutral700}%
+          ``\meta{lema}''}%
+      }%
+    \end{minipage}%
+    \par\vspace{5pt}
+    % --- Filete ------------------------------------------------------
+    \ifdespachofileteencabezado{\color{colorfilete}\rule{\textwidth}{0.6pt}}\fi%
+  \end{minipage}%
+}

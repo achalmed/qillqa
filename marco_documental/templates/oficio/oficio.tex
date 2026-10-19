@@ -1,0 +1,63 @@
+%% =====================================================================
+%%  oficio.tex  --  MAESTRO del oficio (plantilla del despacho)
+%% ---------------------------------------------------------------------
+%%  Flujo de trabajo:
+%%    1. Copia esta carpeta:  documentos/oficios/YYYY-MM-DD-titulo/
+%%    2. Edita metadata.tex (numero, fecha, ...) y el cuerpo de abajo.
+%%    3. Compila:  scripts/build.sh <carpeta>/oficio.tex
+%%
+%%  Selecciones disponibles (descomentar para cambiar el default):
+%%    \usarmembrete{despacho}     % logo Camara de Diputados (moderno)
+%%    \sinmarcaagua               % sin marca de agua
+%%    \setmarcaaguaancho{10cm}    % marca de agua mas pequena
+%%    \confolio                   % "Pag. 1 de N" (oficios largos)
+%% =====================================================================
+\documentclass{oficio}
+
+\input{metadata.tex}
+
+\begin{document}
+
+\lugaryfecha
+\numerodocumento
+
+\destinatario{Señor:}{Xxxxxxxx}{}
+
+\asunto{Invita al plenario ``Encuentro por la educación ayacuchana''}
+
+\saludo
+
+Es un honor saludarle cordialmente a nombre del \meta{cargo},
+\meta{autor}, y expresar el reconocimiento a su
+destacada labor a favor de nuestra comunidad educativa.
+
+El motivo del presente documento es para invitarle de manera especial al
+plenario ``Encuentro por la educación ayacuchana'', un espacio para sumar
+esfuerzos, articular estrategias y coordinar acciones concretas que
+contribuyan al desarrollo de la educación ayacuchana.
+
+El encuentro se llevará a cabo de acuerdo con la siguiente programación:
+
+\begin{itemize}
+  \item Fecha: Sábado, 08 de agosto del 2026.
+  \item Hora: 9:00 a.\,m.
+  \item Lugar: Auditorio de la Casa del Maestro, Jr.~2 de Mayo N.º~235.
+\end{itemize}
+
+Conociendo su constante compromiso con nuestra educación y el desarrollo
+social, estamos seguros de que su participación y valiosos aportes
+enriquecerán significativamente las decisiones que se adopten en este
+espacio.
+
+Sin otro particular por el momento, me despido reiterándole los
+sentimientos de mi especial consideración y estima.
+
+\atentamente
+%% \vfill ancla la firma al FONDO de la pagina: misma altura en todos
+%% los oficios, sin importar el largo del cuerpo. El argumento de
+%% \bloquefirma es el minimo garantizado sobre el nombre (ahi va la
+%% firma digital).
+\vfill
+\bloquefirma[2.0cm]
+
+\end{document}

@@ -1,0 +1,105 @@
+# backend/app/esquemas/pegado/documento-administrativo.yml — contrato de pegado: documento administrativo redactado con el skill, que el editor prellena
+# Contrato de pegado: un documento administrativo redactado con el skill documentos-administrativos (oficio, oficio múltiple,
+# memorando, solicitud, acta…) que el editor de Qillqa prellena: campos del formulario del tipo y el cuerpo. El número lo pone
+# Qillqa al generar; nunca viaja en el bloque.
+tipo: documento-administrativo
+version: 1
+titulo: Documento administrativo
+modulo: documentos
+# 2026-10-12: el prompt autosuficiente (se pega en cualquier IA; el equipo no usa skills); el skill sigue siendo el método completo.
+prompt: "prompts/06 legislativo/prompt_17_documento_administrativo.md"
+campos:
+  tipo_documental:
+    etiqueta: Tipo
+    tipo: opcion
+    valores: [oficio, oficio_multiple, carta, memorando, informe, solicitud, acta]
+    sinonimos: {oficio_multiple: [oficio múltiple, múltiple], memorando: [memorándum, memo], solicitud: [memorial]}
+    obligatorio: true
+    destino: tipo
+  destinatario_tratamiento:
+    etiqueta: Tratamiento
+    tipo: texto
+    destino: destinatario_tratamiento
+    ayuda: "Señor, Señora, Doctor, Ingeniera…"
+  destinatario_nombre:
+    etiqueta: Destinatario
+    tipo: lista
+    destino: destinatario_nombre
+    cruza: persona
+    ayuda: uno por línea en el oficio múltiple; Qillqa lo casa con el directorio
+  destinatario_cargo:
+    etiqueta: Cargo del destinatario
+    tipo: texto
+    destino: destinatario_cargo
+  destinatario_institucion:
+    etiqueta: Institución del destinatario
+    tipo: texto
+    destino: destinatario_institucion
+    cruza: institucion
+  destinatario_lugar:
+    etiqueta: Dependencia o lugar
+    tipo: texto
+    destino: destinatario_lugar
+    ayuda: solo la solicitud (S.D. / PRESENTE)
+  para:
+    etiqueta: Para
+    tipo: texto
+    destino: para
+    ayuda: solo el memorando
+  de:
+    etiqueta: De
+    tipo: texto
+    destino: de
+    ayuda: solo el memorando
+  asunto:
+    etiqueta: Asunto
+    tipo: texto
+    obligatorio: true
+    destino: asunto
+  sumilla_solicito:
+    etiqueta: Sumilla
+    tipo: texto
+    destino: sumilla_solicito
+    ayuda: solo la solicitud; empieza con «SOLICITO:»
+  referencia:
+    etiqueta: Referencia
+    tipo: lista
+    destino: referencia
+    cruza: entrada
+    forma: cita
+    ayuda: documentos que cita, uno por línea, con su denominación y número (sin fecha, anexos ni páginas); si cita un recibido, Qillqa propone «responde a»
+  fecha:
+    etiqueta: Fecha
+    tipo: fecha
+    destino: fecha
+  cuerpo:
+    etiqueta: Cuerpo
+    tipo: texto_largo
+    obligatorio: true
+    destino: cuerpo
+    ayuda: párrafos separados por una línea en blanco; listas con «-» o «1.»; el oficio abre con «Es grato dirigirme…» y cierra con «Sin otro particular…»; sin «De mi consideración:», «Atentamente,» ni firma (los pone la clase)
+  anexo:
+    etiqueta: Adjuntos (línea «Adj.»)
+    tipo: lista
+    destino: anexo
+    forma: cita
+    ayuda: uno por línea, con su denominación y número (sin fecha, anexos ni páginas)
+  con_copia:
+    etiqueta: Con copia
+    tipo: lista
+    destino: con_copia
+  organo:
+    etiqueta: Órgano deliberante
+    tipo: texto
+    destino: organo
+    ayuda: solo el acta
+  clase_sesion:
+    etiqueta: Clase de sesión
+    tipo: opcion
+    valores: [ordinaria, extraordinaria]
+    destino: clase_sesion
+    ayuda: solo el acta
+  observaciones:
+    etiqueta: Observaciones del modelo
+    tipo: lista
+    destino: null

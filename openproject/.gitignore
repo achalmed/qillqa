@@ -1,0 +1,17 @@
+# .gitignore — sgdp/openproject (suite openproject_despacho): qué no entra en git, por clase (NORMATIVA §5, §15.8).
+
+# Despliegue (vive fuera del repo, en <despacho>/operaciones/openproject, por DESPACHO_DIR): lo que un despliegue
+# local pudiera dejar dentro — secretos, un enlace viejo a operaciones, respaldos e ids de la instancia.
+.env
+operaciones
+operaciones/
+operaciones/respaldos/
+respaldos/
+op_ids.json
+
+# Temporales: logs.
+*.log
+
+# Cachés de Python.
+__pycache__/
+*.pyc

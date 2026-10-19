@@ -1,0 +1,39 @@
+%% =====================================================================
+%%  membretes/prensa/membrete.tex  --  Membrete de documentos PUBLICOS
+%% ---------------------------------------------------------------------
+%%  Para comunicados, pronunciamientos, notas de prensa y anuncios:
+%%  encabezado protocolar CENTRADO (escudo nacional + logo de la Camara
+%%  de Diputados + lema del anio) rematado con doble filete clasico.
+%%  El nombre del diputado NO va aqui: vive en la banda de prensa al
+%%  pie (core/config/banda-prensa.tex), que este membrete activa.
+%%
+%%  Seleccionar con:  \usarmembrete{prensa}
+%%  (idempotente: solo \fancyhead/\fancyfoot, sin \newcommand)
+%% =====================================================================
+
+\fancyhead[C]{%
+  \begin{minipage}[b]{\textwidth}%
+    \centering
+    % --- Emblemas oficiales centrados --------------------------------
+    %%  El logo de la Camara va MONOCROMO en guinda sobre transparente
+    %%  (logo-camara-mono.png, generado por scripts/generar-logo-mono.py):
+    %%  el original trae un recuadro guinda solido que, junto al escudo
+    %%  limpio, se veia pesado y ajeno (pedido de Edison, 2026-08-09).
+    \raisebox{0.09cm}{\includegraphics[height=1.32cm]{escudo-peru.png}}%
+    \hspace{0.60cm}%
+    \raisebox{0.02cm}{\includegraphics[height=1.42cm]{logo-camara-mono.png}}%
+    \par\vspace{4.5pt}
+    % --- Lema del anio -----------------------------------------------
+    {\itshape\fontsize{7.5}{9}\selectfont\color{neutral700}%
+      ``\meta{lema}''}%
+    \par\vspace{5.5pt}
+    % --- Doble filete clasico (grueso + fino) ------------------------
+    {\color{colorfilete}\rule{\textwidth}{1.0pt}}%
+    \par\vspace{1.6pt}
+    {\color{colorfilete}\rule{\textwidth}{0.4pt}}%
+  \end{minipage}%
+}
+
+%% La banda de prensa reemplaza el pie institucional en todas las
+%% paginas de este membrete (el contacto viaja dentro de la banda).
+\conbandaprensa

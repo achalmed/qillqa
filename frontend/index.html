@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- La extensión de Qillqa (extension/) reconoce el sistema por esta marca. -->
+    <meta name="sgdp-app" content="sgdp" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/iconos/icono-192.png" />
+    <link rel="apple-touch-icon" href="/iconos/apple-touch-icon.png" />
+    <meta name="theme-color" content="#F5F5F7" />
+    <!-- Apariencia (2026-10-19; src/apariencia.ts, la misma regla): oscura si se eligió «oscuro», o «auto» y el
+         aparato la prefiere; sin elección, clara. Antes del CSS, para que la pantalla de carga ya salga del modo correcto. -->
+    <script>
+      (function () {
+        var a = null; try { a = localStorage.getItem('sgdp_apariencia') } catch (e) {}
+        var oscuro = a === 'oscuro' || (a === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches)
+        if (!oscuro) return
+        document.documentElement.setAttribute('data-tema', 'oscuro')
+        var m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute('content', '#1E1E20')
+      })()
+    </script>
+    <!-- Instalable como aplicación: permite abrir el sistema aunque el
+         servidor esté caído (ver public/sw.js y src/sinconexion.ts). -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Qillqa" />
+    <title>Qillqa — Gestión documental</title>
+    <style>
+      /* Pantalla de carga (2026-10-13): lo primero que se pinta, antes del JS. Continúa la
+         pantalla de inicio de Android y nunca deja la aplicación en blanco; con la apariencia oscura (data-tema), en oscuro. */
+      html, body { margin: 0; background: #F5F5F7; }
+      #sgdp-arranque {
+        position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center;
+        justify-content: center; gap: 18px; background: #F5F5F7; color: #1D1D1F;
+        font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; text-align: center;
+        padding: 24px; box-sizing: border-box;
+      }
+      #sgdp-arranque svg { width: 88px; height: 88px; }
+      #sgdp-arranque .barra { width: 120px; height: 3px; border-radius: 3px; background: #E5E5EA; overflow: hidden; }
+      #sgdp-arranque .barra::after { content: ""; display: block; width: 40%; height: 100%; background: #1D1D1F; animation: sgdp-ir 1.1s ease-in-out infinite; }
+      @keyframes sgdp-ir { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+      #sgdp-arranque .falla { display: none; max-width: 320px; }
+      #sgdp-arranque.con-falla .falla { display: block; }
+      #sgdp-arranque.con-falla .barra { display: none; }
+      #sgdp-arranque button {
+        margin-top: 14px; font: 600 15px system-ui, sans-serif; color: #fff; background: #1D1D1F;
+        border: 0; border-radius: 8px; padding: 10px 22px;
+      }
+      #sgdp-arranque .reparar { display: block; margin: 12px auto 0; color: #515154; opacity: 1; font-size: 13px; background: none; padding: 4px; text-decoration: underline; }
+      /* La misma pantalla en la apariencia oscura (paleta.ts, PALETA_OSCURA). */
+      html[data-tema="oscuro"] { color-scheme: dark; }
+      html[data-tema="oscuro"], html[data-tema="oscuro"] body, html[data-tema="oscuro"] #sgdp-arranque { background: #1E1E20; color: #F5F5F7; }
+      html[data-tema="oscuro"] #sgdp-arranque .barra { background: #38383B; }
+      html[data-tema="oscuro"] #sgdp-arranque .barra::after, html[data-tema="oscuro"] #sgdp-arranque button { background: #F5F5F7; color: #1D1D1F; }
+      html[data-tema="oscuro"] #sgdp-arranque .reparar { color: #B4B4B9; background: none; }
+      html[data-tema="oscuro"] #sgdp-arranque svg .hoja { fill: #2A2A2D; stroke: #4A4A4F; }
+      html[data-tema="oscuro"] #sgdp-arranque svg .doblez { fill: #38383B; }
+      html[data-tema="oscuro"] #sgdp-arranque svg .linea { fill: #F5F5F7; }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div id="sgdp-arranque" role="status" aria-live="polite">
+        <svg viewBox="140 108 232 296" aria-hidden="true">
+          <path class="hoja" d="M160 108h140l72 72v204a20 20 0 0 1-20 20H160a20 20 0 0 1-20-20V128a20 20 0 0 1 20-20z" fill="#FFFFFF" stroke="#D1D1D6" stroke-width="6"/>
+          <path class="doblez" d="M300 108v52a20 20 0 0 0 20 20h52z" fill="#E5E5EA"/>
+          <rect class="linea" x="188" y="222" width="136" height="24" rx="12" fill="#1D1D1F"/>
+          <rect class="linea" x="188" y="274" width="136" height="16" rx="8" fill="#1D1D1F" opacity="0.28"/>
+          <rect class="linea" x="188" y="314" width="92" height="16" rx="8" fill="#1D1D1F" opacity="0.28"/>
+        </svg>
+        <div class="barra"></div>
+        <div class="falla">
+          <div id="sgdp-arranque-texto">El sistema está tardando en abrir.</div>
+          <button type="button" id="sgdp-reintentar">Reintentar</button>
+          <button type="button" class="reparar" id="sgdp-reparar">Reparar la aplicación</button>
+        </div>
+      </div>
+    </div>
+    <script>
+      // VIGÍA DEL ARRANQUE (2026-10-13). Si el JS de la aplicación no llega o no se puede ejecutar
+      // (una publicación a medias, la red que se corta), en vez de quedarse en blanco: un reintento
+      // automático y, si tampoco, un botón. «Reparar» borra la copia de la aplicación guardada en el
+      // equipo (no los datos ni lo pendiente de enviar) y la vuelve a bajar; solo con red.
+      (function () {
+        var CLAVE = 'sgdp_reintento_arranque'
+        function caja() { return document.getElementById('sgdp-arranque') }
+        function mostrarFalla(texto) {
+          var c = caja()
+          if (!c || window.__sgdpMontada) return
+          if (texto) document.getElementById('sgdp-arranque-texto').textContent = texto
+          document.getElementById('sgdp-reparar').style.display = navigator.onLine ? '' : 'none'
+          c.className = 'con-falla'
+        }
+        function reintentarSolo() {
+          var ultima = 0
+          try { ultima = Number(sessionStorage.getItem(CLAVE) || 0) } catch (e) {}
+          if (Date.now() - ultima < 30000) return false
+          try { sessionStorage.setItem(CLAVE, String(Date.now())) } catch (e) {}
+          location.reload()
+          return true
+        }
+        window.addEventListener('error', function (e) {
+          var t = e && e.target
+          if (window.__sgdpMontada || !t || t.tagName !== 'SCRIPT') return
+          if (!reintentarSolo()) mostrarFalla('No se pudo abrir el sistema. Revise la conexión y reintente.')
+        }, true)
+        setTimeout(function () {
+          mostrarFalla(navigator.onLine ? 'El sistema está tardando en abrir.' : 'Sin conexión. Reintente cuando vuelva la señal.')
+        }, 15000)
+        document.getElementById('sgdp-reintentar').onclick = function () { location.reload() }
+        document.getElementById('sgdp-reparar').onclick = function () {
+          var listo = function () { location.reload() }
+          var cachesP = window.caches ? caches.keys().then(function (ks) {
+            return Promise.all(ks.filter(function (k) { return k.indexOf('sgdp-app-') === 0 || k.indexOf('sgdp-v1') === 0 }).map(function (k) { return caches.delete(k) }))
+          }) : Promise.resolve()
+          var swP = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(function (rs) {
+            return Promise.all(rs.map(function (r) { return r.unregister() }))
+          }) : Promise.resolve()
+          Promise.all([cachesP, swP]).then(listo, listo)
+        }
+      })()
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

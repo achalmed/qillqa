@@ -1,0 +1,52 @@
+# backend/app/esquemas/pegado/registro-representacion.yml — contrato de pegado: registro de una jornada de la Semana de representación
+# Contrato de pegado: registro de una jornada de la Semana de representación. Lo produce prompts/06 legislativo/prompt_11_representacion_y_demandas (2.x).
+tipo: registro-representacion
+version: 2
+titulo: Registro de la Semana de representación
+modulo: semanas_sr
+prompt: "prompts/06 legislativo/prompt_11_representacion_y_demandas.md"
+campos:
+  actividades:
+    etiqueta: Actividades
+    tipo: lista_bloques
+    esquema: actividad
+    obligatorio: true
+  pedidos:
+    etiqueta: Pedidos
+    tipo: lista_bloques
+    esquema: pedido
+  observaciones:
+    etiqueta: Observaciones del modelo
+    tipo: lista
+    destino: null
+bloques:
+  actividad:
+    codigo: {etiqueta: Código, tipo: texto, ayuda: "A-01, A-02…; Qillqa lo usa para casar con lo ya registrado"}
+    titulo: {etiqueta: Título, tipo: texto, obligatorio: true, destino: titulo}
+    fecha: {etiqueta: Día, tipo: fecha, obligatorio: true, destino: fecha}
+    tipo: {etiqueta: Tipo, tipo: texto, destino: tipo, ayuda: uno de los tipos de actividad del vocabulario de la semana}
+    sector: {etiqueta: Sector, tipo: texto, destino: sector}
+    hora_inicio: {etiqueta: Hora de inicio, tipo: hora, destino: hora_inicio}
+    hora_fin: {etiqueta: Hora de fin, tipo: hora, destino: hora_fin}
+    lugar: {etiqueta: Lugar, tipo: texto, destino: lugar}
+    localidad: {etiqueta: Localidad, tipo: texto, destino: localidad}
+    distrito: {etiqueta: Distrito, tipo: texto, destino: distrito}
+    provincia: {etiqueta: Provincia, tipo: texto, destino: provincia}
+    participantes: {etiqueta: Participantes, tipo: lista, destino: participantes}
+    contexto: {etiqueta: Contexto, tipo: texto_largo, destino: contexto}
+    hallazgos: {etiqueta: Hallazgos, tipo: lista, destino: hallazgos}
+    documentos: {etiqueta: Documentos, tipo: lista, destino: documentos, cruza: documento}
+    observaciones: {etiqueta: Observaciones internas, tipo: texto_largo, destino: observaciones}
+  pedido:
+    codigo: {etiqueta: Código, tipo: texto, ayuda: "P-001, P-002…"}
+    actividad: {etiqueta: Actividad, tipo: texto, obligatorio: true, destino: actividad, ayuda: el código de la actividad en que se recogió}
+    pedido: {etiqueta: Pedido, tipo: texto_largo, obligatorio: true, destino: pedido}
+    quien: {etiqueta: Quién lo pidió, tipo: texto, destino: null, anexar_a: observaciones}
+    entidades: {etiqueta: Entidades competentes, tipo: lista, destino: entidades, cruza: institucion, ayuda: la primera recibe el oficio}
+    entidades_texto: {etiqueta: Entidades como las nombró la fuente, tipo: texto, destino: entidades_texto}
+    actuacion: {etiqueta: Actuación parlamentaria propuesta, tipo: texto_largo, destino: actuacion}
+    prioridad_propuesta: {etiqueta: Prioridad, tipo: opcion, valores: [urgente, alta, ordinaria], sinonimos: {ordinaria: [normal, media, baja]}, destino: prioridad_propuesta}
+    responsable: {etiqueta: Responsable, tipo: texto, destino: responsable, cruza: equipo}
+    plazo: {etiqueta: Plazo, tipo: fecha, destino: plazo}
+    afirmaciones_a_verificar: {etiqueta: Afirmaciones a verificar, tipo: lista, destino: null, anexar_a: observaciones}
+    observaciones: {etiqueta: Observaciones internas, tipo: texto_largo, destino: observaciones}

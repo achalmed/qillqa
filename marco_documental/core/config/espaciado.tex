@@ -1,0 +1,35 @@
+%% =====================================================================
+%%  core/config/espaciado.tex  --  Interlineado, sangria, parrafos y notas
+%% ---------------------------------------------------------------------
+%%  Estilo oficio (como el machote): parrafos justificados, sangria de
+%%  primera linea de 1.27 cm y aire entre parrafos. El interlineado se
+%%  declara con la misma escala "tipo Word" del AWF.
+%% =====================================================================
+
+\RequirePackage{setspace}
+
+% \setinterlineado{1|1.15|1.5|2}
+\newcommand{\setinterlineado}[1]{\setstretch{#1}}
+
+% \setsangriaparrafo{dim} / \setespacioparrafos{dim}
+\newcommand{\setsangriaparrafo}[1]{\setlength{\parindent}{#1}}
+\newcommand{\setespacioparrafos}[1]{\setlength{\parskip}{#1}}
+
+% --- Defaults del oficio ---------------------------------------------
+\setinterlineado{1.15}
+\setsangriaparrafo{1.27cm}
+%% 4pt (antes 6pt) -- Edison 2026-09-07: el aire entre párrafos
+%% «ocupa demasiado». La sangría de 1.27 cm ya separa los párrafos;
+%% además este \parskip se SUMA a cada \vspace de la cabecera, así
+%% que bajarlo comprime todo el bloque superior. Ajustable por
+%% documento con fmt_espacioparrafos.
+\setespacioparrafos{4pt}
+
+% --- Notas al pie: nunca se parten (2026-10-06) ---------------------
+%% Edison 2026-10-06, en el PL-2026-009: la nota «se repartió a dos
+%% páginas». LaTeX parte por defecto una nota larga entre hojas
+%% (\interfootnotelinepenalty = 100) y deja su resto al pie de la
+%% siguiente, lejos de la llamada. Con 10000 la nota viaja entera: si
+%% no cabe, la línea con la llamada pasa a la hoja siguiente junto con
+%% ella. Un documento oficial no lleva notas partidas.
+\interfootnotelinepenalty=10000\relax

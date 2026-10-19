@@ -1,0 +1,139 @@
+%% =====================================================================
+%%  structures/comunicado/structure.tex  --  Esqueleto del COMUNICADO
+%% ---------------------------------------------------------------------
+%%  Documentos PUBLICOS del despacho: comunicado, pronunciamiento,
+%%  nota de prensa y anuncio (la palabra impresa sale de
+%%  \setmeta{tipodoc}{...}; una sola estructura para los cuatro).
+%%
+%%  Partes, en el orden de la pieza:
+%%
+%%     \cabeceradocumento          COMUNICADO + N.º + ornamento pallay
+%%     \titular{...}               titular de la nota (opcional)
+%%     \bajada{...}                bajada/entradilla (opcional)
+%%     ... parrafos libres ...
+%%     \begin{puntos} \item ...    puntos numerados del pronunciamiento
+%%     \cierrelugarfecha           Lima, 6 de agosto del 2026
+%%     \firmainstitucional         cierre institucional (sin firma manuscrita)
+%%     \contactoprensa             bloque de contacto (notas de prensa)
+%%
+%%  Los bloques centrados usan {\centering ...\par} con \parskip LOCAL
+%%  en cero (no entornos center): el ritmo vertical queda gobernado
+%%  solo por los \vspace explicitos, sin topsep ni parskip colados.
+%%
+%%  OJO: este archivo se carga en el preambulo del documento; nombres
+%%  SIN @ y guardia anti-doble-carga.
+%% =====================================================================
+\ifcsname despachoEstructuraComunicado\endcsname
+  \expandafter\endinput
+\fi
+\expandafter\def\csname despachoEstructuraComunicado\endcsname{cargada}
+
+%% --- Cabecera display: tipo + numero + ornamento ---------------------
+%%  El numero se compone de numero-anio-siglas (NO de numerocompleto,
+%%  que repite la palabra del tipo ya impresa en grande). Un documento
+%%  S/N (o sin \setmeta{numero}) simplemente no muestra la linea.
+\newcommand{\lineanumerodocumento}{%
+  \ifmetadef{numero}{%
+    \edef\despachoNumeroTmp{\csname despacho@meta@numero\endcsname}%
+    \def\despachoNumeroSN{S/N}%
+    \ifx\despachoNumeroTmp\despachoNumeroSN\else
+      {\fuentedatossemi\fontsize{9}{11}\selectfont\color{neutral700}%
+        \addfontfeatures{LetterSpace=10.0}%
+        N.º~\meta{numero}-\meta{anio}-\meta{siglas}\par}%
+      \vspace{5pt}%
+    \fi}{}%
+}
+
+%%  Ornamento: tres rombos del pallay (eco de la banda al pie)
+\newcommand{\ornamentopallay}{%
+  \tikz[baseline=-0.06cm]{%
+    \fill[colorpallay]       (0,-0.085)    -- (0.085,0)  -- (0,0.085)
+                             -- (-0.085,0) -- cycle;
+    \fill[colorpallayacento] (0.40,-0.085) -- (0.485,0)  -- (0.40,0.085)
+                             -- (0.315,0)  -- cycle;
+    \fill[colorpallay]       (0.80,-0.085) -- (0.885,0)  -- (0.80,0.085)
+                             -- (0.715,0)  -- cycle;}%
+}
+
+\newcommand{\cabeceradocumento}{%
+  \par\begingroup
+    \setlength{\parskip}{0pt}\centering
+    {\fuentedisplaynegra\fontsize{23}{26}\selectfont\color{colortitulos}%
+      \addfontfeatures{LetterSpace=6.0}%
+      \MakeUppercase{\meta{tipodoc}}\par}%
+    \vspace{5pt}%
+    \lineanumerodocumento
+    \ornamentopallay\par
+  \endgroup
+  \vspace{0.55\baselineskip}%
+}
+
+%% --- Titular y bajada (registro de nota de prensa) -------------------
+\newcommand{\titular}[1]{%
+  \par\begingroup
+    \setlength{\parskip}{0pt}\centering
+    {\seriesemi\fontsize{14}{17.5}\selectfont #1\par}%
+  \endgroup
+  \vspace{0.30\baselineskip}%
+}
+\newcommand{\bajada}[1]{%
+  \par\begingroup
+    \setlength{\parskip}{0pt}\centering
+    {\itshape\fontsize{10.5}{13.5}\selectfont\color{neutral700}#1\par}%
+  \endgroup
+  \vspace{0.45\baselineskip}%
+}
+
+%% --- Puntos numerados del pronunciamiento ----------------------------
+%%  Numeral en semibold guinda; cuerpo justificado como la prosa.
+\newenvironment{puntos}{%
+  \begin{enumerate}[
+    label={\seriesemi\textcolor{colortitulos}{\arabic*.}},
+    leftmargin=1.05cm, labelsep=0.45cm, labelindent=0pt, align=left,
+    itemsep=0.30\baselineskip]%
+}{\end{enumerate}}
+
+%% --- Cierre -----------------------------------------------------------
+%%  (los tres cierres abren con \par: cierran el parrafo anterior aunque
+%%   el maestro no deje linea en blanco antes del comando)
+\newcommand{\cierrelugarfecha}{%
+  \par\vspace{0.7\baselineskip}%
+  \noindent{\raggedleft
+    \meta{lugar}, \ifmetadef{fecha}{\meta{fecha}}{\today}\par}%
+}
+
+%%  Cierre institucional: los documentos publicos no llevan firma
+%%  manuscrita; cierra el despacho como voz institucional. La minipage
+%%  la vuelve inquebrantable (nunca se parte entre paginas).
+\newcommand{\firmainstitucional}{%
+  \par\vspace{0.9\baselineskip}%
+  \noindent\makebox[\textwidth][c]{%
+    \begin{minipage}{0.8\textwidth}
+      \setlength{\parskip}{0pt}\centering
+      {\color{colorfilete}\rule{3.4cm}{0.5pt}}\\[6pt]
+      {\fuentedatossemi\fontsize{7}{9}\selectfont\color{neutral700}%
+        \addfontfeatures{LetterSpace=16.0}DESPACHO DEL DIPUTADO}\\[3pt]
+      {\seriesemi\MakeUppercase{\meta{autor}}}\\[2pt]
+      {\fontsize{9}{11}\selectfont
+        Cámara de Diputados · Congreso de la República del Perú}%
+    \end{minipage}}%
+  \par
+}
+
+%% --- Contacto de prensa (notas de prensa) ----------------------------
+%%  Datos propios via \setmeta{prensanombre/prensacorreo/prensacelular};
+%%  si faltan, caen al correo/celular del despacho.
+\newcommand{\contactoprensa}{%
+  \par\vspace{1.0\baselineskip}%
+  \noindent{\color{colorfilete}\rule{2.2cm}{0.5pt}}\par
+  \vspace{4pt}%
+  \noindent{\fuentedatossemi\fontsize{7.5}{9.5}\selectfont%
+    \color{colortitulos}\addfontfeatures{LetterSpace=14.0}%
+    CONTACTO DE PRENSA}\par
+  \vspace{2.5pt}%
+  \noindent{\fuentedatos\fontsize{8.5}{11.5}\selectfont\color{neutral700}%
+    \ifmetadef{prensanombre}{\meta{prensanombre}\\}{}%
+    \ifmetadef{prensacorreo}{\meta{prensacorreo}}{\meta{correo}}%
+    \ \,\textperiodcentered\ \,%
+    Cel.~\ifmetadef{prensacelular}{\meta{prensacelular}}{\meta{celular}}\par}%
+}

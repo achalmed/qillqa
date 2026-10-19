@@ -1,0 +1,56 @@
+%% =====================================================================
+%%  informe.tex  --  MAESTRO del informe (plantilla del despacho)
+%% ---------------------------------------------------------------------
+%%  1. Copia esta carpeta:  documentos/informes/YYYY-MM-DD-titulo/
+%%  2. Edita metadata.tex y el cuerpo (secciones con \seccion{...}).
+%%  3. Compila:  scripts/build.sh <carpeta>/informe.tex
+%%
+%%  El folio "Pag. x de y" viene activado por defecto en los informes.
+%% =====================================================================
+\documentclass{informe}
+
+\input{metadata.tex}
+
+\begin{document}
+
+\numerodocumento
+
+\cabecerainforme[Memorando N°008-2026-2027-\meta{siglas}]
+  {\meta{autor} — \meta{cargo}}
+  {\meta{firmante} — \meta{cargofirmante}}
+  {Resultados de la visita de coordinación al distrito de Quinua}
+
+\seccion{Antecedentes}
+
+Mediante encargo verbal del despacho, con fecha 28 de julio del presente
+año, se dispuso la visita de coordinación al distrito de Quinua para el
+levantamiento de información sobre el estado de los compromisos asumidos
+con las autoridades locales.
+
+\seccion{Análisis}
+
+Durante la visita se sostuvo reuniones con el alcalde distrital y con
+los representantes de las comunidades de la zona alta. Los principales
+hallazgos son los siguientes:
+
+\begin{itemize}
+  \item El expediente técnico del sistema de agua de la zona alta se
+        encuentra en revisión desde marzo sin avances.
+  \item La institución educativa del centro poblado requiere
+        mantenimiento urgente en dos aulas.
+  \item Existe interés de la municipalidad en articular una mesa de
+        trabajo con el despacho para el mes de setiembre.
+\end{itemize}
+
+\seccion{Conclusiones y recomendaciones}
+
+Se recomienda oficiar a la unidad ejecutora correspondiente sobre el
+estado del expediente técnico y programar la mesa de trabajo propuesta
+dentro de la primera quincena de setiembre.
+
+\atentamente
+\bloquefirma[1.8cm]
+\adjunto{Panel fotográfico de la visita, 3 hojas.}
+\concopia{Archivo del despacho.}
+
+\end{document}

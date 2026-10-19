@@ -1,0 +1,28 @@
+%% parte_11_anexos.tex -- GENERADO (indice de anexos + caratulas + PDF de respaldo + registro fotografico)
+\capitulo{Anexos}{Documentos de respaldo emitidos o recibidos en el marco de la Semana de Representación, y relación del registro fotográfico.}
+
+\isrkicker{Relación de anexos}
+\begin{isrtabla}{Q[l,wd=1.4cm] X[1.6,l] X[2.4,l] Q[r,wd=1.6cm]}
+  Anexo & Documento & Contenido & Archivos \\
+\BLOCK{ for a in anexos }
+  \VAR{a.n} & \VAR{a.titulo|tex} & \VAR{a.descripcion|tex} & \VAR{a.pdfs|length} \\
+\BLOCK{ endfor }
+  \VAR{anexos|length + 1} & Registro fotográfico & Relación de las fotografías aptas para publicación, por actividad & — \\
+\end{isrtabla}
+
+\BLOCK{ for a in anexos }
+\isranexoportada{\VAR{a.n}}{\VAR{a.titulo|tex}}{\VAR{a.descripcion|tex}\BLOCK{ if a.archivos } Archivos: \BLOCK{ for f in a.archivos }\VAR{f|tex}\BLOCK{ if not loop.last }; \BLOCK{ endif }\BLOCK{ endfor }.\BLOCK{ endif }}
+\BLOCK{ for pdf in a.pdfs }
+\isranexopdf{\VAR{pdf}}
+\BLOCK{ endfor }
+\BLOCK{ endfor }
+
+\isranexoportada{\VAR{anexos|length + 1}}{Registro fotográfico}{Fotografías del banco del despacho aptas para publicación, con la actividad a la que corresponden. Las imágenes con menores identificables o datos personales se conservan en el archivo interno y no se publican sin consentimiento escrito.}
+\vspace{10pt}
+\begin{isrtablalarga}{Q[l,wd=1.2cm] Q[l,wd=1.2cm] X[l] Q[l,wd=2.2cm]}
+  Foto & Actividad & Descripción & Estado \\
+\BLOCK{ for f in datos.fotos.fotos if f.estado == 'publica' }
+  \VAR{f.id} & \VAR{f.actividad|default('—', true)} & \VAR{f.pie|tex} & \BLOCK{ if f.seleccion }En el informe\BLOCK{ else }En archivo\BLOCK{ endif } \\
+\BLOCK{ endfor }
+\end{isrtablalarga}
+\isrfuente{Registro fotográfico de la Semana de Representación (fotos.yaml del informe).}

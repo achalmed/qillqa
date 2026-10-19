@@ -1,0 +1,48 @@
+# docker-compose.yml — openproject_despacho: OpenProject Community «all-in-one» (Postgres + memcached + web + workers en un solo contenedor).
+#
+# Un solo punto de arranque, detención y respaldo. Todo lo que es de UN despliegue viene del
+# .env de operaciones (config.sh lo pasa con --env-file): host, hosts adicionales y secreto.
+#   Arranque:    ./iniciar.sh       Detener:     ./detener.sh
+#   Respaldo:    ./respaldar.sh     Actualizar:  ./actualizar.sh
+#   Estado:      ./estado.sh        Seeds:       ./sembrar.sh
+name: openproject
+
+services:
+  openproject:
+    image: openproject/openproject:17          # serie 17 (recibe parches de seguridad; no salta a 18 solo)
+    container_name: openproject
+    restart: unless-stopped                     # se reinicia solo si el equipo reinicia (salvo que lo detengas tú)
+    environment:
+      # --- Localización ---
+      OPENPROJECT_DEFAULT__LANGUAGE: "es"
+      # --- Acceso: IP:puerto del equipo en la LAN (definido en .env) ---
+      OPENPROJECT_HOST__NAME: "${OPENPROJECT_HOST_NAME}"
+      # Hosts adicionales permitidos (JSON en .env): localhost, IP y el nombre mDNS estable (*.local)
+      OPENPROJECT_ADDITIONAL__HOST__NAMES: '${OPENPROJECT_HOSTS_ADICIONALES:-["localhost","localhost:8080","127.0.0.1","127.0.0.1:8080"]}'
+      # HTTP plano en la red local (sin certificado TLS).
+      # IMPORTANTE: no exponer así a internet abierto; solo LAN de confianza.
+      OPENPROJECT_HTTPS: "false"
+      # --- Seguridad de sesión (clave secreta desde .env) ---
+      SECRET_KEY_BASE: "${OPENPROJECT_SECRET_KEY_BASE}"
+      # --- Ajuste de memoria para un laptop (menos procesos web = menos RAM) ---
+      OPENPROJECT_WEB__WORKERS: "2"
+    ports:
+      # 0.0.0.0 => accesible desde otros equipos del despacho en la LAN
+      - "0.0.0.0:8080:80"
+    volumes:
+      - openproject_pgdata:/var/openproject/pgdata     # base de datos PostgreSQL
+      - openproject_assets:/var/openproject/assets     # archivos subidos (adjuntos)
+    healthcheck:
+      # OpenProject expone un endpoint de salud público. start_period alto porque
+      # el PRIMER arranque corre migraciones y semillas (varios minutos).
+      test: ["CMD-SHELL", "curl -fsS http://localhost/health_checks/default || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 600s
+
+volumes:
+  openproject_pgdata:
+    name: openproject_pgdata      # nombre fijo (no prefijado) para que los respaldos lo encuentren
+  openproject_assets:
+    name: openproject_assets

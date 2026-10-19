@@ -1,0 +1,57 @@
+%% =====================================================================
+%%  structures/memorando/structure.tex  --  Esqueleto del MEMORANDO
+%% ---------------------------------------------------------------------
+%%  Formato interno peruano:
+%%
+%%     MEMORANDO N° 010-2026/ABC/CR
+%%     PARA   : ...
+%%     DE     : ...
+%%     ASUNTO : ...
+%%     FECHA  : ...
+%%     ---------------------------------
+%%     cuerpo ... \atentamente \bloquefirma
+%% =====================================================================
+\ifcsname despachoEstructuraMemorando\endcsname
+  \expandafter\endinput
+\fi
+\expandafter\def\csname despachoEstructuraMemorando\endcsname{cargada}
+
+\newcommand{\numerodocumento}{%
+  \begin{center}
+    \ifmetadef{numerocompleto}%
+      {\underline{\seriesemi\MakeUppercase{\meta{numerocompleto}}}}%
+      {\underline{\seriesemi\MakeUppercase{\meta{tipodoc}}\ N°~\meta{numero}-\meta{anio}/\meta{siglas}}}%
+  \end{center}
+  \vspace{0.3\baselineskip}%
+}
+
+%%  \cabeceramemo[referencia]{para}{de}{asunto}   (la fecha sale de \meta)
+%%  La REFERENCIA es OPCIONAL: la fila REF. solo aparece si se pasa el
+%%  argumento opcional (memorandos que responden a otro documento). El
+%%  \\ de la fila viaja dentro de \despachorefmemo para no quedar
+%%  adyacente a un \fi dentro del tabular (evita el gotcha de \@arraycr).
+\newcommand{\cabeceramemo}[4][]{%
+  \def\despachorefmemo{}%
+  \if\relax\detokenize{#1}\relax\else
+    \def\despachorefmemo{\textbf{REF.} & #1 \\}%
+  \fi
+  \noindent
+  \begin{tabular}{@{}p{1.9cm}@{~:~}p{\dimexpr\textwidth-2.6cm\relax}@{}}
+    \textbf{PARA}   & #2 \\
+    \textbf{DE}     & #3 \\
+    \textbf{ASUNTO} & #4 \\
+    \despachorefmemo
+    \textbf{FECHA}  & \meta{lugar}, \ifmetadef{fecha}{\meta{fecha}}{\today} \\
+  \end{tabular}
+  \par\vspace{2pt}
+  \noindent{\color{neutral500}\rule{\textwidth}{0.5pt}}%
+  \par\espacioantescuerpo{0.8}% aire hasta el primer parrafo (ajustable, 2026-10-01)
+  \setmeta{asunto}{#4}%
+}
+
+\newcommand{\atentamente}[1][Atentamente,]{%
+  \vspace{0.4\baselineskip}%
+  \noindent\hspace*{\parindent}#1\par
+}
+
+%% (\bloquefirma, \adjunto y \concopia viven en core/lib/partes-comunes.tex)

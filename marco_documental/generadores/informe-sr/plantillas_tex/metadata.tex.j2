@@ -1,0 +1,12 @@
+%% metadata.tex -- GENERADO desde datos/informe.yaml (no editar a mano)
+\setmeta{numero}{\VAR{'%02d' % inf.numero}}
+\setmeta{anio}{\VAR{inf.anio}}
+\setmeta{titulocorrido}{\VAR{inf.titulo_corrido|tex}}
+\setmeta{fecha}{\VAR{inf.fecha_documento|fechacorta}}
+\setmeta{lugar}{\VAR{inf.lugar_firma|tex}}
+\BLOCK{ if inf.get('nota_contraportada') }
+\setmeta{notacontraportada}{\VAR{inf.nota_contraportada|tex}}
+\BLOCK{ endif }
+\BLOCK{ if inf.get('sello') }
+\setmeta{sello}{\VAR{inf.sello}}
+\BLOCK{ endif }

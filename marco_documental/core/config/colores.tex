@@ -1,0 +1,80 @@
+%% =====================================================================
+%%  core/config/colores.tex  --  Paleta institucional
+%% ---------------------------------------------------------------------
+%%  Fuente de verdad: identidad-visual/tokens/colors.json (repo del sistema de diseño)
+%%  (escalas puka / q'illu / neutral). Aqui solo se REPLICAN los valores;
+%%  si el manual de marca cambia, actualizar alli primero y reflejar aqui.
+%%
+%%  Regla dura de la marca: SIN NARANJA. Nunca mezclar puka con qillu
+%%  en degradados.
+%% =====================================================================
+
+\RequirePackage{xcolor}
+
+% --- Escala puka (rojo cochinilla, ancla de marca = 600) -------------
+\definecolor{puka600}{HTML}{A6122E}   % marca primaria
+\definecolor{puka700}{HTML}{8A0F27}
+\definecolor{puka800}{HTML}{6E0F22}   % "Vino"
+\definecolor{puka900}{HTML}{4E0A18}
+
+% --- Guinda del logo oficial de la Camara de Diputados ---------------
+\definecolor{guindaoficial}{HTML}{4D1018}
+
+% --- Escala q'illu (amarillo maiz, ancla = 400) ----------------------
+\definecolor{qillu400}{HTML}{EAB61E}  % marca secundaria
+\definecolor{qillu600}{HTML}{A67B10}
+
+% --- Neutros calidos --------------------------------------------------
+\definecolor{papel}{HTML}{F5F1EC}     % neutral.100
+\definecolor{neutral500}{HTML}{A99E92}
+\definecolor{neutral700}{HTML}{6E655D}
+\definecolor{tinta}{HTML}{241F1C}     % neutral.900, texto principal
+\definecolor{negro}{HTML}{000000}     % negro pleno (caja y filetes)
+
+% --- Roles (que color usa cada cosa; cambiar aqui, no en los usos) ---
+\colorlet{colormembrete}{negro}           % caja del nombre en el membrete
+\colorlet{colorfilete}{negro}             % filetes horizontales (membrete y pie)
+\colorlet{colortitulos}{guindaoficial}    % titulos de seccion (informes)
+\colorlet{colorenlaces}{puka800}          % hyperref
+\colorlet{colorsello}{guindaoficial}      % sello de consigna (punos + frase)
+
+% --- Roles de la banda de prensa (comunicados/pronunciamientos) ------
+%%  La franja "pallay" evoca el tejido ayacuchano: campo puka con
+%%  rombos alternados. Solidos adyacentes (nunca degradados puka-qillu).
+\colorlet{colorpallay}{puka600}           % campo de la franja textil
+\colorlet{colorpallayacento}{qillu400}    % rombos de acento (alternan con blanco)
+\colorlet{colorbandalinea}{qillu400}      % linea fina sobre la banda blanca
+\colorlet{colorbandatag}{guindaoficial}   % cajita "DIPUTADO POR AYACUCHO"
+
+% --- Escalas ampliadas (tokens/colors.json, pasos 50-300 y neutros) ---
+%%  Agregadas 2026-09-03 para el INFORME DE SEMANA DE REPRESENTACION
+%%  (classes/informe-sr.cls): fondos de cajas y fichas, filas alternas,
+%%  bordes y chips. Regla de la marca: los pasos 50-300 JAMAS como texto.
+\definecolor{puka50}{HTML}{FBEDEF}
+\definecolor{puka100}{HTML}{F6D8DC}
+\definecolor{puka200}{HTML}{EFB0B9}
+\definecolor{qillu50}{HTML}{FDF6E3}
+\definecolor{qillu100}{HTML}{FAECC4}
+\definecolor{qillu200}{HTML}{F5DE97}
+\definecolor{qillu500}{HTML}{C99614}
+\definecolor{neutral200}{HTML}{E9E2D9}
+\definecolor{neutral300}{HTML}{DCD2C6}
+\definecolor{neutral400}{HTML}{C9BFB4}
+\definecolor{neutral600}{HTML}{8A8079}
+\definecolor{neutral800}{HTML}{524B45}
+\definecolor{datoazul}{HTML}{4A5A66}   % azul-pizarra DATA-ONLY (6.a categoria de graficos)
+\definecolor{exito}{HTML}{2E7D32}      % funcional (estados), nunca de marca
+
+% --- Roles del informe de Semana de Representacion (informe-sr) ------
+%%  El informe consume SOLO estos roles; cambiar aqui, no en la
+%%  estructura. Modo "Blanco oficial" en el cuerpo; "Vino" en portada y
+%%  separadores; Q'illu unicamente como filete/acento.
+\colorlet{colorisrprimario}{puka600}      % kickers, numerales, acentos fuertes
+\colorlet{colorisrprofundo}{puka800}      % portada, separadores, cajas oscuras (Vino)
+\colorlet{colorisracento}{qillu400}       % filetes finos y acentos
+\colorlet{colorisrtexto}{tinta}
+\colorlet{colorisrtextosec}{neutral700}
+\colorlet{colorisrfondo}{papel}           % fondo de fichas y cajas
+\colorlet{colorisrfondosuave}{puka50}     % destacado suave (alertas, compromisos)
+\colorlet{colorisrborde}{neutral300}
+\colorlet{colorisrfila}{neutral200}       % filas alternas de tablas

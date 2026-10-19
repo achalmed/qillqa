@@ -1,0 +1,101 @@
+# backend/app/esquemas/pegado/comprobantes-gasto.yml — contrato de pegado: comprobantes de gasto para la rendición de viáticos
+# Lo produce prompts/06 legislativo/prompt_19_comprobantes_de_gasto (lee las fotos de las boletas y facturas).
+# Lo interpreta POST /api/rendiciones/{id}/pegar (api/rendiciones.py): cada comprobante se compara con la
+# rendición (repetidos, fecha fuera de la comisión) y la persona elige cuáles agregar.
+tipo: comprobantes-gasto
+version: 1
+titulo: Comprobantes de gasto
+modulo: rendiciones
+prompt: "prompts/06 legislativo/prompt_19_comprobantes_de_gasto.md"
+campos:
+  comprobantes:
+    etiqueta: Comprobantes
+    tipo: lista_bloques
+    esquema: comprobante
+    obligatorio: true
+  movilidad:
+    etiqueta: Tramos de movilidad
+    tipo: lista_bloques
+    esquema: tramo
+    destino: null
+  observaciones:
+    etiqueta: Observaciones del modelo
+    tipo: lista
+    destino: null
+bloques:
+  comprobante:
+    fecha:
+      etiqueta: Fecha de emisión
+      tipo: fecha
+      obligatorio: true
+      destino: fecha
+    tipo:
+      etiqueta: Tipo
+      tipo: opcion
+      valores: [boleta_electronica, boleta, factura_electronica, factura, ticket, recibo, otro]
+      sinonimos: {boleta_electronica: [boleta de venta electrónica, boleta electrónica, boleta de venta electronica, boleta electronica], boleta: [boleta de venta], factura_electronica: [factura electrónica, factura electronica], ticket: [ticket de máquina registradora, ticket boleta, voucher], recibo: [recibo de pago, recibo simple]}
+      destino: tipo
+    serie:
+      etiqueta: Serie
+      tipo: texto
+      destino: serie
+      ayuda: "EB01, F001, B002…; sin el número"
+    numero:
+      etiqueta: Número
+      tipo: texto
+      obligatorio: true
+      destino: numero
+    ruc:
+      etiqueta: RUC del proveedor
+      tipo: texto
+      destino: ruc
+    proveedor:
+      etiqueta: Proveedor
+      tipo: texto
+      destino: proveedor
+    concepto:
+      etiqueta: Concepto
+      tipo: opcion
+      valores: [desayuno, almuerzo, cena, otros_alimentacion, hospedaje, pasaje_terrestre, otro_recurso]
+      sinonimos: {otros_alimentacion: [alimentación, alimentacion, refrigerio, bebidas, agua, otros de alimentación], hospedaje: [alojamiento, hotel, hostal], pasaje_terrestre: [pasaje, pasaje terrestre, bus, transporte interprovincial], otro_recurso: [otro, otros recursos, materiales, impresiones, fotocopias]}
+      obligatorio: true
+      destino: concepto
+    importe:
+      etiqueta: Importe total
+      tipo: importe
+      obligatorio: true
+      destino: importe
+    detalle:
+      etiqueta: Detalle
+      tipo: texto
+      destino: nota
+      ayuda: lo que dice el comprobante en una línea (plato, noches, ruta del pasaje)
+    legible:
+      etiqueta: Legible
+      tipo: booleano
+      destino: null
+      ayuda: false si la foto no deja leer algún dato con certeza
+  tramo:
+    fecha:
+      etiqueta: Fecha
+      tipo: fecha
+      obligatorio: true
+      destino: fecha
+    hora:
+      etiqueta: Hora
+      tipo: hora
+      destino: hora
+    desde:
+      etiqueta: Del
+      tipo: texto
+      obligatorio: true
+      destino: desde
+    hasta:
+      etiqueta: Al
+      tipo: texto
+      obligatorio: true
+      destino: hasta
+    monto:
+      etiqueta: Monto
+      tipo: importe
+      destino: monto

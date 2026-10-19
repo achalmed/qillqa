@@ -1,0 +1,71 @@
+# backend/app/esquemas/pegado/plan-de-tareas.yml — contrato de pegado: plan de tareas para el módulo Tareas
+# Contrato de pegado: tareas con responsable y plazo. Lo produce prompts/06 legislativo/prompt_18_plan_de_tareas
+# (de notas sueltas, un acta, un correo o un audio transcrito). Lo lee `POST /api/tareas/pegar`.
+tipo: plan-de-tareas
+version: 1
+titulo: Plan de tareas
+modulo: tareas
+prompt: "prompts/06 legislativo/prompt_18_plan_de_tareas.md"
+campos:
+  tareas:
+    etiqueta: Tareas
+    tipo: lista_bloques
+    esquema: tarea
+    obligatorio: true
+  observaciones:
+    etiqueta: Observaciones del modelo
+    tipo: lista
+    destino: null
+bloques:
+  tarea:
+    titulo:
+      etiqueta: Tarea
+      tipo: texto
+      obligatorio: true
+      destino: titulo
+      ayuda: lo que hay que hacer, empezando por el verbo («Remitir el oficio…»)
+    descripcion:
+      etiqueta: Detalle
+      tipo: texto_largo
+      destino: descripcion
+    responsable:
+      etiqueta: Responsable
+      tipo: texto
+      destino: responsable_id
+      cruza: equipo
+      ayuda: quién de la entidad la hace; Qillqa lo casa con el equipo (nombre, nombre de pila o cuenta)
+    vence:
+      etiqueta: Vence
+      tipo: fecha
+      destino: vence_fecha
+      ayuda: AAAA-MM-DD; null si el texto no fija plazo
+    hora:
+      etiqueta: Hora
+      tipo: hora
+      destino: vence_hora
+      ayuda: HH:MM; solo si el plazo tiene hora
+    prioridad:
+      etiqueta: Prioridad
+      tipo: opcion
+      valores: [baja, normal, alta, urgente]
+      sinonimos: {urgente: [inmediata, inmediato, crítica, muy alta, hoy mismo, lo antes posible], alta: [importante, prioritaria, prioritario], normal: [media, regular, moderada, ordinaria], baja: [menor, opcional, cuando se pueda]}
+      destino: prioridad
+    lista:
+      etiqueta: Lista
+      tipo: texto
+      destino: lista_id
+      ayuda: el nombre de la lista o del frente («Comisión de Educación»); Qillqa la casa con las listas o la crea
+    vinculo:
+      etiqueta: Vínculo
+      tipo: lista
+      destino: vinculos
+      ayuda: "identificadores del sistema: doc:12, pl:3, sr:5, entrada:40, evento:7…; null si no se conocen"
+    etiquetas:
+      etiqueta: Etiquetas
+      tipo: lista
+      destino: etiquetas
+    pasos:
+      etiqueta: Pasos
+      tipo: lista
+      destino: checklist
+      ayuda: la lista de verificación de la tarea, un paso por elemento

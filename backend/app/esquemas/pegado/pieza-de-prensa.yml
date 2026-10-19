@@ -1,0 +1,76 @@
+# backend/app/esquemas/pegado/pieza-de-prensa.yml — contrato de pegado: una pieza de prensa (noticia procesada o nota de prensa) para el módulo Prensa
+# Lo produce prompts/06 legislativo/prompt_16_pieza_de_prensa (2026-10-12). Pegada en el canal Prensa del chat o en el módulo, se registra como pieza.
+tipo: pieza-de-prensa
+version: 1
+titulo: Pieza de prensa
+modulo: prensa
+prompt: "prompts/06 legislativo/prompt_16_pieza_de_prensa.md"
+campos:
+  clase:
+    etiqueta: Clase
+    tipo: opcion
+    valores: [noticia_local, noticia_nacional, noticia_internacional, nota_de_prensa, comunicado, entrevista, agenda_de_medios]
+    sinonimos: {noticia_local: [local, regional, noticia regional], noticia_nacional: [nacional], noticia_internacional: [internacional], nota_de_prensa: [nota, nota de prensa], comunicado: [pronunciamiento], entrevista: [entrevista radial, entrevista en medio], agenda_de_medios: [agenda de prensa, cobertura]}
+    obligatorio: true
+    destino: clase
+  titular:
+    etiqueta: Titular
+    tipo: texto
+    obligatorio: true
+    destino: titular
+  bajada:
+    etiqueta: Bajada
+    tipo: texto
+    destino: bajada
+  cuerpo:
+    etiqueta: Cuerpo
+    tipo: texto_largo
+    destino: cuerpo
+    ayuda: párrafos separados por una línea en blanco; lo más importante primero
+  fuente:
+    etiqueta: Fuente
+    tipo: texto
+    destino: fuente
+    ayuda: medio, programa o entidad de donde sale la noticia
+  enlace:
+    etiqueta: Enlace
+    tipo: texto
+    destino: enlace
+  fecha:
+    etiqueta: Fecha
+    tipo: fecha
+    destino: fecha
+  ambito:
+    etiqueta: Ámbito
+    tipo: texto
+    destino: ambito
+    ayuda: distrito, provincia, región, país
+  temas:
+    etiqueta: Temas
+    tipo: lista
+    destino: temas
+  relevancia:
+    etiqueta: Relevancia para el despacho
+    tipo: texto_largo
+    destino: relevancia
+    ayuda: por qué importa y qué se podría hacer (pronunciamiento, pedido de información, visita)
+  accion_sugerida:
+    etiqueta: Acción sugerida
+    tipo: opcion
+    valores: [pronunciamiento, pedido_de_informacion, visita, agenda, difundir, archivar]
+    sinonimos: {pedido_de_informacion: [oficio, pedido, solicitar información], difundir: [compartir, publicar], agenda: [agendar, reunión]}
+    destino: accion_sugerida
+  cita:
+    etiqueta: Cita atribuida
+    tipo: texto
+    destino: cita
+    ayuda: frase textual con su autor, si la hay
+  documento:
+    etiqueta: Documento relacionado
+    tipo: texto
+    destino: null
+    cruza: documento
+  observaciones:
+    etiqueta: Observaciones del modelo
+    tipo: lista
+    destino: null

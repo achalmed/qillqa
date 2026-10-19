@@ -1,0 +1,19 @@
+%% =====================================================================
+%%  rendicion-viaticos.tex  --  MAESTRO de la rendición de viáticos
+%% ---------------------------------------------------------------------
+%%  La rendición se GENERA desde el SGDP (módulo Rendición de cuentas;
+%%  backend/app/servicios/rendicion_tex.py): escribe una copia de este
+%%  maestro, metadata.tex y contenido.tex en la carpeta de la rendición
+%%  y compila con scripts/build.sh. Aquí, datos FICTICIOS: es el test del
+%%  tipo (make plantillas).
+%%
+%%  Para probar el tipo a mano:
+%%     scripts/build.sh templates/rendicion-viaticos/rendicion-viaticos.tex
+%% =====================================================================
+\documentclass{rendicion-viaticos}
+
+\input{metadata.tex}
+
+\begin{document}
+\input{contenido.tex}
+\end{document}

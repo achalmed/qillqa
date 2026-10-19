@@ -1,0 +1,39 @@
+%% =====================================================================
+%%  structures/informe-sr/anexos.tex  --  Anexos documentales
+%% ---------------------------------------------------------------------
+%%  Cada anexo abre con una CARATULA propia (numero, titulo, descripcion,
+%%  entrada en el indice y en los marcadores) y, si es un documento PDF
+%%  (oficio, memorando, acta), se incluyen sus paginas escaladas con
+%%  pdfpages conservando la cabecera corrida del informe (estilo isranexo,
+%%  que nombra el anexo en curso).
+%%
+%%     \isranexoportada{N}{Titulo}{Descripcion}
+%%     \isranexopdf[opciones pdfpages]{archivo.pdf}
+%%     \isranexoimagen{archivo}{pie}          escaneo/imagen a pagina completa
+%% =====================================================================
+
+\newcommand{\isranexoportada}[3]{%
+  \clearpage\thispagestyle{isr}%
+  \gdef\isranexomarca{ANEXO #1 · \MakeUppercase{#2}}%
+  \markboth{ANEXO #1}{}%
+  \phantomsection\addcontentsline{toc}{subsection}{Anexo #1. #2}%
+  \vspace*{2.6cm}
+  \noindent{\isrtxkicker\color{colorisrprimario}ANEXO #1\par}
+  \vspace{9pt}
+  \noindent{\fuentedisplaynegra\fontsize{22}{26}\selectfont\color{colorisrtexto}#2\par}
+  \vspace{7pt}
+  \noindent{\color{colorisracento}\rule{2.4cm}{2pt}\par}
+  \vspace{11pt}
+  \noindent{\fontsize{10.5}{14}\selectfont\color{colorisrtextosec}#3\par}
+}
+
+\newcommand{\isranexopdf}[2][]{%
+  \includepdf[pages=-, scale=0.88, offset=0 -3mm, frame=false,
+    pagecommand={\thispagestyle{isranexo}}, #1]{#2}}
+
+\newcommand{\isranexoimagen}[2]{%
+  \clearpage\thispagestyle{isranexo}%
+  \noindent\begin{minipage}{\linewidth}\centering
+    \includegraphics[width=\linewidth, height=0.86\textheight, keepaspectratio]{#1}\par
+    \vspace{4pt}{\isrtxpie #2\par}
+  \end{minipage}\par}

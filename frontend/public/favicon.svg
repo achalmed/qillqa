@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Qillqa — Gestión documental">
+  <!-- Favicon de Qillqa: el mismo dibujo que public/iconos/icono.svg (2026-10-13). -->
+  <rect width="512" height="512" rx="112" fill="#4E0A18"/>
+  <path d="M160 108h140l72 72v204a20 20 0 0 1-20 20H160a20 20 0 0 1-20-20V128a20 20 0 0 1 20-20z" fill="#F5F1EC"/>
+  <path d="M300 108v52a20 20 0 0 0 20 20h52z" fill="#C99614"/>
+  <rect x="188" y="222" width="136" height="28" rx="14" fill="#4E0A18"/>
+  <rect x="188" y="280" width="136" height="20" rx="10" fill="#4E0A18" opacity="0.35"/>
+  <rect x="188" y="322" width="92" height="20" rx="10" fill="#4E0A18" opacity="0.35"/>
+</svg>

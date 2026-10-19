@@ -1,0 +1,125 @@
+# backend/app/esquemas/pegado/seguimiento-documento.yml — contrato de pegado: seguimiento del trámite de un documento propio
+# Contrato de pegado: seguimiento del trámite de un documento propio. Lo produce prompts/06 legislativo/prompt_15_seguimiento_de_tramite
+# (y prompt_10_fiscalizacion_y_seguimiento comparte las claves de actuaciones y respuestas).
+tipo: seguimiento-documento
+version: 1
+titulo: Seguimiento de un documento
+modulo: documentos
+prompt: "prompts/06 legislativo/prompt_15_seguimiento_de_tramite.md"
+campos:
+  documento:
+    etiqueta: Documento
+    tipo: texto
+    obligatorio: true
+    destino: null
+    cruza: documento
+    ayuda: número completo del documento propio (OF-0123-2026-2027 o su número oficial); Qillqa comprueba que es el abierto
+  expediente_entidad:
+    etiqueta: Expediente en la entidad
+    tipo: texto
+    destino: expediente_entidad
+    ayuda: el número que la entidad dio al recibirlo (cargo, hoja de trámite, STD de la entidad)
+  estado_propuesto:
+    etiqueta: Situación según la fuente
+    tipo: opcion
+    valores: [en_tramite, respondido, respondido_parcial, sin_respuesta, vencido, archivado, desconocido]
+    sinonimos: {en_tramite: [en trámite, en proceso, derivado, en atención], respondido: [atendido, contestado], respondido_parcial: [respuesta parcial, parcialmente], sin_respuesta: [pendiente, sin contestar], vencido: [fuera de plazo, plazo vencido]}
+    destino: null
+    ayuda: solo se muestra; el estado oficial lo cambia una persona por el flujo del documento
+  ubicacion:
+    etiqueta: Dónde está
+    tipo: texto
+    destino: null
+    anexar_a: std_nota
+    ayuda: oficina o unidad que lo tiene, según la consulta
+  responsable_entidad:
+    etiqueta: Responsable en la entidad
+    tipo: texto
+    destino: null
+    anexar_a: std_nota
+  plazo_legal:
+    etiqueta: Plazo legal
+    tipo: bloque
+    esquema: plazo
+    destino: plazo_legal
+  actuaciones:
+    etiqueta: Actuaciones
+    tipo: lista_bloques
+    esquema: actuacion
+    destino: actuaciones
+  respuestas:
+    etiqueta: Respuestas recibidas
+    tipo: lista_bloques
+    esquema: respuesta
+    destino: null
+    ayuda: Qillqa las busca en Recibidos por su número y propone «responde a»; nunca crea un recibido desde texto
+  pendientes:
+    etiqueta: Qué falta
+    tipo: lista
+    destino: null
+  resumen:
+    etiqueta: En resumen
+    tipo: texto
+    destino: null
+    ayuda: una frase en lenguaje simple (dónde está y qué falta); va al final del estado del expediente en el chat
+  proxima_revision:
+    etiqueta: Próxima revisión
+    tipo: fecha
+    destino: null
+    ayuda: Qillqa propone una tarea con ese plazo
+  observaciones:
+    etiqueta: Observaciones del modelo
+    tipo: lista
+    destino: null
+bloques:
+  plazo:
+    norma:
+      etiqueta: Norma
+      tipo: texto
+      ayuda: "TUO de la Ley 27444, Ley 27806…"
+    articulo:
+      etiqueta: Artículo
+      tipo: texto
+    dias:
+      etiqueta: Días hábiles
+      tipo: entero
+    desde:
+      etiqueta: Cuenta desde
+      tipo: fecha
+    vence:
+      etiqueta: Vence
+      tipo: fecha
+  actuacion:
+    fecha:
+      etiqueta: Fecha
+      tipo: fecha
+      obligatorio: true
+    clase:
+      etiqueta: Clase
+      tipo: opcion
+      valores: [envio, reiteracion, llamada, reunion, respuesta, compromiso, derivacion, nota]
+      sinonimos: {envio: [envío, presentación, presentado, ingreso], reiteracion: [reiteración, reitera, insistencia], llamada: [teléfono, llamada telefónica, whatsapp], reunion: [reunión, visita, cita], respuesta: [contestación, respondió], compromiso: [se comprometió, ofreció], derivacion: [derivación, derivado, trasladado, remitido]}
+      obligatorio: true
+    texto:
+      etiqueta: Qué pasó
+      tipo: texto
+      obligatorio: true
+    fuente:
+      etiqueta: Fuente
+      tipo: texto
+      ayuda: de dónde consta (cargo, correo de la entidad, consulta al STD, llamada del día X)
+  respuesta:
+    fecha:
+      etiqueta: Fecha
+      tipo: fecha
+    documento:
+      etiqueta: Documento
+      tipo: texto
+      cruza: entrada
+    std_numero:
+      etiqueta: N.º de registro (STD)
+      tipo: texto
+      cruza: entrada
+    completa:
+      etiqueta: Responde todo lo pedido
+      tipo: booleano

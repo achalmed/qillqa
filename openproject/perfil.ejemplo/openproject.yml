@@ -1,0 +1,70 @@
+# perfil.ejemplo/openproject.yml — openproject_despacho: plantilla del perfil de un despacho (nombre, proyectos, opciones de campos, roster sin contraseñas).
+# Copiar a <despacho>/perfil/openproject.yml, apuntar OPENPROJECT_PERFIL allí y completar. Lo leen los
+# seeds (sembrar.sh lo pasa al contenedor). Idempotencia: cambiar un nombre o descripción NO renombra lo
+# que ya existe en la instancia; añadir un proyecto, una opción o un usuario sí lo crea. La contraseña
+# temporal de los usuarios nuevos va en OP_TEMP_PASSWORD (.env de operaciones), nunca aquí.
+
+despacho:
+  nombre: "Despacho — Dip. Nombre Apellido"
+  identificador: despacho          # identificador del proyecto raíz
+  descripcion: "Proyecto raíz del despacho. Vista global de toda la operación."
+  url: http://mi-equipo.local:8080
+
+# Proyectos. `tipos`: tipos de work package habilitados (nombres de 11_tipos.rb + Tarea, Hito).
+# `padre`: identificador del proyecto padre (por defecto, el raíz). Los identificadores coordinacion,
+# correspondencia, documentos, cil, legislativo y representacion son los que usan las vistas (50),
+# los tableros (51) y las plantillas (60); si faltan, esos seeds los saltan.
+proyectos:
+  - identificador: coordinacion
+    nombre: "1. Coordinación y Agenda"
+    descripcion: "Agenda diaria y semanal, coordinación del equipo, planificación."
+    tipos: [Tarea, Actividad de agenda, Reunión, Compromiso, Hito]
+  - identificador: correspondencia
+    nombre: "2. Correspondencia y Trámites"
+    descripcion: "Documentos recibidos y trámites que generan acción."
+    tipos: [Expediente, Solicitud recibida, Documento, Tarea]
+  - identificador: documentos
+    nombre: "3. Producción Documental"
+    descripcion: "Elaboración → revisión → firma → envío → seguimiento de documentos oficiales."
+    tipos: [Documento, Tarea, Hito]
+  - identificador: cil
+    nombre: "4. Inteligencia Legislativa"
+    descripcion: "Investigación, análisis y monitoreo legislativo."
+    tipos: [Investigación, Tarea, Documento, Hito]
+  - identificador: legislativo
+    nombre: "5. Agenda Legislativa"
+    descripcion: "Proyectos de ley e iniciativas: idea → investigación → redacción → presentación → comisión → pleno."
+    tipos: [Proyecto de Ley, Investigación, Tarea, Reunión, Hito]
+  - identificador: representacion
+    nombre: "6. Representación Territorial"
+    descripcion: "Semanas de representación y actividades en el territorio."
+    tipos: [Actividad de agenda, Reunión, Compromiso, Tarea, Hito]
+  - identificador: prensa
+    nombre: "7. Comunicación y Prensa"
+    descripcion: "Comunicados, prensa, identidad visual y difusión."
+    tipos: [Documento, Tarea, Actividad de agenda, Hito]
+  - identificador: administracion
+    nombre: "8. Administración del Despacho"
+    descripcion: "Gestión interna: personal, logística, recursos."
+    tipos: [Tarea, Documento, Reunión, Hito]
+
+# Opciones de los campos personalizados de lista que dependen del despacho (13_campos_personalizados.rb).
+campos:
+  origen: [Congreso, Congreso-comisión, Gobierno regional, Municipalidad, PCM, MEF, Ciudadano, Prensa, Interno, Otros]
+  distrito: [Provincia 1, Provincia 2, Provincia 3]          # campo «Distrito/Provincia»
+  tipo_documental: [Oficio, Oficio múltiple, Memorando, Informe, Comunicado, Solicitud, Acta]
+
+# Roster (70_usuarios.rb). Las filas con correo que empieza en TODO se saltan. Roles: los de 14_roles.rb.
+usuarios:
+  - {login: jefe,     nombre: Nombre, apellido: Apellido, correo: TODO-jefe@correo.pe,     rol: Jefe de Despacho, admin: true}
+  - {login: diputado, nombre: Nombre, apellido: Apellido, correo: TODO-diputado@correo.pe, rol: Diputado,         admin: false}
+
+# Qué proyectos ve cada rol al sembrar membresías (`todos` = todos los activos).
+roles_proyectos:
+  Jefe de Despacho: todos
+  Diputado: todos
+  Asesor Legislativo: [despacho, legislativo, cil, coordinacion]
+  Asistente Administrativo: [despacho, correspondencia, documentos, administracion, coordinacion]
+  Prensa: [despacho, prensa, coordinacion]
+  Enlace Distrital: [despacho, representacion, coordinacion]
+  Colaborador: [despacho]

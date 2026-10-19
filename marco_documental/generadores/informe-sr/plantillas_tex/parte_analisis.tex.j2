@@ -1,0 +1,34 @@
+%% parte_08_analisis.tex -- GENERADO (analisis por sector, tipo, entidad y prioridad; graficos con fuente)
+\BLOCK{ set sector_top = stats.pedidos_por_sector.most_common(1)[0] }
+\BLOCK{ set ent_top = stats.entidades[0] }
+\capitulo{Análisis: sectores, entidades y prioridades}{Lo que la Semana dice en conjunto: dónde se concentran los pedidos, qué entidades deben responder y qué es urgente.}
+
+\VAR{inf.analisis_intro|md}
+
+\begin{isrcaja}[oscura]{Lo que dice el dato}
+De los \VAR{stats.n_pedidos} pedidos sistematizados, \VAR{sector_top[1]} (\VAR{(100 * sector_top[1] / stats.n_pedidos)|round|int}\,\%) corresponden al sector \VAR{sector_top[0]|lower|tex}; de las \VAR{stats.n_actividades} actividades registradas, \VAR{stats.n_ie} fueron visitas de trabajo a instituciones educativas. La entidad más requerida es \VAR{ent_top[0]|tex}, que figura como entidad requerida en \VAR{ent_top[1]} de los \VAR{stats.n_pedidos} pedidos registrados. \VAR{stats.por_prioridad.get('urgente', 0)} pedidos se proponen como urgentes por riesgo para la vida, la salud o la continuidad del servicio.
+\end{isrcaja}
+
+\subseccion{Actividades y pedidos por sector}
+\isrgrafico[0.48\linewidth]{\VAR{graficos.actividades_sector}}{Actividades por sector}{Relato cronológico (despacho).}\hfill
+\isrgrafico[0.48\linewidth]{\VAR{graficos.pedidos_sector}}{Pedidos por sector}{Matriz de sistematización (despacho).}
+
+\VAR{inf.analisis_sectores|md}
+
+\subseccion{Tipo de actividad}
+\isrgrafico{\VAR{graficos.tipo}}{Actividades por tipo}{Relato cronológico (despacho).}
+
+\subseccion{Entidades competentes más requeridas}
+\isrgrafico{\VAR{graficos.entidades}}{Entidades con más pedidos asignados (diez primeras)}{Matriz de sistematización (despacho). Un pedido puede involucrar a varias entidades.}
+
+\VAR{inf.analisis_entidades|md}
+
+\subseccion{Prioridad propuesta}
+\noindent
+\begin{minipage}[t]{0.5\linewidth}
+\isrgrafico[\linewidth]{\VAR{graficos.prioridad}}{Pedidos por prioridad propuesta}{Matriz de sistematización (despacho).}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.45\linewidth}
+\vspace{0pt}
+\VAR{inf.analisis_prioridad|md}
+\end{minipage}\par

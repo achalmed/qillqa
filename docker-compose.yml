@@ -1,0 +1,81 @@
+# Qillqa — despliegue completo con Docker Compose (demo y uso real).
+#   cp .env.example .env            cambiar las claves
+#   docker compose up -d --build    base de datos, API con LuaLaTeX y web (con el servidor de edición simultánea)
+#   docker compose run --rm siembra datos ficticios de demostración (idempotente; no usar con datos reales)
+# Web: http://localhost:${QILLQA_PUERTO_WEB:-5173}. La base de datos no se publica fuera de Docker.
+name: qillqa
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-qillqa}
+      POSTGRES_USER: ${POSTGRES_USER:-qillqa}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD en .env}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-qillqa} -d ${POSTGRES_DB:-qillqa}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  api:
+    build: ./backend
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-qillqa}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-qillqa}
+      MDD_RUTA: /app/marco_documental
+      MDD_DOCUMENTOS: /datos/documentos
+      MDD_PERFIL: ${MDD_PERFIL_CONTENEDOR:-}
+    volumes:
+      - ./marco_documental:/app/marco_documental:ro
+      - datos:/datos
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${QILLQA_PUERTO_API:-8000}:8000"
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    restart: unless-stopped
+
+  web:
+    build: ./frontend
+    environment:
+      VITE_NOMBRE_DESPACHO: ${VITE_NOMBRE_DESPACHO:-Entidad de demostración}
+      VITE_API_PROXY: http://api:8000
+      VITE_COLAB_PROXY: ws://127.0.0.1:8001
+      SGDP_API: http://api:8000
+      COLAB_PUERTO: "8001"
+    ports:
+      - "${QILLQA_PUERTO_WEB:-5173}:5173"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Datos ficticios de demostración: cuentas, directorio, documentos con PDF, tareas, agenda y chat.
+  siembra:
+    build: ./backend
+    profiles: ["demo"]
+    environment:
+      QILLQA_API: http://api:8000
+      ADMIN_USUARIO: ${ADMIN_USUARIO:-admin}
+      ADMIN_CLAVE: ${ADMIN_CLAVE:-}
+      DEMO_CLAVE: ${DEMO_CLAVE:-qillqa-demo}
+    volumes:
+      - ./demo:/demo:ro
+    command: ["python3", "/demo/sembrar_demo.py"]
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  db-data:
+  datos:

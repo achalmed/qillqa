@@ -1,0 +1,49 @@
+%% =====================================================================
+%%  membretes/camara/membrete.tex  --  Membrete de la Camara de Diputados
+%%  en blanco y negro (proyectos de ley; 2026-10-01)
+%% ---------------------------------------------------------------------
+%%  Replica el encabezado de las proposiciones legislativas del despacho
+%%  (Word de la Camara de Diputados):
+%%
+%%    [escudo b/n] [Camara de Diputados b/n]   [barra gris: NOMBRE    ]
+%%                                             -------- linea ---------
+%%                                              "lema del decenio"
+%%                                              "lema del anio"
+%%
+%%  - Logos en blanco y negro; SIN filete de lado a lado bajo el membrete.
+%%  - Nombre en blanco sobre barra gris, sin cargo (el proyecto ya dice
+%%    quien lo suscribe); una linea fina gris debajo; lemas centrados.
+%%  Solo consume \meta{autor}, \meta{decenio} y \meta{lema}. NO definir
+%%  aqui macros nuevas: este archivo debe poder cargarse varias veces.
+%% =====================================================================
+
+\fancyhead[C]{%
+  \begin{minipage}[b]{\textwidth}%
+    \begin{minipage}[c]{0.38\textwidth}%
+      \raggedright
+      \includegraphics[height=2.05cm]{escudo-peru-bn.png}%
+      \hspace{0.35cm}%
+      \includegraphics[height=2.15cm]{logo-camara-bn.png}%
+    \end{minipage}%
+    \hfill
+    \begin{minipage}[c]{0.60\textwidth}%
+      \raggedleft
+      \setlength{\fboxsep}{0pt}%
+      \colorbox{grismembrete}{%
+        \begin{minipage}[c][0.85cm][c]{\despachoAnchoCaja}%
+          \centering\color{white}%
+          {\fuentemembretesemi\fontsize{10.5}{13}\selectfont
+            \MakeUppercase{\meta{autor}}}%
+        \end{minipage}%
+      }\\[2.5pt]
+      {\color{grismembrete}\rule{\despachoAnchoCaja}{0.5pt}}\\[3pt]
+      \ifmetadef{decenio}{\makebox[\despachoAnchoCaja][c]{%
+        {\fuentedatos\fontsize{7.2}{8.6}\selectfont\color{neutral700}%
+          ``\meta{decenio}''}}\\[0.5pt]}{}%
+      \makebox[\despachoAnchoCaja][c]{%
+        {\fuentedatos\fontsize{7.2}{8.6}\selectfont\color{neutral700}%
+          ``\meta{lema}''}%
+      }%
+    \end{minipage}%
+  \end{minipage}%
+}

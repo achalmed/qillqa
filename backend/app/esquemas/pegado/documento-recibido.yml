@@ -1,0 +1,164 @@
+# backend/app/esquemas/pegado/documento-recibido.yml — contrato de pegado: documento recibido (Recibidos)
+# Contrato de pegado: documento recibido (Recibidos). Lo produce prompts/06 legislativo/prompt_13_registro_de_recibido.
+# version 2 (2026-10-18): categoría del documento con confianza y alternativas (una duda se confirma, nunca se fuerza),
+# relación con lo registrado, expediente y reunión para los cruces.
+tipo: documento-recibido
+version: 2
+titulo: Documento recibido
+modulo: entradas
+prompt: "prompts/06 legislativo/prompt_13_registro_de_recibido.md"
+campos:
+  documento:
+    etiqueta: Documento
+    tipo: texto
+    destino: documento
+    forma: cita
+    ejemplo: "Oficio N.º 0123-2026-GR/UNIDAD"
+    ayuda: tipo y número con su sufijo institucional completo, tal como aparece en el encabezado
+  clase:
+    etiqueta: Clase
+    tipo: opcion
+    valores: [oficio, carta, solicitud, invitacion, citacion, informe, otro]
+    sinonimos: {invitacion: [invitación], citacion: [citación, convocatoria], solicitud: [memorial, pedido], carta: [carta simple, carta notarial]}
+    destino: clase
+  categoria:
+    etiqueta: Categoría
+    tipo: opcion
+    valores: [comunicacion, respuesta, invitacion, seguimiento, pronunciamiento, anexo]
+    sinonimos: {comunicacion: [comunicación nueva, comunicación, nueva, nuevo], respuesta: [respuesta a oficio, respuesta a solicitud, responde, contestación], invitacion: [invitación, citación, citacion, agenda, convocatoria], seguimiento: [seguimiento de expediente, expediente, trámite en curso, continuación], pronunciamiento: [respuesta de institución, respuesta de gremio, posición, pronunciamiento institucional, gremio], anexo: [anexo, informe, adjunto, documentación complementaria]}
+    destino: categoria
+    ayuda: "qué es para el despacho: comunicacion = nueva; respuesta = contesta un documento propio; invitacion = invita, cita o agenda; seguimiento = continúa un expediente o trámite en curso; pronunciamiento = posición de una institución o gremio sobre un tema; anexo = anexo o informe que completa otro documento"
+  categoria_confianza:
+    etiqueta: Confianza en la categoría
+    tipo: opcion
+    valores: [alta, media, baja]
+    destino: null
+    ayuda: "baja = Qillqa pide confirmar la categoría antes de registrar y la ficha queda «por revisar»"
+  categoria_alternativas:
+    etiqueta: Otras categorías posibles
+    tipo: lista
+    destino: null
+    ayuda: "las categorías del vocabulario que también podrían valer, de más a menos probable; se ofrecen a la persona"
+  relacion:
+    etiqueta: Relación con lo registrado
+    tipo: opcion
+    valores: [nuevo, respuesta, actualizacion, continuacion]
+    sinonimos: {nuevo: [nueva, primera vez], respuesta: [responde, contesta], actualizacion: [actualización, reemplaza, corrige, fe de erratas], continuacion: [continuación, continúa, siguiente entrega, segunda parte]}
+    destino: null
+    anexar_a: nota
+    ayuda: "nuevo = nada previo; respuesta = contesta algo de la entidad; actualizacion = corrige o reemplaza algo ya recibido; continuacion = sigue un expediente, oficio, reunión o actividad en curso"
+  expediente:
+    etiqueta: Expediente o trámite al que pertenece
+    tipo: texto
+    destino: null
+    cruza: documento
+    ayuda: "el número de expediente, registro o trámite que el documento cita (el de la entidad o el del Congreso), o null; Qillqa busca el oficio propio que lleva ese expediente"
+  reunion:
+    etiqueta: Reunión o actividad a la que se refiere
+    tipo: texto
+    destino: null
+    cruza: evento
+    ayuda: "la reunión, sesión o actividad ya realizada o programada a la que el documento da seguimiento (nombre y, si consta, la fecha AAAA-MM-DD), o null; Qillqa propone vincularla a la Agenda"
+  via:
+    etiqueta: Vía de ingreso
+    tipo: opcion
+    valores: [std, correo, mesa_partes, mano, otro]
+    sinonimos: {std: [sistema de trámite documentario, trámite documentario, STD], correo: [correo institucional, email, e-mail], mesa_partes: [mesa de partes, mesa de partes virtual, MPV], mano: [en mano, personalmente, mensajería]}
+    destino: via
+  remitente:
+    etiqueta: Remitente
+    tipo: texto
+    destino: remitente
+    cruza: persona
+    ayuda: la persona que firma, con su nombre completo; si firma una unidad, el nombre de la unidad
+  remitente_cargo:
+    etiqueta: Cargo del remitente
+    tipo: texto
+    destino: remitente_cargo
+  remitente_institucion:
+    etiqueta: Institución
+    tipo: texto
+    destino: null
+    cruza: institucion
+    ayuda: la entidad del membrete; Qillqa la casa con el directorio y pone su id
+  fecha_documento:
+    etiqueta: Fecha del documento
+    tipo: fecha
+    destino: fecha_documento
+  fecha_recepcion:
+    etiqueta: Fecha de recepción
+    tipo: fecha
+    destino: fecha_recepcion
+  std_numero:
+    etiqueta: N.º de registro (STD)
+    tipo: texto
+    destino: std_numero
+    cruza: entrada
+    ayuda: el número del sello de recepción o del sistema de trámite; con él se detectan duplicados
+  dirigido_a:
+    etiqueta: Dirigido a
+    tipo: texto
+    destino: null
+    anexar_a: nota
+  asunto:
+    etiqueta: Asunto
+    tipo: texto
+    obligatorio: true
+    destino: asunto
+    ayuda: literal, sin el rótulo «ASUNTO:»
+  referencia:
+    etiqueta: Referencia
+    tipo: texto
+    destino: referencia
+    cruza: documento
+    ayuda: el documento propio que cita, si lo hay (número completo); Qillqa propone «responde a»
+  resumen:
+    etiqueta: Resumen
+    tipo: texto_largo
+    destino: resumen
+    ayuda: qué pide o informa, en cuatro líneas como mucho, sin opinión
+  atencion:
+    etiqueta: Atención
+    tipo: opcion
+    valores: [responder, agendar, emitir_opinion, interceder, conocimiento]
+    sinonimos: {responder: [respuesta, contestar], agendar: [agenda, asistir, participar], emitir_opinion: [opinión, opinar, informe técnico], interceder: [intercesión, gestionar, gestión], conocimiento: [para conocimiento, informativo, archivo]}
+    destino: atencion
+  plazo:
+    etiqueta: Plazo
+    tipo: fecha
+    destino: plazo
+    ayuda: la fecha límite que el documento fija o que la norma impone; null si no consta
+  prioridad:
+    etiqueta: Prioridad
+    tipo: opcion
+    valores: [alta, media, baja]
+    sinonimos: {alta: [urgente, roja], media: [normal, amarilla], baja: [verde]}
+    destino: null
+    anexar_a: nota
+  origen:
+    etiqueta: Origen
+    tipo: opcion
+    valores: [interno, externo, indeterminado]
+    destino: null
+    anexar_a: nota
+    ayuda: interno = del propio Congreso; externo = otra entidad o un particular
+  accion_requerida:
+    etiqueta: Acción requerida
+    tipo: texto
+    destino: null
+    anexar_a: nota
+  norma:
+    etiqueta: Norma o dispositivo citado
+    tipo: texto
+    destino: null
+    anexar_a: nota
+  agenda:
+    etiqueta: Actividad que convoca
+    tipo: bloque
+    esquema: agenda-actividades/actividad
+    destino: null
+    ayuda: solo si el documento convoca a una actividad con fecha; Qillqa propone crearla en la Agenda
+  observaciones:
+    etiqueta: Observaciones del modelo
+    tipo: lista
+    destino: null

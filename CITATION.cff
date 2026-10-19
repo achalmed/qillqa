@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "Si usas Qillqa en un trabajo académico o institucional, cítalo con estos metadatos."
+title: "Qillqa: gestión documental para entidades públicas y privadas"
+abstract: >-
+  Plataforma web de gestión documental: redacción en un editor visual, numeración transaccional por serie,
+  revisión, generación de PDF con LuaLaTeX, mesa de partes física y virtual, seguimiento del trámite,
+  tareas, agenda, chat, proyectos con edición simultánea y directorio institucional con organigramas.
+type: software
+authors:
+  - family-names: Achalma
+    given-names: Edison
+version: 0.1.0-demo
+date-released: 2026-10-19
+license: AGPL-3.0-only
+repository-code: "https://github.com/achalmed/qillqa"
+keywords:
+  - gestión documental
+  - trámite documentario
+  - mesa de partes
+  - administración pública
+  - LuaLaTeX
+  - FastAPI
+  - React

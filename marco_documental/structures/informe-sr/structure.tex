@@ -1,0 +1,159 @@
+%% =====================================================================
+%%  structures/informe-sr/structure.tex  --  INFORME DE SEMANA DE
+%%  REPRESENTACION (ISR): cargador de la estructura editorial
+%% ---------------------------------------------------------------------
+%%  Concepto (pedido de Edison, 2026-09-03, v2): REVISTA INSTITUCIONAL
+%%  DE ALTA GAMA. Menos elementos, mejor jerarquia: sin filetes, sin
+%%  cajas ni lineas decorativas, sin franja textil, paleta minima
+%%  (tinta + puka + gris; vino solo en la contraportada), prosa a dos
+%%  columnas, pocas fotografias pero grandes, portada sobria.
+%%
+%%  Archivos (responsabilidad unica):
+%%     structure.tex    paquetes, titulos, indice, cabecera/pie, sectores
+%%     portada.tex      portada, apertura de articulo, membrete en linea,
+%%                      separador (edicion interna), contraportada
+%%     componentes.tex  kicker, cifra, cita, fotos, columnas, listas,
+%%                      grafico; + fichas/cajas (solo edicion interna)
+%%     tablas.tex       tablas (solo edicion interna: matriz, seguimiento)
+%%     anexos.tex       anexos (solo edicion interna)
+%%
+%%  Se carga con \usarestructura{informe-sr} desde classes/informe-sr.cls.
+%%  Preambulo del documento => nombres SIN @ y guardia anti-doble-carga.
+%%  Iconos: PDF vectoriales en assets/iconos/ (Tabler): <nombre>-puka|tinta|blanco.pdf.
+%% =====================================================================
+\ifcsname despachoEstructuraInformeSR\endcsname
+  \expandafter\endinput
+\fi
+\expandafter\def\csname despachoEstructuraInformeSR\endcsname{cargada}
+
+%% --- Paquetes propios del tipo ----------------------------------------
+\RequirePackage{tikz}
+\usetikzlibrary{calc}
+\RequirePackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+\RequirePackage{tabularray}
+\UseTblrLibrary{booktabs}
+\RequirePackage{pdfpages}
+\RequirePackage{titlesec}
+\RequirePackage{tocloft}
+\RequirePackage{needspace}
+\RequirePackage{ragged2e}
+\RequirePackage{multicol}
+
+%% --- Iconos (Tabler, PDF vectorial) -----------------------------------
+\newcommand{\isricono}[3][puka]{\includegraphics[height=#3]{#2-#1.pdf}}
+\newcommand{\isrdefsector}[3]{%
+  \expandafter\def\csname isr-sec-ico-#1\endcsname{#2}%
+  \expandafter\def\csname isr-sec-nom-#1\endcsname{#3}}
+\isrdefsector{educacion}{school}{Educación}
+\isrdefsector{salud}{building-hospital}{Salud}
+\isrdefsector{infraestructura}{road}{Infraestructura}
+\isrdefsector{agricultura}{plant}{Agricultura}
+\isrdefsector{seguridad}{shield-check}{Seguridad}
+\isrdefsector{justicia_ddhh}{scale}{Justicia y DD.\,HH.}
+\isrdefsector{economia}{coin}{Economía}
+\isrdefsector{gobierno}{building-community}{Gobierno y territorio}
+\isrdefsector{comunicacion}{speakerphone}{Comunicación}
+\isrdefsector{deporte}{ball-football}{Deporte}
+\newcommand{\isrsectoricono}[3][puka]{\isricono[#1]{\csname isr-sec-ico-#2\endcsname}{#3}}
+\newcommand{\isrsectornombre}[1]{\csname isr-sec-nom-#1\endcsname}
+
+%% --- Tipografias de apoyo (una sola escala para todo el informe) -------
+\newcommand{\isrtxkicker}{\fuentedisplaysemi\fontsize{7.6}{10}\selectfont\addfontfeatures{LetterSpace=13}}
+\newcommand{\isrtxmeta}{\fuentedatos\fontsize{7.4}{9.5}\selectfont\color{colorisrtextosec}}
+\newcommand{\isrtxpie}{\fuentedatos\fontsize{7}{9}\selectfont\color{colorisrtextosec}}
+\newcommand{\isrtxcuerpo}{\fontsize{9.3}{11.8}\selectfont}
+\newcommand{\isrtxcolumna}{\fontsize{9.9}{13.9}\selectfont}
+\newcommand{\isrtxcolumnaancha}{\fontsize{9.9}{14.2}\selectfont}   % prosa a una columna: mismo cuerpo, interlinea apenas mayor
+
+%% --- Titulo corrido y marca de capitulo -------------------------------
+\newcommand{\isrtitulocorrido}{%
+  \ifmetadef{titulocorrido}{\meta{titulocorrido}}{Informe de Semana de Representación}}
+\renewcommand{\sectionmark}[1]{\markboth{\MakeUppercase{#1}}{}}
+\renewcommand{\subsectionmark}[1]{}
+
+%% --- Jerarquia de titulos (titlesec): sin numeros ni reglas ------------
+%%  La jerarquia la dan el cuerpo, el peso y el aire, no las lineas.
+%%  Los titulares NUNCA se parten con guion: a bandera y sin particion.
+\newcommand{\isrsinguiones}{\hyphenpenalty=10000\exhyphenpenalty=10000\raggedright}
+\setcounter{secnumdepth}{0}
+\titleformat{\section}
+  {\fuentedisplaynegra\fontsize{21}{24}\selectfont\color{colorisrtexto}\isrsinguiones}{}{0em}{}
+\titlespacing*{\section}{0pt}{6pt}{14pt}
+\titleformat{\subsection}
+  {\fuentedisplaysemi\fontsize{11.5}{14}\selectfont\color{colorisrtexto}\isrsinguiones}{}{0em}{}
+\titlespacing*{\subsection}{0pt}{14pt plus 3pt minus 2pt}{5pt}
+\titleformat{\subsubsection}
+  {\fuentedisplaysemi\fontsize{10}{13}\selectfont\color{colorisrprimario}}{}{0em}{}
+\titlespacing*{\subsubsection}{0pt}{9pt plus 2pt}{3pt}
+\newcommand{\seccion}[1]{\needspace{10\baselineskip}\section{#1}}
+\newcommand{\subseccion}[1]{\needspace{8\baselineskip}\subsection{#1}}
+\newcommand{\subsubseccion}[1]{\needspace{6\baselineskip}\subsubsection{#1}}
+
+%% --- Indice (tocloft): limpio, sin puntos, folio a la derecha ----------
+%%  OJO polyglossia fija «Índice general» al arrancar el documento y pisa
+%%  cualquier \renewcommand del preambulo: el generador emite
+%%  \renewcommand{\contentsname}{Contenido} en el CUERPO, justo antes de
+%%  \tableofcontents (parte_creditos).
+\setcounter{tocdepth}{1}
+\renewcommand{\cfttoctitlefont}{\fuentedisplaynegra\fontsize{21}{24}\selectfont\color{colorisrtexto}}
+\renewcommand{\cftaftertoctitle}{\par\vspace{2pt}}
+\setlength{\cftbeforetoctitleskip}{0pt}
+\setlength{\cftaftertoctitleskip}{12pt}
+\renewcommand{\cftsecfont}{\fuentedisplaysemi\fontsize{10.5}{16}\selectfont\color{colorisrtexto}}
+\renewcommand{\cftsecpagefont}{\fuentedatossemi\fontsize{9.5}{16}\selectfont\color{colorisrprimario}}
+\renewcommand{\cftsecleader}{\hfill}
+\setlength{\cftsecindent}{0pt}
+\setlength{\cftsecnumwidth}{0pt}
+\setlength{\cftbeforesecskip}{4pt}
+\renewcommand{\cftsubsecfont}{\fontsize{9.5}{13}\selectfont\color{colorisrtextosec}}
+\renewcommand{\cftsubsecpagefont}{\fuentedatos\fontsize{9}{13}\selectfont\color{colorisrtextosec}}
+\renewcommand{\cftsubsecleader}{\hfill}
+\setlength{\cftsubsecindent}{1.2em}
+\setlength{\cftsubsecnumwidth}{0pt}
+\setlength{\cftbeforesubsecskip}{2pt}
+
+%% --- Columnas de prosa (revista) --------------------------------------
+\setlength{\columnsep}{8mm}
+\setlength{\columnseprule}{0pt}
+
+%% --- Estilos de pagina: cabecera SOLO texto, sin filete ----------------
+\newcommand{\isrcabeceraizq}{%
+  {\fuentedatossemi\fontsize{6.4}{8}\selectfont\color{colorisrtextosec}%
+    \addfontfeatures{LetterSpace=12}\MakeUppercase{\isrtitulocorrido}}}
+\newcommand{\isrcabecerader}[1]{%
+  {\fuentedisplaysemi\fontsize{6.4}{8}\selectfont\color{colorisrprimario}%
+    \addfontfeatures{LetterSpace=10}#1}}
+\newcommand{\isrpieizq}{%
+  {\fuentedatos\fontsize{6.4}{8}\selectfont\color{colorisrtextosec}%
+    \meta{autor}\ \textperiodcentered\ \meta{cargo}%
+    \ifmetadef{distrito}{ por \meta{distrito}}{}}}
+\newcommand{\isrpieder}{%
+  {\fuentedatossemi\fontsize{8.5}{8.5}\selectfont\color{colorisrtexto}\thepage}}
+\newcommand{\isranexomarca}{}
+
+\fancypagestyle{isr}{%
+  \fancyhf{}%
+  \renewcommand{\headrulewidth}{0pt}%
+  \renewcommand{\footrulewidth}{0pt}%
+  \fancyhead[L]{\isrcabeceraizq}%
+  \fancyhead[R]{\isrcabecerader{\leftmark}}%
+  \fancyfoot[L]{\isrpieizq}%
+  \fancyfoot[R]{\isrpieder}%
+}
+\fancypagestyle{isranexo}{%
+  \fancyhf{}%
+  \renewcommand{\headrulewidth}{0pt}%
+  \renewcommand{\footrulewidth}{0pt}%
+  \fancyhead[L]{\isrcabeceraizq}%
+  \fancyhead[R]{\isrcabecerader{\isranexomarca}}%
+  \fancyfoot[L]{\isrpieizq}%
+  \fancyfoot[R]{\isrpieder}%
+}
+\pagestyle{isr}
+
+%% --- Piezas de la estructura ------------------------------------------
+\input{structures/informe-sr/portada.tex}
+\input{structures/informe-sr/componentes.tex}
+\input{structures/informe-sr/tablas.tex}
+\input{structures/informe-sr/anexos.tex}

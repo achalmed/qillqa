@@ -1,0 +1,44 @@
+%% =====================================================================
+%%  core/lib/metadata.tex  --  Sistema de metadatos del documento
+%% ---------------------------------------------------------------------
+%%  Mismo contrato que el Academic Writing Framework:
+%%    \setmeta{clave}{valor}   define/sobrescribe un dato
+%%    \meta{clave}             lo recupera (si falta: ??clave?? visible)
+%%    \ifmetadef{clave}{si}{no}  rama segun exista y no este vacio
+%%
+%%  El documento NUNCA escribe datos en el cuerpo: los declara en su
+%%  metadata.tex y las estructuras/membretes los consumen via \meta.
+%% =====================================================================
+
+\newcommand{\setmeta}[2]{%
+  \expandafter\def\csname despacho@meta@#1\endcsname{#2}%
+}
+
+\newcommand{\meta}[1]{%
+  \ifcsname despacho@meta@#1\endcsname
+    \csname despacho@meta@#1\endcsname
+  \else
+    \textbf{¿¿#1??}%
+  \fi
+}
+
+% \ifmetadef{clave}{si-definido-y-no-vacio}{si-no}
+\newcommand{\ifmetadef}[3]{%
+  \ifcsname despacho@meta@#1\endcsname
+    \expandafter\ifx\csname despacho@meta@#1\endcsname\empty
+      #3%
+    \else
+      #2%
+    \fi
+  \else
+    #3%
+  \fi
+}
+
+%% --- Defaults neutros del framework --------------------------------
+%%  Los datos del titular (autor, cargo, lema, siglas, correo, dirección,
+%%  celular, distrito) NO viven aquí: los declara el PERFIL del despacho en
+%%  perfil-despacho.tex, que core/despacho.cls carga al final de su
+%%  configuración (TEXINPUTS con MDD_PERFIL primero; core/perfil-defecto/ si
+%%  no hay perfil). Cada documento puede sobrescribirlos en su metadata.tex.
+\setmeta{tipodoc}{Documento}
