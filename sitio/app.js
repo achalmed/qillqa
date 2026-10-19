@@ -1,4 +1,4 @@
-/* Qillqa — sitio de demostración: Dock de módulos, recorrido del trámite, contador sin huecos,
+/* Qillqa — sitio de demostración: pestañas de módulos, recorrido del trámite, contador sin huecos,
    tablero arrastrable, mesa de partes simulada, carrusel y visor. Sin dependencias. */
 'use strict'
 document.documentElement.classList.add('js')
@@ -34,59 +34,59 @@ const ICONOS = {
 }
 const svg = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${ICONOS[k]}"/></svg>`
 
-/* ---------------------------------------------------------------- módulos del Dock */
+/* ---------------------------------------------------------------- módulos */
 const MODULOS = [
-  { id: 'inicio', nombre: 'Inicio', color: 'linear-gradient(160deg,#5aa6ff,#0a66d8)', titulo: 'Todo el día en una pantalla',
+  { id: 'inicio', nombre: 'Inicio', titulo: 'Todo el día en una pantalla',
     texto: 'Al entrar, cada persona ve lo suyo: lo que espera su firma o su revisión, los plazos que vencen, las reuniones del día y los avisos del equipo.',
     puntos: ['Pendientes ordenados por urgencia', 'Accesos a cada módulo, como aplicaciones', 'Avisos agrupados, sin ruido'] },
-  { id: 'bandeja', icono: 'documentos', nombre: 'Documentos', color: 'linear-gradient(160deg,#6dd3ff,#1c8be0)', titulo: 'La bandeja de documentos',
+  { id: 'bandeja', icono: 'documentos', nombre: 'Documentos', titulo: 'La bandeja de documentos',
     texto: 'Cada oficio, memorando o informe con su número, su estado y su destinatario. Se filtra por pestaña y se busca también dentro del contenido.',
     puntos: ['Estados claros: borrador, en revisión, por firmar, enviado', 'Visor rápido del PDF sin salir de la lista', 'Selección múltiple para acciones en lote'] },
-  { id: 'editor', nombre: 'Editor', color: 'linear-gradient(160deg,#ffb86b,#f07d1a)', titulo: 'Redactar sin pelear con el formato',
+  { id: 'editor', nombre: 'Editor', titulo: 'Redactar sin pelear con el formato',
     texto: 'Un formulario por tipo de documento y un cuerpo que se escribe como en un procesador de textos. El PDF se recompone en cada guardado.',
     puntos: ['Destinatario, asunto, referencia y copias en su sitio', 'Revisión formal automática al numerar', 'Dos personas no se pisan: cada guardado verifica la versión'] },
-  { id: 'seguimiento', nombre: 'Seguimiento', color: 'linear-gradient(160deg,#ff8aa8,#e0365f)', titulo: 'Qué pasó con cada oficio',
+  { id: 'seguimiento', nombre: 'Seguimiento', titulo: 'Qué pasó con cada oficio',
     texto: 'El trámite completo de un documento: cuándo salió, quién lo recibió, el expediente en la otra entidad, los plazos y la respuesta.',
     puntos: ['Cargo de recepción y número de expediente', 'Plazos legales que avisan antes de vencer', 'La respuesta queda ligada al oficio que la pidió'] },
-  { id: 'recibidos', nombre: 'Mesa de partes', color: 'linear-gradient(160deg,#9fe0a8,#2fa84f)', titulo: 'Lo que llega, registrado y asignado',
+  { id: 'recibidos', nombre: 'Mesa de partes', titulo: 'Lo que llega, registrado y asignado',
     texto: 'Los documentos recibidos se registran con su remitente, su responsable y su plazo. El sistema lee la ficha del PDF para ahorrar tipeo.',
     puntos: ['Responsable y plazo desde el registro', 'Respuesta con un clic: nace el oficio ya referido', 'Mesa de partes virtual pública con cargo en PDF'] },
-  { id: 'tablero', icono: 'tareas', nombre: 'Tareas', color: 'linear-gradient(160deg,#c3a6ff,#7a4fe0)', titulo: 'Un tablero para el equipo',
+  { id: 'tablero', icono: 'tareas', nombre: 'Tareas', titulo: 'Un tablero para el equipo',
     texto: 'Las tareas del equipo en columnas, con su responsable, su plazo y el documento al que pertenecen. Lo que se mueve aquí se ve en la agenda.',
     puntos: ['Tablero, lista y matriz de prioridades', 'Tareas que nacen solas de un recibido o un plazo', 'Comentarios y avance por tarea'] },
-  { id: 'matriz', nombre: 'Prioridades', color: 'linear-gradient(160deg,#ffd36b,#e8a400)', titulo: 'Urgente e importante, por separado',
+  { id: 'matriz', nombre: 'Prioridades', titulo: 'Urgente e importante, por separado',
     texto: 'La matriz reparte las tareas en cuatro cuadrantes para decidir qué se hace hoy, qué se programa, qué se delega y qué se deja.',
     puntos: ['Se arrastra de un cuadrante a otro', 'Usa los mismos datos del tablero', 'Ayuda a la coordinación a repartir la semana'] },
-  { id: 'agenda', nombre: 'Agenda', color: 'linear-gradient(160deg,#ff7b72,#d63b32)', titulo: 'La semana del equipo',
+  { id: 'agenda', nombre: 'Agenda', titulo: 'La semana del equipo',
     texto: 'Reuniones, plazos y actividades en vista de mes, semana o día. Un evento puede nacer de un documento y llevar su enlace.',
     puntos: ['Cruces de horario marcados', 'Por confirmar, confirmado y realizado', 'Pensada primero para el celular'] },
-  { id: 'chat', nombre: 'Chat', color: 'linear-gradient(160deg,#6be08a,#1fae4b)', titulo: 'Conversaciones con contexto',
+  { id: 'chat', nombre: 'Chat', titulo: 'Conversaciones con contexto',
     texto: 'Conversaciones directas y grupos del equipo. Un documento compartido aparece como tarjeta con su número, su asunto y su estado.',
     puntos: ['Adjuntos, respuestas y menciones', 'Tarjetas del sistema cuando algo cambia', 'Reemplaza el grupo de mensajería suelto'] },
-  { id: 'proyecto', icono: 'proyectos', nombre: 'Proyectos', color: 'linear-gradient(160deg,#8fb3ff,#4a6fe0)', titulo: 'Trabajos largos, escritos entre varios',
+  { id: 'proyecto', icono: 'proyectos', nombre: 'Proyectos', titulo: 'Trabajos largos, escritos entre varios',
     texto: 'Un reglamento, una norma o un informe extenso se divide en partes, con fases y responsables. Varias personas escriben a la vez sin pisarse.',
     puntos: ['Edición simultánea en tiempo real', 'Fases y responsables por parte', 'Versiones para volver atrás'] },
-  { id: 'directorio', nombre: 'Directorio', color: 'linear-gradient(160deg,#b0b8c6,#6b7486)', titulo: 'Instituciones y personas',
+  { id: 'directorio', nombre: 'Directorio', titulo: 'Instituciones y personas',
     texto: 'El directorio de instituciones, autoridades y contactos que usan los documentos. Los organigramas se navegan como un árbol.',
     puntos: ['Cargos y tratamientos listos para el oficio', 'Organigramas navegables', 'Aviso cuando cambia una autoridad'] },
-  { id: 'estadisticas', nombre: 'Estadísticas', color: 'linear-gradient(160deg,#7fe0d6,#169e8f)', titulo: 'Cuánto se produce y cuánto se responde',
+  { id: 'estadisticas', nombre: 'Estadísticas', titulo: 'Cuánto se produce y cuánto se responde',
     texto: 'Documentos por estado, por tipo y por mes, y la correspondencia con cada institución: enviados, respondidos y días de respuesta.',
     puntos: ['Cada cifra abre su lista', 'Oficios sin respuesta a la vista', 'Unidas al mapa de relaciones'] },
-  { id: 'mapa', nombre: 'Mapa', color: 'linear-gradient(160deg,#ff9be0,#c03fa0)', titulo: 'Cómo se citan los documentos',
+  { id: 'mapa', nombre: 'Mapa', titulo: 'Cómo se citan los documentos',
     texto: 'Un grafo con los documentos, las instituciones y las personas: quién respondió a qué, qué oficio cita a cuál y qué quedó sin respuesta.',
     puntos: ['Se explora con el dedo o el ratón', 'Ficha de cada nodo con sus cifras', 'Encuentra el hilo de un expediente'] },
-  { id: 'mesa-virtual', icono: 'mesa', nombre: 'Mesa virtual', color: 'linear-gradient(160deg,#9ad0ff,#3b82c4)', titulo: 'Atención al público sin ventanilla',
+  { id: 'mesa-virtual', icono: 'mesa', nombre: 'Mesa virtual', titulo: 'Atención al público sin ventanilla',
     texto: 'Una página pública, sin cuenta, donde cualquier persona presenta un escrito y recibe su cargo. Lo presentado entra directo a la mesa de partes.',
     puntos: ['Cargo en PDF con número de expediente', 'Consulta del estado con ese número', 'Lo recibido queda asignado y con plazo'] },
 ]
 
-function iniciarDock() {
+function iniciarModulos() {
   const dock = $('#dock'), img = $('#modulo-imagen'), titulo = $('#modulo-titulo')
   const caja = $('.explicacion'), nombre = $('#modulo-nombre'), grupo = $('#modulo-grupo')
   const texto = $('#modulo-texto'), puntos = $('#modulo-puntos')
   let actual = 0
-  dock.innerHTML = MODULOS.map((m, i) => `<button type="button" role="tab" id="dock-${m.id}" aria-selected="${i === 0}"
-    aria-label="${m.nombre}" style="--icono:${m.color}">${svg(m.icono || m.id)}<span class="globo">${m.nombre}</span></button>`).join('')
+  dock.innerHTML = MODULOS.map((m, i) => `<button type="button" role="tab" id="dock-${m.id}" aria-selected="${i === 0}">
+    ${svg(m.icono || m.id)}<span>${m.nombre}</span></button>`).join('')
   const botones = $$('button', dock)
   // Precarga discreta: la imagen siguiente ya está lista cuando se pide.
   const precargar = (i) => { const m = MODULOS[(i + MODULOS.length) % MODULOS.length]; new Image().src = `img/${m.id}.webp` }
@@ -95,7 +95,7 @@ function iniciarDock() {
     actual = (i + MODULOS.length) % MODULOS.length
     const m = MODULOS[actual]
     botones.forEach((b, j) => { b.setAttribute('aria-selected', j === actual); b.tabIndex = j === actual ? 0 : -1 })
-    if (enfocar) { botones[actual].focus(); botones[actual].scrollIntoView({ block: 'nearest', inline: 'center', behavior: calma ? 'auto' : 'smooth' }) }
+    if (enfocar) { botones[actual].focus(); dock.scrollTo({ left: botones[actual].offsetLeft - dock.clientWidth / 2 + botones[actual].offsetWidth / 2, behavior: calma ? 'auto' : 'smooth' }) }
     img.classList.add('cambiando')
     const nueva = new Image()
     nueva.onload = nueva.onerror = () => {
@@ -103,7 +103,7 @@ function iniciarDock() {
       requestAnimationFrame(() => img.classList.remove('cambiando'))
     }
     nueva.src = `img/${m.id}.webp`
-    titulo.textContent = `Qillqa — ${m.nombre}`
+    titulo.textContent = `Qillqa · ${m.nombre}`
     grupo.textContent = m.nombre; nombre.textContent = m.titulo; texto.textContent = m.texto
     puntos.innerHTML = m.puntos.map((p) => `<li>${p}</li>`).join('')
     caja.classList.remove('entra'); void caja.offsetWidth; caja.classList.add('entra')
@@ -118,20 +118,6 @@ function iniciarDock() {
   })
   $('#modulo-ant').addEventListener('click', () => { parar(); mostrar(actual - 1) })
   $('#modulo-sig').addEventListener('click', () => { parar(); mostrar(actual + 1) })
-
-  // Aumento del Dock como en macOS (solo con ratón).
-  if (matchMedia('(hover: hover) and (pointer: fine)').matches && !calma) {
-    const BASE = 52, MAX = 80, ALCANCE = 150
-    dock.addEventListener('mousemove', (e) => {
-      for (const b of botones) {
-        const r = b.getBoundingClientRect()
-        const d = Math.abs(e.clientX - (r.left + r.width / 2))
-        const t = Math.max(0, 1 - d / ALCANCE)
-        b.style.setProperty('--tam', `${BASE + (MAX - BASE) * t * t}px`)
-      }
-    })
-    dock.addEventListener('mouseleave', () => botones.forEach((b) => b.style.removeProperty('--tam')))
-  }
 
   // Avance solo mientras la ventana se ve y nadie la ha tocado.
   let reloj = null
@@ -149,17 +135,17 @@ function iniciarDock() {
 
 /* ---------------------------------------------------------------- recorrido del trámite */
 const PASOS = [
-  { nombre: 'Redactar', breve: 'Formulario y cuerpo', estado: ['Borrador', 'gris'], clase: '',
+  { nombre: 'Redactar', breve: 'Formulario y cuerpo', estado: ['Borrador', ''], clase: '',
     texto: 'Ana elige «Oficio», llena destinatario y asunto, y escribe el cuerpo en el editor. Todavía no hay número: un borrador nunca consume la serie.' },
-  { nombre: 'Revisar', breve: 'Observaciones', estado: ['En revisión', 'ambar'], clase: 'observada',
+  { nombre: 'Revisar', breve: 'Observaciones', estado: ['En revisión', 'revision'], clase: 'observada',
     texto: 'Luis, de coordinación, lo revisa y deja una observación sobre el texto. Ana corrige; el historial guarda quién pidió qué y cuándo.' },
-  { nombre: 'Numerar', breve: 'Contador transaccional', estado: ['Numerado', 'azul'], clase: '', numero: true,
+  { nombre: 'Numerar', breve: 'Contador transaccional', estado: ['Numerado', 'aprobado'], clase: '', numero: true,
     texto: 'Aprobado, el sistema le da el siguiente número de la serie en una sola transacción y compone el PDF con LuaLaTeX: membrete, pie e iniciales.' },
-  { nombre: 'Firmar', breve: 'Firma y sello', estado: ['Firmado', 'verde'], clase: 'firmada', numero: true,
+  { nombre: 'Firmar', breve: 'Firma y sello', estado: ['Firmado', 'firmado'], clase: 'firmada', numero: true,
     texto: 'El titular firma. El PDF firmado se sube y reemplaza al de trabajo; el documento pasa solo a «Firmado».' },
-  { nombre: 'Enviar', breve: 'Cargo de recepción', estado: ['Enviado', 'azul'], clase: 'firmada enviada', numero: true,
+  { nombre: 'Enviar', breve: 'Cargo de recepción', estado: ['Enviado', 'enviado'], clase: 'firmada enviada', numero: true,
     texto: 'Se envía y se registra el cargo: fecha, hora y número de expediente en la entidad de destino. Desde aquí corren los plazos.' },
-  { nombre: 'Archivar', breve: 'Respuesta y archivo', estado: ['Archivado', 'gris'], clase: 'firmada archivada', numero: true,
+  { nombre: 'Archivar', breve: 'Respuesta y archivo', estado: ['Archivado', 'archivado'], clase: 'firmada archivada', numero: true,
     texto: 'Llega la respuesta y queda ligada al oficio. El expediente se archiva con nombres de archivo uniformes y se encuentra buscando en su contenido.' },
 ]
 
@@ -209,9 +195,9 @@ function iniciarTramite() {
 
 /* ---------------------------------------------------------------- contador sin huecos */
 const PERSONAS = [
-  { ini: 'AT', nombre: 'Ana Torres', color: '#0a66d8' },
-  { ini: 'LM', nombre: 'Luis Mamani', color: '#1f9d55' },
-  { ini: 'RQ', nombre: 'Rosa Quispe', color: '#c0398a' },
+  { ini: 'AT', nombre: 'Ana Torres' },
+  { ini: 'LM', nombre: 'Luis Mamani' },
+  { ini: 'RQ', nombre: 'Rosa Quispe' },
 ]
 const ASUNTOS = ['Solicita información sobre obras', 'Remite informe de la comisión', 'Invita a mesa de trabajo',
   'Traslada pedido ciudadano', 'Reitera pedido de información', 'Comunica acuerdo de reunión', 'Solicita opinión técnica']
@@ -233,7 +219,7 @@ function iniciarContador() {
       const accion = d.estado === 'emitido' ? `<button type="button" data-retirar="${d.id}" aria-label="Retirar ${num}">Retirar</button>`
         : d.estado === 'archivado' ? '<span class="marca">archivado</span>' : ''
       const recien = d.recien; d.recien = false
-      return `<li class="${d.estado}${recien ? ' recien' : ''}"><span class="avatar" style="background:${p.color}">${p.ini}</span>
+      return `<li class="${d.estado}${recien ? ' recien' : ''}"><span class="avatar">${p.ini}</span>
         <span class="que"><b>${num}</b><small>${p.nombre} · ${d.asunto}</small></span>${accion}</li>`
     }).join('')
   }
@@ -307,7 +293,7 @@ function iniciarTablero() {
     const li = document.createElement('li')
     li.className = 'tarjeta'; li.tabIndex = 0
     li.innerHTML = `<b>${titulo}</b><span class="meta"><span class="etiqueta ${color}">${etiqueta}</span>
-      <span class="quien" style="background:${PERSONAS[p].color}" title="${PERSONAS[p].nombre}">${PERSONAS[p].ini}</span></span>`
+      <span class="quien" title="${PERSONAS[p].nombre}">${PERSONAS[p].ini}</span></span>`
     $(`[data-columna="${col}"] ul`, tablero).append(li)
   }
   function contar() {
@@ -418,22 +404,22 @@ function codigo(svgEl, texto) {
 
 /* ---------------------------------------------------------------- funciones */
 const FUNCIONES = [
-  ['documentos', '#1c8be0', 'Documentos', 'Bandeja con estados, nuevo documento por tipo, incorporar lo hecho fuera del sistema, versiones y búsqueda en el contenido.'],
-  ['recibidos', '#2fa84f', 'Mesa de partes', 'Recibidos con responsable, plazo y respuesta; mesa de partes virtual pública con cargo en PDF.'],
-  ['tareas', '#7a4fe0', 'Tareas y agenda', 'Mis tareas, tablero, matriz urgente e importante y calendario por mes, semana y día.'],
-  ['chat', '#1fae4b', 'Chat', 'Conversaciones directas y grupos, tarjetas de documentos y avisos del sistema.'],
-  ['proyectos', '#4a6fe0', 'Proyectos', 'Trabajos largos divididos en partes, con fases, responsables y edición simultánea.'],
-  ['informe', '#e07a1a', 'Informes de actividades', 'Semanas de trabajo de campo: actividades, pedidos, fotos y su informe en PDF.'],
-  ['dinero', '#b8860b', 'Rendición de cuentas', 'Viáticos por comisión: comprobantes, declaración jurada, saldo y anexos.'],
-  ['foto', '#d63b72', 'Mediateca', 'Fotos y videos del equipo con revisión, favoritos y papelera.'],
-  ['directorio', '#6b7486', 'Directorio', 'Instituciones, personas y organigramas navegables, listos para el oficio.'],
-  ['mapa', '#c03fa0', 'Mapa de relaciones', 'Cómo se citan y responden los documentos entre sí, con sus cifras.'],
-  ['nube', '#169e8f', 'Sin conexión', 'Aplicación instalable: se sigue redactando cuando el servidor no responde.'],
-  ['ajustes', '#55595f', 'Administración', 'Cuentas, roles, módulos activos, reglas automáticas y parámetros.'],
+  ['documentos', 'Documentos', 'Bandeja con estados, nuevo documento por tipo, incorporar lo hecho fuera del sistema, versiones y búsqueda en el contenido.'],
+  ['recibidos', 'Mesa de partes', 'Recibidos con responsable, plazo y respuesta; mesa de partes virtual pública con cargo en PDF.'],
+  ['tareas', 'Tareas y agenda', 'Mis tareas, tablero, matriz urgente e importante y calendario por mes, semana y día.'],
+  ['chat', 'Chat', 'Conversaciones directas y grupos, tarjetas de documentos y avisos del sistema.'],
+  ['proyectos', 'Proyectos', 'Trabajos largos divididos en partes, con fases, responsables y edición simultánea.'],
+  ['informe', 'Informes de actividades', 'Semanas de trabajo de campo: actividades, pedidos, fotos y su informe en PDF.'],
+  ['dinero', 'Rendición de cuentas', 'Viáticos por comisión: comprobantes, declaración jurada, saldo y anexos.'],
+  ['foto', 'Mediateca', 'Fotos y videos del equipo con revisión, favoritos y papelera.'],
+  ['directorio', 'Directorio', 'Instituciones, personas y organigramas navegables, listos para el oficio.'],
+  ['mapa', 'Mapa de relaciones', 'Cómo se citan y responden los documentos entre sí, con sus cifras.'],
+  ['nube', 'Sin conexión', 'Aplicación instalable: se sigue redactando cuando el servidor no responde.'],
+  ['ajustes', 'Administración', 'Cuentas, roles, módulos activos, reglas automáticas y parámetros.'],
 ]
 function iniciarFunciones() {
-  $('#rejilla').innerHTML = FUNCIONES.map(([i, c, t, d]) =>
-    `<article class="funcion vidrio"><span class="icono" style="background:${c}">${svg(i)}</span><h3>${t}</h3><p>${d}</p></article>`).join('')
+  $('#rejilla').innerHTML = FUNCIONES.map(([i, t, d]) =>
+    `<article class="funcion vidrio"><span class="icono">${svg(i)}</span><h3>${t}</h3><p>${d}</p></article>`).join('')
 }
 
 /* ---------------------------------------------------------------- carrusel */
@@ -460,16 +446,10 @@ function iniciarTema() {
     guardar('qillqa-tema', raiz.dataset.theme)
   })
 }
-function iniciarHora() {
-  const el = $('#hora')
-  const pinta = () => {
-    const a = new Date()
-    const sin = (o) => a.toLocaleDateString('es-PE', o).replace(/\./g, '')
-    const hora = a.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', hour12: false })
-    el.innerHTML = `<span class="menu-fecha">${sin({ weekday: 'short' })} ${a.getDate()} ${sin({ month: 'short' }).toLowerCase()}</span> ${hora}`
-    el.dateTime = a.toISOString()
-  }
-  pinta(); setInterval(pinta, 20000)
+function iniciarCabecera() {
+  const menu = $('#menu')
+  const marcar = () => menu.classList.toggle('con-borde', scrollY > 8)
+  addEventListener('scroll', marcar, { passive: true }); marcar()
 }
 function iniciarRevelar() {
   const io = new IntersectionObserver((es) => es.forEach((e) => {
@@ -522,7 +502,7 @@ function iniciarCopiar() {
   }))
 }
 
-for (const f of [iniciarTema, iniciarHora, iniciarDock, iniciarTramite, iniciarContador, iniciarTablero, iniciarMesa,
+for (const f of [iniciarTema, iniciarCabecera, iniciarModulos, iniciarTramite, iniciarContador, iniciarTablero, iniciarMesa,
   iniciarFunciones, iniciarCarrusel, iniciarVisor, iniciarCopiar, iniciarRevelar, iniciarMenuActivo]) {
   try { f() } catch (err) { console.error(`[qillqa] ${f.name}:`, err) }
 }

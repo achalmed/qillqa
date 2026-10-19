@@ -57,3 +57,50 @@ def test_lo_escrito_por_una_persona_no_cambia():
     assert denominar_adjuntos(["cargo"]) == ["Cargo de recepción"]
     # Una serie que no es un tipo propio se deja como está.
     assert denominar_adjuntos(["XYZ-0001-2026-2027_Algo"]) == ["XYZ-0001-2026-2027_Algo"]
+
+
+# --- Al subir: la descripción ya documental (Edison 2026-10-19: «incorporar esa funcionalidad») --
+
+from app.servicios.adjuntos import etiqueta_documental  # noqa: E402
+
+
+def test_al_subir_el_archivo_toma_su_denominacion_y_el_cargo_la_del_anterior():
+    copia = etiqueta_documental("FIRM-OF-0152-2026-2027 Informacion documentada")
+    assert copia.startswith("Copia del Oficio N°0152-2026-2027")
+    cargo = etiqueta_documental("cargo", copia)
+    assert cargo.startswith("Cargo de recepción del Oficio N°0152-2026-2027")
+    # El anterior aún con su nombre de archivo (subido antes de esta regla) también sirve.
+    assert etiqueta_documental("cargo-2", "FIRM-CARTA-0003-2026-2027_Boleto").startswith("Cargo de recepción de la Carta N°0003")
+    assert etiqueta_documental("cargo", "Informe técnico") == "Cargo de recepción"
+    assert etiqueta_documental("Relación de dirigentes", copia) == "Relación de dirigentes"
+
+
+def test_la_copia_y_su_cargo_ya_nombrados_van_en_una_linea():
+    copia = etiqueta_documental("FIRM-OF-0152-2026-2027_x")
+    cargo = etiqueta_documental("cargo", copia)
+    otra = etiqueta_documental("OF-0153-2026-2027_y")
+    salida = denominar_adjuntos([copia, cargo, otra, etiqueta_documental("cargo", otra)])
+    assert len(salida) == 2
+    assert all(s.endswith(", con su cargo de recepción") for s in salida)
+    # Un cargo de otro documento no se pega al anterior.
+    suelto = denominar_adjuntos([otra, cargo])
+    assert len(suelto) == 2 and suelto[1].startswith("Cargo de recepción del Oficio N°0152")
+
+
+# --- La lista muestra la cita calculada, sin tocar lo guardado (OF-0160 ya firmado) -------------
+
+from types import SimpleNamespace  # noqa: E402
+
+from app.servicios.adjuntos import citas_de  # noqa: E402
+
+
+def test_citas_de_lo_ya_cargado_sin_renombrar():
+    def fila(i, etiqueta, categoria=""):
+        return SimpleNamespace(id=i, etiqueta=etiqueta, categoria=categoria, nombre_original="", nombre_archivo="")
+    filas = [fila(3, "cargo"), fila(1, "FIRM-OF-0152-2026-2027_Informacion"), fila(9, "x", "firmado"),
+             fila(5, "Informe técnico"), fila(4, "OF-0157-2026-2027_Intervencion"), fila(6, "cargo-2")]
+    c = citas_de(filas)
+    assert set(c) == {1, 3, 4, 5, 6}                     # el firmado no es un adjunto de la lista
+    assert c[1].startswith("Copia del Oficio N°0152") and c[3].startswith("Cargo de recepción del Oficio N°0152")
+    assert c[4].startswith("Copia del Oficio N°0157")
+    assert c[5] == "Informe técnico" and c[6] == "Cargo de recepción"  # el anterior a 6 es el informe

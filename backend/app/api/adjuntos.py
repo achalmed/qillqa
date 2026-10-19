@@ -49,7 +49,8 @@ async def listar(
             .order_by(Adjunto.subido_en.desc())
         )
     ).scalars().all()
-    return [svc.resumen(a) for a in filas]
+    citas = svc.citas_de(filas)
+    return [{**svc.resumen(a), "cita": citas.get(a.id, "")} for a in filas]
 
 
 def _confirmacion(valor: str | None) -> bool | None:

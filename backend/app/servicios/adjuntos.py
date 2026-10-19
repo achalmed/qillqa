@@ -350,6 +350,10 @@ async def guardar(
         # Un adjunto sin nombre imprimía «ADJ-OF-0060-2026-2027_Asunto» en la
         # línea «Adj.» (el nombre de convención): se toma el del archivo.
         etiqueta = " ".join(Path(archivo.filename or "").stem.replace("_", " ").split())[:160]
+    if categoria == "":
+        # Un documento propio o su cargo se nombran como se citan (Edison 2026-10-19, OF-0160):
+        # «Copia del Oficio N°…», «Cargo de recepción del Oficio N°…» (el del adjunto anterior).
+        etiqueta = etiqueta_documental(etiqueta, await _ultima_etiqueta(sesion, doc.id))[:160]
     # Convención de nombres de la entidad: firmado -> «…[R].pdf»;
     # recepción -> «CONSTANCIA_DE_RECEPCION …». Se renombra AL SUBIR,
     # sin importar cómo venga el archivo.
@@ -442,6 +446,30 @@ def renombrar(sesion: AsyncSession, doc: Documento, adj: Adjunto, etiqueta: str)
     vigencia.mover(sesion, viejo, dir_adjuntos / nuevo)
     adj.nombre_original = oficial
     adj.nombre_archivo = nuevo
+
+
+async def renombrar_al_numerar(sesion: AsyncSession, doc: Documento) -> int:
+    """Al numerar: los archivos subidos al borrador («ADJ-OF-SN-…») pasan al nombre con el
+    número del documento, conservando su descripción. El firmado no se toca. No hace commit;
+    devuelve cuántos cambió."""
+    from sqlalchemy import select
+
+    if not doc.numero:
+        return 0
+    filas = (await sesion.execute(select(Adjunto).where(Adjunto.documento_id == doc.id))).scalars().all()
+    cambiados = 0
+    for adj in filas:
+        if adj.categoria == "firmado" or "-SN-" not in (adj.nombre_archivo or ""):
+            continue
+        if not (adj.etiqueta or "").strip() and (adj.categoria or "") == "":
+            continue  # sin descripción, renombrar lo rechazaría: el número ya está dado
+        antes = adj.nombre_archivo
+        try:
+            renombrar(sesion, doc, adj, adj.etiqueta)
+        except OSError:
+            continue  # un archivo que no se pudo mover conserva su nombre; numerar no falla por eso
+        cambiados += adj.nombre_archivo != antes
+    return cambiados
 
 
 async def cargar(
@@ -567,12 +595,62 @@ def denominacion_de_archivo(nombre: str) -> str | None:
     return f"{_ANTEPUESTO[prefijo]} {articulo} {denominacion}"
 
 
+_RE_CARGO_DE = re.compile(r"^Cargo de recepción (?:del|de la) (?P<den>.+)$")
+_RE_COPIA_DE = re.compile(r"^(?:Copia|Respuesta) (?:del|de la|al|a la) (?P<den>.+?)(?:, con su cargo de recepción)?$")
+
+
+def etiqueta_documental(etiqueta: str, anterior: str | None = None) -> str:
+    """La descripción con que se guarda un adjunto: un nombre de archivo del sistema pasa a su
+    denominación («Copia del Oficio N°…») y un «cargo» se nombra por el documento que acompaña,
+    el adjunto anterior («Cargo de recepción del Oficio N°…»). Lo demás queda igual. Pura."""
+    if es_cargo(etiqueta):
+        previo = denominacion_de_archivo(anterior or "") or (anterior or "")
+        m = _RE_COPIA_DE.match(previo)
+        if m:
+            den = m["den"]
+            articulo = "de la" if _plano(den).split(" ")[0] in _FEMENINOS else "del"
+            return f"Cargo de recepción {articulo} {den}"
+        return "Cargo de recepción"
+    return denominacion_de_archivo(etiqueta) or etiqueta
+
+
+def citas_de(filas: list) -> dict[int, str]:
+    """{id: cómo se cita} de los adjuntos (categoría vacía), en orden de carga: lo que la web
+    muestra en la lista. Se CALCULA, no se guarda: renombrar la descripción de un documento ya
+    firmado cambiaría la huella de su firma (servicios/vigencia.py) aunque lo impreso fuera igual
+    (Edison 2026-10-19, OF-0160: «sin eliminar el documento firmado»). Pura."""
+    salida: dict[int, str] = {}
+    anterior: str | None = None
+    for a in sorted((f for f in filas if not f.categoria), key=lambda f: f.id):
+        propia = (a.etiqueta or "").strip() or Path(a.nombre_original or a.nombre_archivo or "").stem
+        cita = etiqueta_documental(propia, anterior)
+        salida[a.id] = cita
+        anterior = cita
+    return salida
+
+
+async def _ultima_etiqueta(sesion: AsyncSession, documento_id: int) -> str | None:
+    """La descripción del último adjunto (categoría vacía) del documento: un cargo que se sube
+    a continuación es el de ese documento."""
+    from sqlalchemy import or_, select
+
+    return (await sesion.execute(
+        select(Adjunto.etiqueta)
+        .where(Adjunto.documento_id == documento_id, or_(Adjunto.categoria == "", Adjunto.categoria.is_(None)))
+        .order_by(Adjunto.id.desc()).limit(1)
+    )).scalar_one_or_none()
+
+
 def denominar_adjuntos(nombres_adj: list[str]) -> list[str]:
     """Los nombres de la línea «Adj.» como se citan en un documento oficial: un nombre de
     archivo del sistema pasa a su denominación y un «cargo» se une al documento anterior
     («…, con su cargo de recepción»). Lo que escribió una persona queda como está. Pura."""
     salida: list[str] = []
     for nombre in nombres_adj:
+        cargo = _RE_CARGO_DE.match(nombre.strip())
+        if cargo and salida and cargo["den"] in salida[-1] and "con su cargo" not in salida[-1]:
+            salida[-1] = f"{salida[-1]}, con su cargo de recepción"
+            continue
         if es_cargo(nombre):
             if salida and "con su cargo" not in salida[-1]:
                 salida[-1] = f"{salida[-1]}, con su cargo de recepción"

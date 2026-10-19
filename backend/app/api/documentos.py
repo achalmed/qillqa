@@ -1125,6 +1125,7 @@ async def generar_oficial(
         sesion, doc, usuario, antes, "modificación del documento", datos.confirmar_anulacion
     )
     doc.version_contenido = (doc.version_contenido or 0) + 1
+    recien_numerado = doc.numero is None
     if doc.numero is None:
         doc.numero = await asignar_siguiente(sesion, doc)
         # Leídos ANTES del flush: tras un fallo el objeto no se puede consultar.
@@ -1174,6 +1175,11 @@ async def generar_oficial(
     # Lo numerado sale COMPLETO: aquí no se aceptan reparaciones que pierdan contenido (tablas,
     # imágenes); si hacen falta, el error se explica y no se numera a medias (2026-10-12).
     await compilacion.compilar(sesion, doc, permitir_perdida=False)
+    if recien_numerado:
+        # Los adjuntos subidos al borrador llevaban «SN» en el archivo (ADJ-OF-SN-…) para siempre:
+        # ya con número y carpeta definitiva, toman el del documento (Edison 2026-10-19, OF-0160).
+        if await svc_adjuntos.renombrar_al_numerar(sesion, doc):
+            await sesion.commit()
     respuesta = {
         "ok": True,
         "numero": doc.numero,

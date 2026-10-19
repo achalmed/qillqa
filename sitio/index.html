@@ -23,7 +23,7 @@
 <!-- Barra de menú, como la de macOS -->
 <header class="menu" id="menu">
   <a class="menu-marca" href="#inicio" aria-label="Qillqa, inicio">
-    <img src="img/icono.svg" alt="" width="18" height="18"><b>Qillqa</b>
+    <svg class="marca-icono" viewBox="0 0 64 64" width="26" height="26" aria-hidden="true"><rect width="64" height="64" rx="15"/><path d="M44 14c-9 2-17 9-21 19l-4 13 3 2 7-11c9-3 15-10 17-19"/><path class="raya" d="M17 50h30"/></svg>Qillqa
   </a>
   <nav class="menu-nav" aria-label="Secciones">
     <a href="#escritorio">Recorrido</a>
@@ -37,10 +37,7 @@
     <button class="menu-boton" id="tema" type="button" aria-label="Cambiar entre tema claro y oscuro" title="Tema claro u oscuro">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path class="sol" d="M12 4V2m0 20v-2m8-8h2M2 12h2m13.66-5.66 1.41-1.41M4.93 19.07l1.41-1.41m0-11.32L4.93 4.93m14.14 14.14-1.41-1.41M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10Z"/><path class="luna" d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
     </button>
-    <a class="menu-boton" href="https://github.com/achalmed/qillqa" aria-label="Código en GitHub" title="Código en GitHub">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 7 3.5 12l5 5M15.5 7l5 5-5 5M13.5 4.5l-3 15"/></svg>
-    </a>
-    <time class="menu-hora" id="hora" aria-label="Hora"></time>
+    <a class="boton chico primario" href="https://github.com/achalmed/qillqa">Ver en GitHub</a>
   </div>
 </header>
 
@@ -50,7 +47,7 @@
 <section class="portada" id="inicio">
   <div class="portada-texto revelar">
     <p class="sobre">Software libre · AGPL-3.0 · versión de demostración</p>
-    <h1>Los documentos oficiales,<br><span class="tinta">de la idea al archivo.</span></h1>
+    <h1>Los documentos oficiales,<br><span class="tenue">de la idea al archivo.</span></h1>
     <p class="entrada">Qillqa redacta, numera, revisa, genera el PDF, envía y archiva los documentos de una
       entidad desde el navegador. Sin cuadernos de numeración, sin carpetas perdidas y sin tocar LaTeX.</p>
     <div class="acciones">
@@ -62,7 +59,7 @@
 
   <div class="portada-ventana revelar">
     <figure class="ventana ventana-flota">
-      <div class="ventana-barra"><span class="semaforo"><i></i><i></i><i></i></span><span class="ventana-titulo">Qillqa — Inicio</span></div>
+      <div class="ventana-barra"><span class="ventana-titulo">Qillqa · Inicio</span></div>
       <img src="img/inicio.webp" alt="Pantalla de inicio de Qillqa: pendientes del día, documentos por firmar y agenda" width="1600" height="1000" data-ampliar fetchpriority="high">
     </figure>
     <div class="ficha ficha-a vidrio" aria-hidden="true">
@@ -84,19 +81,19 @@
   <div class="cifra vidrio"><b data-contar="375" data-sufijo=" px">375 px</b><span>de ancho basta: cada pantalla está pensada primero para el celular</span></div>
 </section>
 
-<!-- Escritorio con Dock -->
+<!-- Recorrido por módulos -->
 <section class="seccion" id="escritorio">
   <div class="encabezado revelar">
     <p class="sobre">Un día de trabajo</p>
     <h2>Recorre el sistema como si estuvieras dentro.</h2>
-    <p>Las capturas son de la demo con datos ficticios: un mes de oficios, recibidos, tareas, reuniones y conversaciones de un equipo imaginario. Elige un módulo en el Dock.</p>
+    <p>Las capturas son de la demo con datos ficticios: un mes de oficios, recibidos, tareas, reuniones y conversaciones de un equipo imaginario. Elige un módulo.</p>
   </div>
 
   <div class="escritorio revelar">
+    <nav class="modulos vidrio" id="dock" aria-label="Módulos de Qillqa" role="tablist"></nav>
     <figure class="ventana ventana-grande" id="ventana-modulo">
       <div class="ventana-barra">
-        <span class="semaforo"><i></i><i></i><i></i></span>
-        <span class="ventana-titulo" id="modulo-titulo">Qillqa — Inicio</span>
+        <span class="ventana-titulo" id="modulo-titulo">Qillqa · Inicio</span>
         <span class="ventana-pasos" aria-hidden="true"><button type="button" id="modulo-ant" aria-label="Módulo anterior">‹</button><button type="button" id="modulo-sig" aria-label="Módulo siguiente">›</button></span>
       </div>
       <div class="ventana-cuerpo">
@@ -109,7 +106,6 @@
       <p id="modulo-texto"></p>
       <ul id="modulo-puntos"></ul>
     </aside>
-    <nav class="dock vidrio" id="dock" aria-label="Módulos de Qillqa" role="tablist"></nav>
   </div>
 </section>
 
@@ -287,7 +283,7 @@
   </div>
   <div class="probar revelar">
     <figure class="ventana terminal">
-      <div class="ventana-barra"><span class="semaforo"><i></i><i></i><i></i></span><span class="ventana-titulo">Terminal — qillqa</span>
+      <div class="ventana-barra"><span class="ventana-titulo">Terminal</span>
         <button class="copiar" type="button" data-copiar="comandos">Copiar</button></div>
       <pre id="comandos"><code><span class="c"># descarga y configura</span>
 git clone https://github.com/achalmed/qillqa.git

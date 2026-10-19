@@ -49,6 +49,8 @@ interface AdjuntoMeta {
   es_imagen: boolean
   categoria: string
   etiqueta: string
+  /** Cómo se cita en la línea «Adj.» (la calcula el servidor; adjuntos.citas_de). */
+  cita?: string
 }
 
 const ACEPTA = '.pdf,.docx,.xlsx,.ods,.odt,.jpg,.jpeg,.png,.zip,.csv'
@@ -191,7 +193,8 @@ export default function Adjuntos({
       .then((lista) => {
         // El firmado, las constancias y las respuestas NO son adjuntos: se
         // gestionan aparte. Aquí solo los de categoría vacía.
-        const propios = (lista || []).filter((a) => !a.categoria)
+        // En el orden de la línea «Adj.» (el de carga): cada cargo queda debajo de su documento.
+        const propios = (lista || []).filter((a) => !a.categoria).sort((x, y) => x.id - y.id)
         setAdjuntos(propios)
         setListaCargada(true)
         alContar?.(propios.length)
@@ -467,7 +470,15 @@ export default function Adjuntos({
           icono={<AttachFileIcon fontSize="small" />}
           nombre={
             <>
-              {a.nombre}
+              {/* Como se cita en la línea «Adj.» (la descripción), no el nombre del archivo, que
+                  queda al pasar el puntero (Edison 2026-10-19: «sigue con el nombre anterior»). */}
+              <Box
+                component="span"
+                title={a.nombre}
+                sx={{ display: 'block', whiteSpace: 'normal', overflowWrap: 'anywhere', lineHeight: 1.35 }}
+              >
+                {a.cita || a.etiqueta || a.nombre}
+              </Box>
               {a.es_anexo && (
                 <Chip
                   label="página del PDF"
