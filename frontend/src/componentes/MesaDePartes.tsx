@@ -6,7 +6,7 @@
  * todos); si el destinatario no está en el directorio, se busca. El reconocimiento lo hace el
  * servidor (`POST /api/directorio/destinos`, servicios/mesas_partes.py).
  */
-import { Link as RouterLink } from 'react-router-dom'
+import { Link as RouterLink } from 'react-router'
 import { abrirMesaDePartes, extensionInstalada } from '../mesaExtension'
 import { DialogoInstalarExtension } from './InstalarExtension'
 import Alert from '@mui/material/Alert'

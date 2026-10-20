@@ -25,7 +25,7 @@
  *   pone una página (las de un proyecto, una semana) siguen como pestañas.
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router'
 import AppBar from '@mui/material/AppBar'
 import Toolbar from '@mui/material/Toolbar'
 import Box from '@mui/material/Box'

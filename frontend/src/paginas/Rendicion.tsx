@@ -14,7 +14,7 @@
  * Consulta: `?ver=<paso>`. Un texto del chat (`state.textoPegar`) abre el pegado en Comprobantes.
  */
 import { useCallback, useEffect, useState } from 'react'
-import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router'
 import Box from '@mui/material/Box'
 import Alert from '@mui/material/Alert'
 import Snackbar from '@mui/material/Snackbar'

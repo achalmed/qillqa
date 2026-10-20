@@ -1,9 +1,7 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import Underline from '@tiptap/extension-underline'
-import Table from '@tiptap/extension-table'
-import TableRow from '@tiptap/extension-table-row'
+import { Table, TableRow } from '@tiptap/extension-table'
 import type { Content, Editor } from '@tiptap/core'
 import { CeldaAlineada, CabeceraAlineada } from '../extensiones/TablaAlineada'
 import { SangriaParrafo } from '../extensiones/SangriaParrafo'
@@ -21,6 +19,11 @@ import FormatBoldIcon from '@mui/icons-material/FormatBold'
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered'
 import TableChartIcon from '@mui/icons-material/TableChart'
 import { PALETA } from '../paleta'
+
+// Tiptap 3: el subrayado viene en el kit; sin enlace ni nodo final, como en
+// la v2. Configuradas una vez: useEditor compara las extensiones por identidad.
+const KitAnexo = StarterKit.configure({ link: false, trailingNode: false })
+const TablaAnexo = Table.configure({ resizable: false })
 
 // Un anexo compuesto del formulario: título + un doc TipTap (cuadros/
 // tablas/texto). El generador emite cada uno como página «ANEXO» tras la
@@ -123,15 +126,15 @@ const UnAnexo = forwardRef<
   const [titulo, setTitulo] = useState(inicialTitulo)
   const editor = useEditor({
     extensions: [
-      StarterKit,
-      Underline,
-      Table.configure({ resizable: false }),
+      KitAnexo,
+      TablaAnexo,
       TableRow,
       CabeceraAlineada,
       CeldaAlineada,
       SangriaParrafo,
     ],
     content: (inicialCuerpo ?? undefined) as Content,
+    shouldRerenderOnTransaction: true,
   })
 
   useImperativeHandle(

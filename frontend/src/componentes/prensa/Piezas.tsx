@@ -9,7 +9,7 @@
  * Dirección: `/prensa?ver=piezas[&nueva=1][&pegar=<id de mensaje>]`.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import TextField from '@mui/material/TextField'

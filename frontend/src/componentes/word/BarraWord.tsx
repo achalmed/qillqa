@@ -102,7 +102,7 @@ import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import TitleIcon from '@mui/icons-material/Title'
 import SortByAlphaIcon from '@mui/icons-material/SortByAlpha'
 import TrackChangesIcon from '@mui/icons-material/TrackChanges'
-import { Boton, lista, ponerEnlace, useHerramientasEditor } from '../BarraFormato'
+import { Boton, editorVivo, lista, ponerEnlace, useHerramientasEditor } from '../BarraFormato'
 import type { SangriaTipo } from '../../extensiones/SangriaParrafo'
 import { COLORES_TEXTO } from '../../extensiones/ColorTexto'
 import { ETIQUETA_ESTADO, sxEstado } from '../../estados'
@@ -257,7 +257,7 @@ export default function BarraWord({ editor, documento, icono, archivo, herramien
   const { est, palabras } = h
   const extra = useEditorState({
     editor,
-    selector: ({ editor: e }) => (!e ? null : {
+    selector: ({ editor: e }) => (!editorVivo(e) ? null : {
       color: (e.getAttributes('colorTexto').color as string | undefined) ?? null,
       estilo: e.isActive('heading') ? 'titulo' : e.isActive('bulletList') ? 'vinetas' : e.isActive('orderedList') ? 'numerada' : 'parrafo',
       romana: e.isActive('orderedList', { type: 'i' }),

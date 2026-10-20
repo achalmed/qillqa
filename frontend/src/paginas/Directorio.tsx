@@ -28,7 +28,7 @@
  */
 import { TablaDistritos } from '../componentes/Distritos'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router'
 import Typography from '@mui/material/Typography'
 import { PALETA } from '../paleta'
 import Box from '@mui/material/Box'

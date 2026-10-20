@@ -3,7 +3,7 @@
  * pedido muestran de qué Semana de representación vienen, y un clic lleva allí.
  */
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import Chip from '@mui/material/Chip'
 import Tooltip from '@mui/material/Tooltip'
 import CampaignOutlinedIcon from '@mui/icons-material/CampaignOutlined'

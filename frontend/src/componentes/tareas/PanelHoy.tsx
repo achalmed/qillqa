@@ -4,7 +4,7 @@
  * tarjeta del Inicio (reemplaza al mensaje nocturno «mañana: …» y a los fijados del chat).
  */
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import ButtonBase from '@mui/material/ButtonBase'

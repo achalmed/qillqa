@@ -4,7 +4,7 @@
 // fechas cívicas de los próximos 7 y los aniversarios de creación de distritos de los próximos 15.
 // Reemplaza a la tarjeta grande de aniversarios.
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { Box, ButtonBase, Tooltip, Typography } from '@mui/material'
 import CakeOutlinedIcon from '@mui/icons-material/CakeOutlined'
 import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined'

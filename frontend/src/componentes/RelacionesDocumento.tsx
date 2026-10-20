@@ -23,7 +23,7 @@
  * (Referencias) vincula un documento.
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link as RouterLink } from 'react-router-dom'
+import { Link as RouterLink } from 'react-router'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'

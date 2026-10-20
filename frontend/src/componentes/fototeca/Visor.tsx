@@ -15,7 +15,7 @@
  * ni se exporta por tamaños: se descarga el original.
  */
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import Dialog from '@mui/material/Dialog'
 import Box from '@mui/material/Box'
 import IconButton from '@mui/material/IconButton'

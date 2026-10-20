@@ -14,7 +14,7 @@
  * en el tema claro.
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import ForceGraph2D, { type ForceGraphMethods, type LinkObject, type NodeObject } from 'react-force-graph-2d'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'

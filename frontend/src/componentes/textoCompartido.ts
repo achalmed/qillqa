@@ -128,6 +128,6 @@ export function useOtrosEnTexto(proveedor: HocuspocusProvider | null): { name: s
 
 /** Estilos de los cursores de las demás personas, con su nombre encima. */
 export const estiloCursores = {
-  '& .collaboration-cursor__caret': { position: 'relative', mx: '-1px', borderLeft: '1px solid', borderRight: '1px solid', wordBreak: 'normal', pointerEvents: 'none' },
-  '& .collaboration-cursor__label': { position: 'absolute', top: '-1.35em', left: '-1px', fontSize: 11, fontWeight: 600, lineHeight: 'normal', whiteSpace: 'nowrap', color: '#fff', px: '4px', py: '1px', borderRadius: '3px 3px 3px 0', userSelect: 'none' },
+  '& .collaboration-carets__caret': { position: 'relative', mx: '-1px', borderLeft: '1px solid', borderRight: '1px solid', wordBreak: 'normal', pointerEvents: 'none' },
+  '& .collaboration-carets__label': { position: 'absolute', top: '-1.35em', left: '-1px', fontSize: 11, fontWeight: 600, lineHeight: 'normal', whiteSpace: 'nowrap', color: '#fff', px: '4px', py: '1px', borderRadius: '3px 3px 3px 0', userSelect: 'none' },
 } as const

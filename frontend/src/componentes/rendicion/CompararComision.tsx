@@ -9,7 +9,7 @@
  * cada valor que difiere dice, debajo, el de la otra. «Solo lo distinto» deja solo las filas que difieren.
  */
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import Box from '@mui/material/Box'
 import ButtonBase from '@mui/material/ButtonBase'
 import FormControlLabel from '@mui/material/FormControlLabel'

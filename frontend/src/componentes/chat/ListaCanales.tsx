@@ -16,7 +16,7 @@
  * breve a activar los avisos en el celular (`InvitacionAvisos`), una sola vez.
  */
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import Badge from '@mui/material/Badge'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'

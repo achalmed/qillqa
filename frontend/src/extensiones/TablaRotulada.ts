@@ -5,7 +5,7 @@
 // encima y debajo (estiloContenido de BarraFormato), sin nodos nuevos.
 //
 // Imports con `.ts`: lo carga también el servidor de edición simultánea.
-import Table from '@tiptap/extension-table'
+import { Table } from '@tiptap/extension-table'
 
 const texto = (nombre: string) => ({
   default: '',

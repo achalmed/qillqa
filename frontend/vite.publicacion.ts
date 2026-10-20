@@ -45,7 +45,7 @@ export function trozos(id: string): string | undefined {
   if (m(/[\\/]pdfjs-dist[\\/]/)) return 'pdf'
   if (m(/[\\/](react-force-graph-2d|force-graph|d3-[^\\/]+|kapsule|canvas-color-tracker|bezier-js|accessor-fn|float-tooltip|index-array-by|tinycolor2|lodash-es|preact)[\\/]/)) return 'grafo'
   if (m(/[\\/](yjs|y-protocols|lib0|@hocuspocus)[\\/]/)) return 'colab'
-  if (m(/[\\/](@tiptap|y-prosemirror|prosemirror-[^\\/]+|linkifyjs|orderedmap|rope-sequence|w3c-keyname|crelt|tippy\.js)[\\/]/)) return 'editor'
+  if (m(/[\\/](@tiptap|y-prosemirror|prosemirror-[^\\/]+|linkifyjs|orderedmap|rope-sequence|w3c-keyname|crelt|fast-equals)[\\/]/)) return 'editor'
   if (m(/[\\/]@mui[\\/]icons-material[\\/]/)) return 'iconos' // uno solo: decenas de archivos pequeños pesan más por la latencia que por los bytes
   if (m(/[\\/](@mui|@emotion|@popperjs|react-transition-group|stylis|clsx|prop-types|react-is|hoist-non-react-statics|@babel[\\/]runtime)[\\/]/)) return 'mui'
   if (m(/[\\/](react|react-dom|scheduler|react-router|react-router-dom|@remix-run)[\\/]/)) return 'react'

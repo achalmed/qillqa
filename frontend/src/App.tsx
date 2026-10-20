@@ -1,5 +1,5 @@
 import { Suspense, useEffect } from 'react'
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router'
 import { iniciarUso, registrarVista } from './uso'
 import PantallaCarga from './componentes/PantallaCarga'
 import { cargarPagina } from './arranque'
@@ -100,9 +100,10 @@ function SeguirRuta() {
 
 export default function App() {
   return (
-    // v7_startTransition: al cambiar de página se queda la anterior a la vista hasta que llega el
-    // trozo de la nueva (sin pantallazo en blanco); la línea de carga solo se ve al abrir en frío.
-    <BrowserRouter future={{ v7_startTransition: true }}>
+    // React Router 7 envuelve cada navegación en startTransition (en la 6 era v7_startTransition): al
+    // cambiar de página se queda la anterior a la vista hasta que llega el trozo de la nueva (sin
+    // pantallazo en blanco); la línea de carga solo se ve al abrir en frío.
+    <BrowserRouter>
       {/* Mientras llega el trozo de la primera página, la pantalla de carga de index.html. */}
       <SeguirRuta />
       <RegistrarUso />

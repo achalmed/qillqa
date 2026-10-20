@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router'
 import { PALETA } from '../paleta'
 import Typography from '@mui/material/Typography'
 import Container from '@mui/material/Container'

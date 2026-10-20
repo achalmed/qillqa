@@ -28,7 +28,7 @@
  * sirviendo: se traduce a la consulta al cargar.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router'
 import { Alert, Box, CircularProgress, Typography } from '@mui/material'
 import Marco from '../componentes/Marco'
 

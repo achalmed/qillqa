@@ -13,7 +13,7 @@
  * Las cuentas, los avisos de contraseña y los módulos se cargan aquí: el Resumen y su sección los usan.
  */
 import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router'
 import Alert from '@mui/material/Alert'
 import Container from '@mui/material/Container'
 import Snackbar from '@mui/material/Snackbar'

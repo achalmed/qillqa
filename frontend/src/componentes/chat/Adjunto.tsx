@@ -11,7 +11,7 @@
  * `blob:` en memoria: adelantar no depende de los rangos del servidor) y suena uno a la vez.
  */
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import Box from '@mui/material/Box'
 import ButtonBase from '@mui/material/ButtonBase'
 import Chip from '@mui/material/Chip'

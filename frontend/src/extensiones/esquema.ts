@@ -9,12 +9,10 @@
 // Los imports llevan la extensión `.ts`: Node 24 carga este archivo sin
 // compilar (borra los tipos) y su resolución ESM no adivina extensiones.
 import StarterKit from '@tiptap/starter-kit'
-import Underline from '@tiptap/extension-underline'
-import Link from '@tiptap/extension-link'
 import Superscript from '@tiptap/extension-superscript'
 import Subscript from '@tiptap/extension-subscript'
 import TextAlign from '@tiptap/extension-text-align'
-import TableRow from '@tiptap/extension-table-row'
+import { TableRow } from '@tiptap/extension-table'
 import type { AnyExtension } from '@tiptap/core'
 import { NotaAlPie } from './NotaAlPie.ts'
 import { SangriaParrafo } from './SangriaParrafo.ts'
@@ -32,8 +30,22 @@ import { ColorTexto } from './ColorTexto.ts'
 
 // Configuradas UNA vez: useEditor compara las extensiones por identidad y un
 // `.configure()` dentro del render recrearía el editor en cada pintada.
-const KitSinHistorial = StarterKit.configure({ history: false })
-const EnlaceDocumento = Link.configure({ openOnClick: false })
+//
+// Tiptap 3 (2026-10-19): StarterKit trae ya el subrayado, el enlace y el nodo
+// final. El subrayado se queda (antes iba aparte); el enlace solo en el cuerpo
+// de un documento, como en la v2, para que el esquema de las partes no cambie;
+// el nodo final (`trailingNode`) se apaga: con varios editores a la vez cada
+// uno añadiría su propio párrafo vacío al final.
+const kit = ({ historial, enlace }: { historial: boolean; enlace: boolean }) =>
+  StarterKit.configure({
+    trailingNode: false,
+    link: enlace ? { openOnClick: false } : false,
+    ...(historial ? {} : { undoRedo: false as const }),
+  })
+const KitParte = kit({ historial: true, enlace: false })
+const KitParteSinHistorial = kit({ historial: false, enlace: false })
+const KitDocumento = kit({ historial: true, enlace: true })
+const KitDocumentoSinHistorial = kit({ historial: false, enlace: true })
 const TablaDocumento = TablaRotulada.configure({ resizable: false })
 // Alineación de párrafos y títulos (2026-10-01). El texto del documento es
 // JUSTIFICADO: ese es el valor por omisión y el serializador no emite nada
@@ -48,8 +60,7 @@ const Alineacion = TextAlign.configure({
  *  deshacer lo lleva Yjs (por persona), no el historial de ProseMirror. */
 export function extensionesParte({ historial = true }: { historial?: boolean } = {}): AnyExtension[] {
   return [
-    historial ? StarterKit : KitSinHistorial,
-    Underline,
+    historial ? KitParte : KitParteSinHistorial,
     TablaRotulada,
     TableRow,
     CabeceraAlineada,
@@ -81,12 +92,10 @@ export function extensionesParte({ historial = true }: { historial?: boolean } =
   ]
 }
 
-/** Cuerpo de un documento: lo mismo que una parte, más los enlaces. */
+/** Cuerpo de un documento: lo mismo que una parte, más los enlaces (del kit). */
 export function extensionesDocumento({ historial = true }: { historial?: boolean } = {}): AnyExtension[] {
   return [
-    historial ? StarterKit : KitSinHistorial,
-    Underline,
-    EnlaceDocumento,
+    historial ? KitDocumento : KitDocumentoSinHistorial,
     TablaDocumento,
     TableRow,
     CabeceraAlineada,

@@ -19,7 +19,7 @@
 import { subirFirmado } from '../firmados'
 import { BotonOpenProject, useEnlaceOpenProject } from '../componentes/OpenProject'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router'
 import { useEditor, EditorContent } from '@tiptap/react'
 import Typography from '@mui/material/Typography'
 import { PALETA } from '../paleta'
@@ -265,6 +265,9 @@ function EditorParte({
     extensions: [...extensionesParte(), AutocompletarReferencias.configure({ control: controlReferencias })],
     content: s.contenido,
     editable,
+    // Tiptap 3 ya no repinta por transacción por omisión; esta página (barra,
+    // botones) lo daba por hecho en la v2.
+    shouldRerenderOnTransaction: true,
     // Solo lo que cambia el TEXTO: setEditable también emite «update» (sin
     // cambio) y abrir una parte parecía escribir en ella.
     onUpdate: ({ editor: e, transaction }) => { if (transaction.docChanged) marcarEscrito(e.getJSON()) },
@@ -280,13 +283,13 @@ function EditorParte({
     // hasta recargarse: con «!==» se volvía a poner el texto viejo encima de lo
     // recién guardado (Edison 2026-10-01: «al guardar desaparece lo último»).
     if (!sucio && s.version > base.current) {
-      editor.commands.setContent(s.contenido, false)
+      editor.commands.setContent(s.contenido, { emitUpdate: false })
       base.current = s.version
     }
   }, [editor, editable, s.version, s.contenido, sucio])
   useEffect(() => {
     if (!editor) return
-    editor.commands.setContent(s.contenido, false)
+    editor.commands.setContent(s.contenido, { emitUpdate: false })
     base.current = s.version
     setSucio(false)
     setEstadoGuardado({ t: '' })
@@ -313,7 +316,7 @@ function EditorParte({
     const base = plantillaParte(s.clave, separador)
     if (!base) return
     plantillaPuesta.current = s.clave
-    editor.commands.setContent(base, false)
+    editor.commands.setContent(base, { emitUpdate: false })
     setSucio(true)
     setConPlantilla(true)
   }, [editor, editable, s.clave, s.contenido, separador])
@@ -328,7 +331,7 @@ function EditorParte({
         alAvisar('info', 'Aún no hay textos citados en las modificatorias.')
         return
       }
-      editor.commands.setContent(r.contenido, false)
+      editor.commands.setContent(r.contenido, { emitUpdate: false })
       marcarEscrito(editor.getJSON())
       alAvisar(
         'info',

@@ -222,10 +222,15 @@ export async function insertarNota(editor: Editor) {
   else if (texto.trim()) editor.chain().focus().setTextSelection({ from, to }).insertContent({ type: 'footnote', attrs: { texto } }).run()
 }
 
+/** ¿Se le puede preguntar algo al editor? Tiptap 3 (2026-10-19) vacía el esquema y los comandos al
+ *  destruirlo, y al recrearlo (llega el proveedor de «En vivo») useEditorState corre una vez más
+ *  con el viejo: `isActive`, `can()` o `getText()` reventarían la página entera. */
+export const editorVivo = (ed: Editor | null): ed is Editor => ed !== null && (ed as { schema: unknown }).schema != null
+
 /** Lo que la barra pinta según el cursor, en primitivos: useEditorState la
  *  repinta solo si algo de esto cambia, no en cada tecla (2026-10-06). */
 function estadoBarra(ed: Editor | null, nivelTitulo: 2 | 3) {
-  if (!ed) return null
+  if (!editorVivo(ed)) return null
   const parrafo = ed.getAttributes('paragraph')
   return {
     deshacer: ed.can().undo(),
@@ -375,7 +380,7 @@ export function useHerramientasEditor(editor: Editor | null, nivelTitulo: 2 | 3 
     if (!editor) return
     const { doc, informe } = ordenarTextoWord(editor.getJSON() as Nodo)
     // setContent queda en el historial: Ctrl+Z lo deshace entero.
-    if (huboCambios(informe)) editor.chain().focus().setContent(doc, true).run()
+    if (huboCambios(informe)) editor.chain().focus().setContent(doc, { emitUpdate: true }).run()
     else if (automatico) return
     setAvisoOrden(automatico ? `Texto pegado ordenado solo. ${describirInforme(informe).replace(/^Ordenado: /, 'Se arregló: ')} Ctrl+Z lo deshace.` : describirInforme(informe))
     setSugerirOrden(false)

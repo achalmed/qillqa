@@ -8,7 +8,7 @@
  * Si además tenía la contraseña temporal, este es el paso 2 de 2 (PasoIngreso.tsx).
  */
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'

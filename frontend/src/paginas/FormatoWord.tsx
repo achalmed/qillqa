@@ -12,7 +12,7 @@
  * (fase 4) o un borrador que ya existe.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router'
 import type { Editor } from '@tiptap/react'
 import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'

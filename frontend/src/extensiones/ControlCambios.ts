@@ -89,6 +89,10 @@ declare module '@tiptap/core' {
       rechazarTodos: (autor?: string) => ReturnType
     }
   }
+  // Tiptap 3: `editor.storage` se tipa por extensión.
+  interface Storage {
+    controlCambios: AlmacenCambios
+  }
 }
 
 export interface AlmacenCambios { sugerir: boolean; autor: string }

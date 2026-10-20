@@ -5,7 +5,7 @@
  * Lo ve cada persona con lo suyo: no es la franja de conexión del administrador.
  */
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import IconButton from '@mui/material/IconButton'

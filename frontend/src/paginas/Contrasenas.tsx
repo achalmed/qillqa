@@ -6,7 +6,7 @@
 // (api/contrasenas.py) y cada vez que alguien ve o copia una queda registrado. La extensión del
 // Qillqa (extension/) autocompleta el ingreso en el sitio.
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router'
 import {
   Alert, Autocomplete, Avatar, Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider,
   FormControlLabel, IconButton, InputAdornment, InputBase, LinearProgress, Slider, Switch, TextField, Tooltip, Typography,

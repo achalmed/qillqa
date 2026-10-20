@@ -2,7 +2,7 @@
  * Pantalla de carga mientras llega el trozo de la primera página (2026-10-13): la misma de
  * index.html (fondo neutro, la hoja en tinta y una barra fina; 2026-10-19; en la apariencia oscura, desde PALETA), para que el arranque se vea
  * como UNA sola pantalla y nunca en blanco. Al cambiar de página no aparece: el router mantiene la anterior
- * a la vista hasta que la nueva está lista (App.tsx, v7_startTransition).
+ * a la vista hasta que la nueva está lista (App.tsx: React Router 7 navega dentro de startTransition).
  */
 import Box from '@mui/material/Box'
 import { keyframes } from '@mui/material/styles'

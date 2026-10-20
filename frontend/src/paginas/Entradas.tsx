@@ -17,7 +17,7 @@
  * Módulo propio desde el 2026-10-12 (fase 9.6): sus opciones están en `navegacion.ts`.
  */
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'

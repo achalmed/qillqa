@@ -54,7 +54,7 @@ import DirectionsWalkOutlinedIcon from '@mui/icons-material/DirectionsWalkOutlin
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import NotesOutlinedIcon from '@mui/icons-material/NotesOutlined'
 import AddPhotoAlternateOutlinedIcon from '@mui/icons-material/AddPhotoAlternateOutlined'
-import { Link as EnlaceRuta } from 'react-router-dom'
+import { Link as EnlaceRuta } from 'react-router'
 import { api, subirArchivo } from '../../api'
 import { PALETA } from '../../paleta'
 import Selector from '../fototeca/Selector'

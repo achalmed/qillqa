@@ -24,9 +24,9 @@ export const estilosHoja = (letra: number) => ({
   '& .ProseMirror th': { bgcolor: PALETA.superficieMedia, fontWeight: 600 },
   '& .ProseMirror span.referencia': { borderBottom: '1px dotted', borderColor: 'primary.main', bgcolor: 'action.hover', borderRadius: '2px', px: '1px' },
   '& .ProseMirror p.is-editor-empty:first-of-type::before': { content: '"Escriba aquí"', color: PALETA.apagado, float: 'left', pointerEvents: 'none', height: 0 },
-  // Cursores de la edición simultánea (CollaborationCursor), como en el formulario.
-  '& .collaboration-cursor__caret': { position: 'relative', borderLeft: '1px solid', borderRight: '1px solid', ml: '-1px', mr: '-1px', pointerEvents: 'none', wordBreak: 'normal' },
-  '& .collaboration-cursor__label': { position: 'absolute', top: '-1.4em', left: '-1px', fontSize: 10, fontWeight: 600, color: '#fff', px: 0.5, borderRadius: '3px 3px 3px 0', whiteSpace: 'nowrap', userSelect: 'none', fontFamily: 'system-ui, sans-serif' },
+  // Cursores de la edición simultánea (CollaborationCaret), como en el formulario.
+  '& .collaboration-carets__caret': { position: 'relative', borderLeft: '1px solid', borderRight: '1px solid', ml: '-1px', mr: '-1px', pointerEvents: 'none', wordBreak: 'normal' },
+  '& .collaboration-carets__label': { position: 'absolute', top: '-1.4em', left: '-1px', fontSize: 10, fontWeight: 600, color: '#fff', px: 0.5, borderRadius: '3px 3px 3px 0', whiteSpace: 'nowrap', userSelect: 'none', fontFamily: 'system-ui, sans-serif' },
 })
 
 /** Evento (window) con el id del comentario cuyo tramo se tocó en la hoja. */

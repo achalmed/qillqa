@@ -6,7 +6,7 @@
  * la semana (serie ISR), donde siguen la firma, el cargo y el STD.
  */
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Alert from '@mui/material/Alert'

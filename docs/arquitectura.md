@@ -317,8 +317,8 @@ de fases de agosto de 2026 la conserva git.
 
 Varias personas escriben a la vez en la misma parte de un proyecto de ley o en el mismo documento
 (oficio, memorando…; desde el 2026-10-05), cada una con el cursor y el nombre de las demás; «Guardar» sigue creando una versión con nota y lo escrito entre versiones se
-conserva solo. Está construida sobre **Yjs** (CRDT) con el editor TipTap 2 (`collaboration` y
-`collaboration-cursor`) y un servidor **Hocuspocus 2.15** (`frontend/colab/servidor.ts`, Node, puerto
+conserva solo. Está construida sobre **Yjs** (CRDT) con el editor TipTap 3 (`collaboration` y
+`collaboration-caret`, con la clave de sincronía de `@tiptap/y-tiptap`) y un servidor **Hocuspocus 2.15** (`frontend/colab/servidor.ts`, Node, puerto
 8001, `colab.log` (en `logs/`)), que vive en `frontend/` para que haya una sola copia de TipTap, ProseMirror y Yjs
 y el esquema del servidor sea el del navegador (`frontend/src/extensiones/esquema.ts`, compartido con
 los dos editores).
@@ -1280,7 +1280,7 @@ página se queda la anterior a la vista hasta que llega la nueva.
 
 **Trozos.** `manualChunks` (`trozos` en `vite.publicacion.ts`): `react`, `mui`, `iconos` (todos
 juntos: sueltos eran un centenar de archivos de 1 KB, y con la latencia del celular pesaban más las
-peticiones que los bytes), `editor` (TipTap, ProseMirror, y-prosemirror), `colab` (Yjs, Hocuspocus),
+peticiones que los bytes), `editor` (TipTap, ProseMirror, y-tiptap, y-prosemirror), `colab` (Yjs, Hocuspocus),
 `pdf` y `grafo`; el código propio va con su página. El primer acceso baja React, MUI, los íconos, el
 marco y la página abierta. Medido con Chrome sin ventana, perfil limpio y red «4G lenta» (1,6 Mb/s,
 150 ms): Inicio pasó de 825 kB y 4,6 s a 228 kB y 1,7 s; la bandeja, de 825 kB y 4,6 s a 314 kB y
@@ -1831,7 +1831,8 @@ deshace de verdad. Solo párrafos de primer nivel (listas y tablas se editan dir
 los cuatro tipos (`insercion`, `supresion`, `formato`, `parrafo`); `aceptarCambio(de, a, filtro)` admite
 autor y tipo y `aceptarTodos(autor)` solo los suyos: el panel filtra por autor con chips. El PDF y el Word
 ignoran `cambioFormato` y los atributos `cambio`: el documento sale como estaba. **Al publicar hay que
-reiniciar el servidor de texto compartido y recargar las pestañas**: `y-prosemirror`, al convertir un
+reiniciar el servidor de texto compartido y recargar las pestañas**: `y-prosemirror` (y su bifurcación
+`@tiptap/y-tiptap`, la del navegador desde TipTap 3), al convertir un
 `Y.Text` con una marca que su esquema no conoce, BORRA ese tramo del documento compartido (el `catch` de
 `createTextNodesFromYText`), no solo la marca; se comprobó el 2026-10-19 con el servidor de prueba viejo.
 

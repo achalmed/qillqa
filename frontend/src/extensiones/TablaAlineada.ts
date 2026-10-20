@@ -4,8 +4,7 @@
 // celda, la fila, la columna o toda la tabla; el serializador del backend
 // (app/latex/serializador.py, _celda/_tabla) lo traduce a columnas
 // >{\centering...}p{} conservando el ancho de extremo a extremo.
-import TableCell from '@tiptap/extension-table-cell'
-import TableHeader from '@tiptap/extension-table-header'
+import { TableCell, TableHeader } from '@tiptap/extension-table'
 import type { Editor } from '@tiptap/core'
 import { TableMap, cellAround } from '@tiptap/pm/tables'
 

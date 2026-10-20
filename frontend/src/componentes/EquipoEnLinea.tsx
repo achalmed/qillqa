@@ -31,7 +31,7 @@ import Button from '@mui/material/Button'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { api } from '../api'
 import {
   avisoActivo, campanilla, esAdministrador, fijarAviso, llegadas, notificarEscritorio,

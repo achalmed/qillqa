@@ -21,7 +21,7 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { PALETA } from '../paleta'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router'
 import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'

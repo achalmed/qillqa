@@ -22,7 +22,7 @@
  * expediente…) va en una burbuja ajena firmada por «Mesa de Partes», «Agenda»…, con «Abrir» y «Copiar».
  */
 import { useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import ButtonBase from '@mui/material/ButtonBase'

@@ -9,7 +9,7 @@ import { useMemo, useRef } from 'react'
 import { useEditor, type Editor } from '@tiptap/react'
 import type { AnyExtension } from '@tiptap/core'
 import Collaboration from '@tiptap/extension-collaboration'
-import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
+import CollaborationCaret from '@tiptap/extension-collaboration-caret'
 import type { HocuspocusProvider } from '@hocuspocus/provider'
 import { colorDe, useProveedorCompartido, type EstadoConexion } from '../textoCompartido'
 import { AutocompletarReferencias, type ControlReferencias } from '../../extensiones/AutocompletarReferencias'
@@ -37,7 +37,7 @@ export function useEditorWord({ extensiones, nombreCompartido, control, alRecarg
   const lista = useMemo(
     () => {
       const base = proveedor
-        ? [...extensiones({ historial: false }), Collaboration.configure({ document: proveedor.document }), CollaborationCursor.configure({ provider: proveedor, user: { name: yo, color: colorDe(yo) } })]
+        ? [...extensiones({ historial: false }), Collaboration.configure({ document: proveedor.document }), CollaborationCaret.configure({ provider: proveedor, user: { name: yo, color: colorDe(yo) } })]
         : extensiones()
       return control ? [...base, AutocompletarReferencias.configure({ control })] : base
     },

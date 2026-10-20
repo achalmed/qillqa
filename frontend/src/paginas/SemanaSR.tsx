@@ -11,7 +11,7 @@
  */
 import { useCallback, useEffect, useState } from 'react'
 import { PALETA } from '../paleta'
-import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router'
 import Box from '@mui/material/Box'
 import Alert from '@mui/material/Alert'
 import Snackbar from '@mui/material/Snackbar'

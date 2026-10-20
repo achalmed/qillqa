@@ -18,7 +18,7 @@ despacho. Las decisiones de fondo están en `docs/arquitectura.md`; la operació
 | Web | React 18 + TypeScript + MUI + TipTap, Vite; PWA (`frontend/public/sw.js`) | `frontend/` |
 | Motor de formato | LuaLaTeX (TeX Live del host, o el contenedor `latex`) + `marco_documental/` | `MDD_RUTA` |
 | Utilidades | `pdfunite`, `pdftocairo`, `pdftoppm` (poppler) para expediente, copia como imagen y folios; `magick` (ImageMagick) para las miniaturas de las fotos de la semana y para abrir en la Fototeca lo que Pillow no lee (HEIC) | host |
-| Edición simultánea | Node 24, Hocuspocus 2.15 + Yjs (TipTap 2 con colaboración); puerto 8001, detrás de `/colab` | `frontend/colab/servidor.ts` |
+| Edición simultánea | Node 24, Hocuspocus 2.15 + Yjs (TipTap 3 con colaboración); puerto 8001, detrás de `/colab` | `frontend/colab/servidor.ts` |
 
 ## Entorno de desarrollo (modo laptop)
 

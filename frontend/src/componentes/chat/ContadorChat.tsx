@@ -12,7 +12,7 @@
  * dispositivo para la cuenta que entró (`resincronizarAvisos`).
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import Badge from '@mui/material/Badge'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'

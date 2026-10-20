@@ -5,7 +5,7 @@
  * «@persona» en el editor. Cada vínculo es una chip que lleva a su ficha.
  */
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import Autocomplete from '@mui/material/Autocomplete'
 import TextField from '@mui/material/TextField'
 import Chip from '@mui/material/Chip'

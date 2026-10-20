@@ -7,7 +7,7 @@
  * «Confirmación» (a quién y hasta cuándo responder) entra por confirmar (2026-10-18).
  */
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import Link from '@mui/material/Link'
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'

@@ -7,7 +7,7 @@
  * aún no existe). Constancia en `pegados`, una por tarea creada. Nada se crea sin marcar.
  */
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import Link from '@mui/material/Link'
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'

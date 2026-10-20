@@ -4,7 +4,7 @@
 // (paginas/Contrasenas.tsx). Todo el equipo menos el invitado ve y copia; solo el
 // administrador edita.
 import { useCallback, useEffect, useState } from 'react'
-import { Link as RouterLink } from 'react-router-dom'
+import { Link as RouterLink } from 'react-router'
 import { Alert, Box, Button, Card, CardContent, Chip, IconButton, LinearProgress, TextField, Typography } from '@mui/material'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'

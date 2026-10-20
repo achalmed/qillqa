@@ -7,7 +7,7 @@
  * del trámite —revisión, aprobación, vista PDF, comparativo, generar— sigue en la pestaña Texto.
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router'
 import type { Editor } from '@tiptap/react'
 import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'

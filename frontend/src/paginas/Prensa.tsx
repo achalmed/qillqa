@@ -24,7 +24,7 @@
  */
 import { useEffect, useState } from 'react'
 import { PALETA } from '../paleta'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router'
 import { Alert, Box, Button, CircularProgress, Typography } from '@mui/material'
 import Marco from '../componentes/Marco'
 import Piezas from '../componentes/prensa/Piezas'

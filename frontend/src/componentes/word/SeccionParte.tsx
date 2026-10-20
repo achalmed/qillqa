@@ -7,10 +7,10 @@
  * vigente. Las versiones de la parte se listan y restauran con los endpoints de siempre.
  */
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { EditorContent } from '@tiptap/react'
 import { NodeSelection, type Transaction } from '@tiptap/pm/state'
-import { ySyncPluginKey } from 'y-prosemirror'
+import { ySyncPluginKey } from '@tiptap/y-tiptap'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Chip from '@mui/material/Chip'
@@ -118,17 +118,18 @@ const SeccionParte = forwardRef<ManejadorSeccion, {
   useEffect(() => { baseRef.current = parte.version }, [parte.version])
   useEffect(() => {
     if (!editor) return
-    if (!enVivo) editor.chain().command(({ tr }) => { tr.setMeta('addToHistory', false); return true }).setContent(parte.contenido ?? { type: 'doc', content: [] }, false).run()
+    if (!enVivo) editor.chain().command(({ tr }) => { tr.setMeta('addToHistory', false); return true }).setContent(parte.contenido ?? { type: 'doc', content: [] }, { emitUpdate: false }).run()
     editor.setEditable(editable, false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editor, parte.version, enVivo, editable])
   useEffect(() => {
     if (!editor) return
-    // Lo que llega del texto compartido (Yjs) no es un cambio de esta persona: no ensucia ni guarda.
+    // Lo que llega del texto compartido (Yjs) no es un cambio de esta persona: no ensucia ni guarda,
+    // pero sí refresca las notas del panel (las de otra persona llegan por ahí).
     const alCambiar = ({ transaction }: { transaction: Transaction }) => {
-      if (transaction.getMeta(ySyncPluginKey)) return
-      marcarSucio()
-      alCambio({ id, tipoNombre: parte.titulo, rotulo: grupoNombre, campos: { asunto: parte.titulo }, estado: parte.estado, numero: null, sucio: true }, notasDe(editor))
+      const deYjs = !!transaction.getMeta(ySyncPluginKey)
+      if (!deYjs) marcarSucio()
+      alCambio({ id, tipoNombre: parte.titulo, rotulo: grupoNombre, campos: { asunto: parte.titulo }, estado: parte.estado, numero: null, sucio: sucioRef.current }, notasDe(editor))
     }
     const alEnfocar = () => alActivar(id)
     editor.on('update', alCambiar)

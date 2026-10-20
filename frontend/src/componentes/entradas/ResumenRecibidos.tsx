@@ -3,7 +3,7 @@
  * vencidas y las mías — y las más urgentes. Sin nada abierto no se muestra.
  */
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import ButtonBase from '@mui/material/ButtonBase'

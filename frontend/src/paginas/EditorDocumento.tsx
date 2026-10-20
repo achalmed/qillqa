@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router'
 import { useEditor, EditorContent } from '@tiptap/react'
 import type { Editor } from '@tiptap/core'
 import { extensionesDocumento } from '../extensiones/esquema'
@@ -7,11 +7,11 @@ import { AutocompletarReferencias, crearControl } from '../extensiones/Autocompl
 import PopupReferencias, { avisarRelaciones, useAvisoReferencias } from '../componentes/PopupReferencias'
 import SugerenciaInformeSR from '../componentes/SugerenciaInformeSR'
 import Collaboration from '@tiptap/extension-collaboration'
-import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
+import CollaborationCaret from '@tiptap/extension-collaboration-caret'
 import type * as Y from 'yjs'
 import type { Transaction } from '@tiptap/pm/state'
 import type { Node as NodoPM } from '@tiptap/pm/model'
-import { ySyncPluginKey } from 'y-prosemirror'
+import { ySyncPluginKey } from '@tiptap/y-tiptap'
 import Chip from '@mui/material/Chip'
 import Avatar from '@mui/material/Avatar'
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
@@ -369,7 +369,7 @@ export default function EditorDocumento() {
             // compartido el deshacer lo lleva Yjs, por persona.
             ...extensionesDocumento({ historial: false }),
             Collaboration.configure({ document: proveedor.document }),
-            CollaborationCursor.configure({ provider: proveedor, user: { name: yo, color: colorDe(yo) } }),
+            CollaborationCaret.configure({ provider: proveedor, user: { name: yo, color: colorDe(yo) } }),
             autocompletar,
           ]
         : [...extensionesDocumento(), autocompletar],
@@ -659,7 +659,7 @@ export default function EditorDocumento() {
       editor
         .chain()
         .command(({ tr }) => { tr.setMeta('addToHistory', false); return true })
-        .setContent(documento.borrador?.cuerpo ?? documento.cuerpo, false)
+        .setContent(documento.borrador?.cuerpo ?? documento.cuerpo, { emitUpdate: false })
         .run()
       marcarLimpio()
       // Los anexos se inicializan dentro de <AnexosEditor> (se remonta por
@@ -1396,7 +1396,7 @@ export default function EditorDocumento() {
   const aplicarPegado = (nuevos: Record<string, string>, cuerpoHtml: string | null, aplicado: { tipo: string; version: number | null; fuente: string; texto: string; campos_propuestos: Record<string, unknown>; aceptadas: Set<string>; rechazadas: string[] }) => {
     // Campo a campo por `ponerCampo`: en modo compartido el mapa Yjs es la fuente y pisaría un setCampos directo.
     for (const [k, v] of Object.entries(nuevos)) if ((campos[k] ?? '') !== (v ?? '')) ponerCampo(k, v)
-    if (cuerpoHtml !== null && editor) editor.commands.setContent(cuerpoHtml, true)
+    if (cuerpoHtml !== null && editor) editor.commands.setContent(cuerpoHtml, { emitUpdate: true })
     programarRespaldo()
     setPegarDoc(false)
     setTextoPegar('')

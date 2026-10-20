@@ -10,10 +10,10 @@
  * edita un borrador sin número y sin firma en curso: lo numerado se ve y se tramita en el formulario.
  */
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { EditorContent, type Editor } from '@tiptap/react'
 import { NodeSelection, type Transaction } from '@tiptap/pm/state'
-import { ySyncPluginKey } from 'y-prosemirror'
+import { ySyncPluginKey } from '@tiptap/y-tiptap'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Chip from '@mui/material/Chip'
@@ -162,7 +162,7 @@ const SeccionWord = forwardRef<ManejadorSeccion, {
     if (!editor || !doc) return
     if (!enVivo) {
       const cuerpo = doc.borrador?.cuerpo ?? doc.cuerpo
-      editor.chain().command(({ tr }) => { tr.setMeta('addToHistory', false); return true }).setContent(cuerpo, false).run()
+      editor.chain().command(({ tr }) => { tr.setMeta('addToHistory', false); return true }).setContent(cuerpo, { emitUpdate: false }).run()
     }
     editor.setEditable(editableEnWord(doc), false)
     // Lo pegado de un prompt (fase 4) entra una vez, ya sobre el documento creado, y se guarda solo.
@@ -170,7 +170,7 @@ const SeccionWord = forwardRef<ManejadorSeccion, {
     if (ini) {
       inicialRef.current = undefined
       setCampos((c) => ({ ...c, ...ini.campos }))
-      if (ini.cuerpoHtml) editor.commands.setContent(ini.cuerpoHtml, false)
+      if (ini.cuerpoHtml) editor.commands.setContent(ini.cuerpoHtml, { emitUpdate: false })
       marcarSucio()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -236,7 +236,11 @@ const SeccionWord = forwardRef<ManejadorSeccion, {
   }, [doc?.tipo_nombre, doc?.estado, doc?.numero, campos.asunto, campos.destinatario_nombre, campos.fmt_tamano, campos.fmt_interlineado, sucio, doc === null])
   useEffect(() => {
     if (!editor) return
-    const alCambiar = () => alCambio({ id, tipoNombre: doc?.tipo_nombre ?? '', campos: camposRef.current, estado: doc?.estado ?? '', numero: doc?.numero ?? null, sucio: true }, notasDe(editor))
+    // Lo que llega de Yjs (la sincronía al abrir, el tecleo de otra persona) refresca las notas sin ensuciar.
+    const alCambiar = ({ transaction }: { transaction: Transaction }) => {
+      const sucioAhora = sucioRef.current || !transaction.getMeta(ySyncPluginKey)
+      alCambio({ id, tipoNombre: doc?.tipo_nombre ?? '', campos: camposRef.current, estado: doc?.estado ?? '', numero: doc?.numero ?? null, sucio: sucioAhora }, notasDe(editor))
+    }
     editor.on('update', alCambiar)
     return () => { editor.off('update', alCambiar) }
   }, [editor, id, doc?.tipo_nombre, doc?.estado, doc?.numero, alCambio])

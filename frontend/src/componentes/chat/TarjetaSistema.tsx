@@ -19,7 +19,7 @@
  * esta tarjeta queda para los mensajes anteriores y las reglas con plantilla propia.
  */
 import { useLayoutEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import ButtonBase from '@mui/material/ButtonBase'

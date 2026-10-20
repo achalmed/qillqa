@@ -13,7 +13,7 @@
  * «Por etapa» del procedimiento—; la elección se recuerda en este equipo.
  */
 import { useEffect, useState, type ReactNode, useCallback } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router'
 import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'

@@ -20,7 +20,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { PALETA } from '../paleta'
 import { useEditor, EditorContent } from '@tiptap/react'
 import Collaboration from '@tiptap/extension-collaboration'
-import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
+import CollaborationCaret from '@tiptap/extension-collaboration-caret'
 import type { HocuspocusProvider } from '@hocuspocus/provider'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
@@ -125,13 +125,14 @@ function Lienzo({
     () => [
       ...extensionesParte({ historial: false }),
       Collaboration.configure({ document: proveedor.document }),
-      CollaborationCursor.configure({ provider: proveedor, user: { name: yo, color: colorDe(yo) } }),
+      CollaborationCaret.configure({ provider: proveedor, user: { name: yo, color: colorDe(yo) } }),
       // Autocompletado de referencias (2026-10-06): «Ley …», «@…» citan y relacionan.
       AutocompletarReferencias.configure({ control: controlReferencias }),
     ],
     [proveedor, yo, controlReferencias],
   )
-  const editor = useEditor({ extensions: extensiones, editable: !lectura }, [extensiones])
+  // Repinta por transacción, como la v2 por omisión (Tiptap 3 lo apaga): la barra lo da por hecho.
+  const editor = useEditor({ extensions: extensiones, editable: !lectura, shouldRerenderOnTransaction: true }, [extensiones])
   useAvisoReferencias(editor, `pl:${pid}`, s.clave)
 
   // ¿Lo que hay difiere de la última versión? (habilita «Guardar»). La versión
@@ -186,7 +187,7 @@ function Lienzo({
         return
       }
       // Pasa por Yjs como cualquier edición: todos ven el cuadro armado.
-      editor.commands.setContent(r.contenido)
+      editor.commands.setContent(r.contenido, { emitUpdate: false })
       // Texto breve, pedido de Edison (2026-10-06).
       alAvisar('info', `Cuadro armado: ${r.citas} artículo${r.citas > 1 ? 's' : ''}.` + (r.pendientes ? ` Falta el texto vigente de ${r.pendientes}.` : ''))
     } catch (e) {
@@ -263,7 +264,7 @@ function Lienzo({
               <MenuEstructura editor={editor} clave={s.clave} alAvisar={(t, x) => alAvisar(t, x)} />
               {editor.isEmpty && plantillaParte(s.clave) && (
                 <Tooltip title="Inserta la estructura base: artículos o disposiciones numerados.">
-                  <Button size="small" variant="outlined" onClick={() => { const b = plantillaParte(s.clave); if (b) editor.commands.setContent(b) }}>Estructura base</Button>
+                  <Button size="small" variant="outlined" onClick={() => { const b = plantillaParte(s.clave); if (b) editor.commands.setContent(b, { emitUpdate: false }) }}>Estructura base</Button>
                 </Tooltip>
               )}
               <Tooltip title="Cita de otra norma; sale sangrada en el PDF.">
