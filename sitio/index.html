@@ -279,14 +279,18 @@
   <div class="encabezado revelar">
     <p class="sobre">Probar la demo</p>
     <h2>En tu computadora, en cinco minutos.</h2>
-    <p>Requisitos: Docker con Docker Compose. La primera vez descarga la imagen de TeX Live (varios GB): tómalo con calma.</p>
+    <p>Requisitos: Docker con Docker Compose 2.17 o más nuevo. La primera vez descarga la imagen de TeX Live (varios GB): tómalo
+      con calma. Qillqa monta módulos que viven en sus propios repositorios: se clonan uno junto al otro.</p>
   </div>
   <div class="probar revelar">
     <figure class="ventana terminal">
       <div class="ventana-barra"><span class="ventana-titulo">Terminal</span>
         <button class="copiar" type="button" data-copiar="comandos">Copiar</button></div>
-      <pre id="comandos"><code><span class="c"># descarga y configura</span>
-git clone https://github.com/achalmed/qillqa.git
+      <pre id="comandos"><code><span class="c"># la plataforma: Qillqa y sus módulos, uno junto al otro</span>
+mkdir plataforma &amp;&amp; cd plataforma
+for r in qillqa tiqsi qillqasqa rikchay wayra ruray tullpu kuyuy awana qhawana yupay minka rimay punku; do
+  git clone https://github.com/achalmed/$r.git
+done
 cd qillqa
 cp .env.example .env            <span class="c"># cambia POSTGRES_PASSWORD y JWT_SECRET</span>
 <span class="c"># base de datos, API con LuaLaTeX y web</span>
@@ -315,6 +319,7 @@ docker compose run --rm siembra</code></pre>
 
 <footer class="pie">
   <p><b>Qillqa</b> · gestión documental para entidades públicas y privadas · <a href="https://github.com/achalmed/qillqa/blob/main/LICENSE">AGPL-3.0</a></p>
+  <p>Cada módulo tiene su sitio: <a href="https://achalmed.github.io/tiqsi/">Tiqsi</a> · <a href="https://achalmed.github.io/qillqasqa/">Qillqasqa</a> · <a href="https://achalmed.github.io/punku/">Punku</a> · <a href="https://achalmed.github.io/minka/">Minka</a> · <a href="https://achalmed.github.io/rimay/">Rimay</a> · <a href="https://achalmed.github.io/rikchay/">Rikchay</a> · <a href="https://achalmed.github.io/yupay/">Yupay</a> · <a href="https://achalmed.github.io/ruray/">Ruray</a> · <a href="https://achalmed.github.io/tullpu/">Tullpu</a> · <a href="https://achalmed.github.io/kuyuy/">Kuyuy</a> · <a href="https://achalmed.github.io/awana/">Awana</a> · <a href="https://achalmed.github.io/wayra/">Wayra</a> · <a href="https://achalmed.github.io/qhawana/">Qhawana</a>.</p>
   <p>Todas las personas, números y documentos de esta página son ficticios.</p>
 </footer>
 
