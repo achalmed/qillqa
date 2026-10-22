@@ -42,7 +42,7 @@ export const VERBO: Record<TipoAlVolver, string> = {
   crear: 'Crear',
 }
 
-const CLAVE = 'sgdp_al_volver'
+const CLAVE = 'qillqa_al_volver'
 const MAX = 20
 
 // --- reglas puras (pruebas/continuidad.test.ts) ----------------------------------------------
@@ -73,7 +73,7 @@ export function rutaWebDe(rutaApi: string): string {
 
 const cuentaActual = (): string => {
   try {
-    return (localStorage.getItem('sgdp_usuario') ?? '').trim().toLowerCase()
+    return (localStorage.getItem('qillqa_usuario') ?? '').trim().toLowerCase()
   } catch {
     return ''
   }
@@ -97,7 +97,7 @@ function escribir(l: AccionAlVolver[]): void {
   window.dispatchEvent(new CustomEvent(EVENTO_AL_VOLVER))
 }
 
-export const EVENTO_AL_VOLVER = 'sgdp:al-volver'
+export const EVENTO_AL_VOLVER = 'qillqa:al-volver'
 
 export function accionesAlVolver(): AccionAlVolver[] {
   return accionesDe(leer(), cuentaActual())

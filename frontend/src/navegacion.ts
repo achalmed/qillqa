@@ -18,61 +18,38 @@ import CropOutlinedIcon from '@mui/icons-material/CropOutlined'
 import CakeOutlinedIcon from '@mui/icons-material/CakeOutlined'
 import type { SvgIconComponent } from '@mui/icons-material'
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined'
-import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined'
-import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined'
 import CampaignOutlinedIcon from '@mui/icons-material/CampaignOutlined'
 import AccountBalanceOutlinedIcon from '@mui/icons-material/AccountBalanceOutlined'
 import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined'
 import InboxOutlinedIcon from '@mui/icons-material/InboxOutlined'
-import MoveToInboxOutlinedIcon from '@mui/icons-material/MoveToInboxOutlined'
-import NoteAddOutlinedIcon from '@mui/icons-material/NoteAddOutlined'
 import UploadFileOutlinedIcon from '@mui/icons-material/UploadFileOutlined'
-import ManageSearchOutlinedIcon from '@mui/icons-material/ManageSearchOutlined'
-import QueryStatsOutlinedIcon from '@mui/icons-material/QueryStatsOutlined'
-import CloudSyncOutlinedIcon from '@mui/icons-material/CloudSyncOutlined'
-import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
-import ChecklistOutlinedIcon from '@mui/icons-material/ChecklistOutlined'
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
-import DateRangeOutlinedIcon from '@mui/icons-material/DateRangeOutlined'
-import MapOutlinedIcon from '@mui/icons-material/MapOutlined'
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
 import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined'
 import LanOutlinedIcon from '@mui/icons-material/LanOutlined'
 import InsightsOutlinedIcon from '@mui/icons-material/InsightsOutlined'
 import HubOutlinedIcon from '@mui/icons-material/HubOutlined'
 import SpaceDashboardOutlinedIcon from '@mui/icons-material/SpaceDashboardOutlined'
-import ViewListOutlinedIcon from '@mui/icons-material/ViewListOutlined'
-import StackedLineChartOutlinedIcon from '@mui/icons-material/StackedLineChartOutlined'
-import SourceOutlinedIcon from '@mui/icons-material/SourceOutlined'
-import ScienceOutlinedIcon from '@mui/icons-material/ScienceOutlined'
 import PhotoLibraryOutlinedIcon from '@mui/icons-material/PhotoLibraryOutlined'
-import RateReviewOutlinedIcon from '@mui/icons-material/RateReviewOutlined'
-import StarBorderIcon from '@mui/icons-material/StarBorder'
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import NewspaperOutlinedIcon from '@mui/icons-material/NewspaperOutlined'
 import DashboardCustomizeOutlinedIcon from '@mui/icons-material/DashboardCustomizeOutlined'
 import MovieFilterOutlinedIcon from '@mui/icons-material/MovieFilterOutlined'
-import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined'
-import ViewKanbanOutlinedIcon from '@mui/icons-material/ViewKanbanOutlined'
-import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined'
-import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined'
-import TodayOutlinedIcon from '@mui/icons-material/TodayOutlined'
-import AddTaskOutlinedIcon from '@mui/icons-material/AddTaskOutlined'
-import ForumOutlinedIcon from '@mui/icons-material/ForumOutlined'
-import PendingActionsOutlinedIcon from '@mui/icons-material/PendingActionsOutlined'
-import EventBusyOutlinedIcon from '@mui/icons-material/EventBusyOutlined'
-import AddCommentOutlinedIcon from '@mui/icons-material/AddCommentOutlined'
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined'
 import PersonAddAltOutlinedIcon from '@mui/icons-material/PersonAddAltOutlined'
-import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined'
-import SummarizeOutlinedIcon from '@mui/icons-material/SummarizeOutlined'
-import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined'
 import ToggleOnOutlinedIcon from '@mui/icons-material/ToggleOnOutlined'
 import BoltOutlinedIcon from '@mui/icons-material/BoltOutlined'
 import ExtensionOutlinedIcon from '@mui/icons-material/ExtensionOutlined'
+import type { ModuloWeb } from '@qillqa/tiqsi'
+import { MEDIATECA } from '@qillqa/rikchay/modulo'
+import { RENDICION } from '@qillqa/yupay/modulo'
+import { MINKA } from '@qillqa/minka/modulo'
+import { RIMAY } from '@qillqa/rimay/modulo'
+import { PUNKU } from '@qillqa/punku/modulo'
+import { DOCUMENTOS, PROYECTOS, REPRESENTACION } from '@qillqa/qillqasqa/modulo'
+import { QHAWANA } from '@qillqa/qhawana/modulo'
+import { WAYRA } from '@qillqa/wayra/modulo'
 import { moduloActivo } from './modulos'
 
-export type IdModulo = 'inicio' | 'documentos' | 'recibidos' | 'proyectos' | 'representacion' | 'rendicion' | 'fototeca' | 'prensa' | 'mapa' | 'observatorio' | 'directorio' | 'contrasenas' | 'admin' | 'tareas' | 'chat' | 'cuenta'
+export type IdModulo = 'inicio' | 'documentos' | 'recibidos' | 'proyectos' | 'representacion' | 'rendicion' | 'fototeca' | 'prensa' | 'mapa' | 'observatorio' | 'obs' | 'directorio' | 'contrasenas' | 'admin' | 'tareas' | 'chat' | 'cuenta'
 
 export interface Opcion {
   etiqueta: string
@@ -102,6 +79,19 @@ export interface Modulo {
   oculto?: boolean
 }
 
+/** Un módulo aislado entra al menú por su manifiesto web (Tiqsi): lo que declara él, con los tipos de Qillqa. */
+const desdeManifiesto = (m: ModuloWeb): Modulo => ({
+  id: m.id as IdModulo,
+  nombre: m.nombre,
+  corto: m.corto ?? m.nombre,
+  ruta: m.ruta,
+  icono: m.icono as SvgIconComponent,
+  descripcion: m.descripcion ?? '',
+  opciones: (m.opciones ?? []) as Opcion[],
+  ...(m.roles ? { roles: m.roles } : {}),
+  ...(m.soloAdmin ? { soloAdmin: true } : {}),
+})
+
 export const MODULOS: Modulo[] = [
   {
     id: 'inicio',
@@ -112,142 +102,26 @@ export const MODULOS: Modulo[] = [
     descripcion: 'El menú principal: todos los módulos y lo que le toca hoy.',
     opciones: [],
   },
+  // Gestión documental, Proyectos de ley y la Semana entran por su manifiesto (Qillqasqa, fase 10.2b Q6b-3):
+  // @qillqa/qillqasqa/modulo (en su repositorio desde el 2026-10-22).
+  desdeManifiesto(DOCUMENTOS),
+  // La Mesa de Partes entra por su manifiesto (Punku, fase 10.2b P4): componentes/entradas/modulo.ts.
+  desdeManifiesto(PUNKU),
+  // Tareas y Agenda entra por su manifiesto (Minka, su repositorio desde el 2026-10-22: @qillqa/minka/modulo).
+  desdeManifiesto(MINKA),
+  // El chat entra por su manifiesto (Rimay, fase 10.2b R4): componentes/chat/modulo.ts.
+  desdeManifiesto(RIMAY),
+  desdeManifiesto(PROYECTOS),
+  desdeManifiesto(REPRESENTACION),
+  // Rendición de cuentas entra por su manifiesto (Yupay, su repositorio desde el 2026-10-22: @qillqa/yupay/modulo).
+  desdeManifiesto(RENDICION),
+  // La Mediateca entra por su manifiesto (fase 10.2b, Tiqsi web): nombre, ruta, icono y opciones los declara ella
+  // (su repositorio, Rikchay: @qillqa/rikchay/modulo); el lugar en el menú lo decide Qillqa, aquí.
+  desdeManifiesto(MEDIATECA),
   {
-    id: 'documentos',
-    nombre: 'Gestión documental',
-    corto: 'Documentos',
-    ruta: '/documentos',
-    icono: DescriptionOutlinedIcon,
-    descripcion: 'Oficios, memorandos, informes: redactar, numerar, firmar, enviar y archivar.',
-    opciones: [
-      { etiqueta: 'Bandeja', ruta: '/documentos', icono: InboxOutlinedIcon, ayuda: 'Todos los documentos de la entidad' },
-      { etiqueta: 'Nuevo documento', ruta: '/documentos?nuevo=1', icono: NoteAddOutlinedIcon, accion: true, ayuda: 'Redactar un documento nuevo con número oficial' },
-      { etiqueta: 'Incorporar', ruta: '/documentos?incorporar=1', icono: UploadFileOutlinedIcon, accion: true, ayuda: 'Registrar un documento hecho fuera del sistema (con su PDF)' },
-      { etiqueta: 'Búsqueda avanzada', ruta: '/documentos?avanzada=1', icono: ManageSearchOutlinedIcon, ayuda: 'Buscar también en el contenido, por año, destinatario o firma' },
-      { etiqueta: 'Estadísticas', ruta: '/estadisticas', icono: QueryStatsOutlinedIcon, ayuda: 'Producción documental, tiempos y estados' },
-      { etiqueta: 'Sincronizar', ruta: '/sincronizar', icono: CloudSyncOutlinedIcon, ayuda: 'Copiar los documentos a este dispositivo' },
-    ],
-  },
-  {
-    // Mesa de Partes (antes «Recibidos»: opción de Gestión documental el 2026-10-06, módulo propio
-    // desde el 2026-10-12, fase 9.6; renombrado el 2026-10-13 a pedido de Edison): lo que llega al
-    // despacho —cartas, oficios, invitaciones, citaciones, y lo que entra por la mesa de partes
-    // virtual— con su ficha, responsable, plazo y respuesta. El id, la ruta (`/recibidos`) y la API
-    // (`entradas`) no cambian: solo lo visible.
-    id: 'recibidos',
-    nombre: 'Mesa de Partes',
-    corto: 'Mesa de Partes',
-    ruta: '/recibidos',
-    icono: MoveToInboxOutlinedIcon,
-    descripcion: 'Lo que llega a la entidad, también por la mesa de partes virtual: ficha, responsable, plazo y respuesta.',
-    opciones: [
-      { etiqueta: 'Pendientes', ruta: '/recibidos?estado=nueva', icono: MoveToInboxOutlinedIcon, ayuda: 'Documentos sin atender todavía' },
-      { etiqueta: 'En atención', ruta: '/recibidos?estado=en_atencion', icono: PendingActionsOutlinedIcon, ayuda: 'Con responsable y en trámite' },
-      { etiqueta: 'Vencidos', ruta: '/recibidos?vencidas=1', icono: EventBusyOutlinedIcon, ayuda: 'Con el plazo de atención pasado' },
-      { etiqueta: 'Todos', ruta: '/recibidos?estado=todas', icono: FormatListBulletedIcon, ayuda: 'También los atendidos y archivados' },
-      { etiqueta: 'Registrar documentos', ruta: '/recibidos?subir=1', icono: UploadFileOutlinedIcon, accion: true, ayuda: 'Subir los PDF que llegaron; el sistema lee su ficha' },
-    ],
-  },
-  {
-    // Tareas y Agenda (2026-10-06): módulo propio (OpenProject queda como espejo
-    // opcional). Lista, tablero, agenda y «Hoy»; alta rápida en lenguaje natural.
-    id: 'tareas',
-    nombre: 'Tareas y Agenda',
-    corto: 'Tareas',
-    ruta: '/tareas',
-    icono: TaskAltOutlinedIcon,
-    descripcion: 'Encargos con responsable, plazo y estado; agenda de la entidad con choques de horario.',
-    opciones: [
-      { etiqueta: 'Mis tareas', ruta: '/tareas', icono: ChecklistOutlinedIcon, ayuda: 'Lo que tiene a su cargo, por plazo' },
-      { etiqueta: 'Hoy', ruta: '/tareas?ver=hoy', icono: TodayOutlinedIcon, ayuda: 'La agenda de hoy y sus tareas de hoy y vencidas' },
-      { etiqueta: 'Tablero', ruta: '/tareas?ver=tablero', icono: ViewKanbanOutlinedIcon, ayuda: 'Todas las tareas por estado; arrastrar para moverlas' },
-      { etiqueta: 'Matriz', ruta: '/tareas?ver=matriz', icono: GridViewOutlinedIcon, ayuda: 'Urgente e importante: cada tarea se ordena sola por su plazo e importancia' },
-      { etiqueta: 'Agenda', ruta: '/agenda', icono: CalendarMonthOutlinedIcon, ayuda: 'Calendario de la entidad: mes, semana y día' },
-      { etiqueta: 'Todas', ruta: '/tareas?ver=todas', icono: FormatListBulletedIcon, ayuda: 'Las del equipo, con filtros' },
-      { etiqueta: 'Nueva tarea', ruta: '/tareas?nueva=1', icono: AddTaskOutlinedIcon, accion: true, ayuda: 'A mano o desde el resultado del prompt de plan de tareas' },
-    ],
-  },
-  {
-    // Chat (2026-10-12, fase 8): la conversación del equipo dentro del sistema, con los
-    // mensajes automáticos de las reglas de eventos. Directos, grupos y temas; hilos; la
-    // ficha de la entidad del canal al lado. Lista, conversación y búsqueda van en la página.
-    id: 'chat',
-    nombre: 'Chat',
-    corto: 'Chat',
-    ruta: '/chat',
-    icono: ForumOutlinedIcon,
-    descripcion: 'Conversar con el equipo: directos, grupos y temas, con lo que el sistema avisa solo.',
-    opciones: [
-      { etiqueta: 'Conversaciones', ruta: '/chat', icono: ForumOutlinedIcon },
-      { etiqueta: 'Nueva conversación', ruta: '/chat?nuevo=1', icono: AddCommentOutlinedIcon, accion: true, ayuda: 'Un directo con alguien del equipo o un grupo' },
-    ],
-  },
-  {
-    id: 'proyectos',
-    nombre: 'Proyectos de ley',
-    corto: 'Proyectos',
-    ruta: '/proyectos',
-    icono: AccountTreeOutlinedIcon,
-    descripcion: 'Proyectos de ley por fases: equipo, tareas, redacción en colaboración, fuentes y firma.',
-    opciones: [
-      { etiqueta: 'Todos los proyectos', ruta: '/proyectos', icono: FormatListBulletedIcon },
-      { etiqueta: 'Mis tareas', ruta: '/proyectos?ver=mias', icono: ChecklistOutlinedIcon, ayuda: 'Las tareas y partes que tiene a su cargo' },
-      { etiqueta: 'Nuevo proyecto', ruta: '/proyectos?nuevo=1', icono: AddCircleOutlineIcon, accion: true, ayuda: 'Crear un proyecto de ley con sus fases y partes' },
-    ],
-  },
-  {
-    id: 'representacion',
-    nombre: 'Semana de representación',
-    corto: 'Semanas',
-    ruta: '/informes',
-    icono: CampaignOutlinedIcon,
-    descripcion: 'Registrar cada semana (actividades, pedidos, fotos) y generar su informe desde esos datos.',
-    opciones: [
-      { etiqueta: 'Semanas', ruta: '/informes', icono: DateRangeOutlinedIcon, ayuda: 'Cada semana y su informe' },
-      { etiqueta: 'Nueva semana', ruta: '/informes?nuevo=1', icono: AddCircleOutlineIcon, accion: true, ayuda: 'Registrar una semana: actividades, pedidos, fotos y su informe' },
-      { etiqueta: 'Territorio y pedidos', ruta: '/informes?ver=territorio', icono: MapOutlinedIcon, ayuda: 'Provincias recorridas y pedidos registrados, de todas las semanas' },
-    ],
-  },
-  {
-    // Rendición de cuentas (2026-10-18): los viáticos de cada comisión de servicio —la Semana de
-    // representación, sobre todo—: comprobantes con foto, movilidad propuesta desde las actividades,
-    // controles y los Anexos 3 y 4 en LaTeX. Todo el equipo salvo el invitado; cada quien ve las suyas.
-    id: 'rendicion',
-    nombre: 'Rendición de cuentas',
-    corto: 'Rendiciones',
-    ruta: '/rendiciones',
-    icono: ReceiptLongOutlinedIcon,
-    descripcion: 'Viáticos de cada comisión: comprobantes, movilidad, controles y los anexos listos para firmar.',
-    roles: ['administrador', 'secretaria', 'asesor', 'diputado', 'prensa'],
-    opciones: [
-      { etiqueta: 'Mis rendiciones', ruta: '/rendiciones', icono: ReceiptLongOutlinedIcon, ayuda: 'Las suyas, con su saldo y su plazo' },
-      { etiqueta: 'Nueva rendición', ruta: '/rendiciones?nueva=1', icono: AddCircleOutlineIcon, accion: true, ayuda: 'De una semana de representación u otra comisión' },
-      { etiqueta: 'Resumen de la entidad', ruta: '/rendiciones?ver=resumen', icono: SummarizeOutlinedIcon, soloAdmin: true, ayuda: 'Cada comisionado de la semana: recibido, rendido y saldo' },
-      { etiqueta: 'Parámetros', ruta: '/rendiciones?parametros=1', icono: TuneOutlinedIcon, soloAdmin: true, ayuda: 'Tope diario, % de declaración jurada y plazo' },
-    ],
-  },
-  {
-    // Fototeca (2026-10-06): las fotos originales de la entidad, organizadas y
-    // editadas sin tocar el original; la usan la semana, los proyectos y prensa.
-    // Álbumes, etiquetas y línea de tiempo van en el panel de la propia página.
-    id: 'fototeca',
-    // «Mediateca» (2026-10-10): fotos Y videos; el id y las rutas siguen siendo `fototeca`.
-    nombre: 'Mediateca',
-    corto: 'Fotos',
-    ruta: '/fototeca',
-    icono: PhotoLibraryOutlinedIcon,
-    descripcion: 'Las fotos originales de la entidad: subir, organizar en álbumes, etiquetar, editar y exportar para informes y publicaciones.',
-    opciones: [
-      { etiqueta: 'Todas', ruta: '/fototeca', icono: PhotoLibraryOutlinedIcon },
-      { etiqueta: 'Por revisar', ruta: '/fototeca?ver=revisar', icono: RateReviewOutlinedIcon, ayuda: 'Las recién subidas: decidir si son públicas o reservadas' },
-      { etiqueta: 'Favoritas', ruta: '/fototeca?ver=favoritas', icono: StarBorderIcon },
-      { etiqueta: 'Papelera', ruta: '/fototeca?ver=papelera', icono: DeleteOutlineIcon, ayuda: 'Lo descartado; se restaura cuando haga falta' },
-    ],
-  },
-  {
-    // Prensa (2026-10-06): el estudio de Identidad Visual (piezas, fotos y videos)
-    // dentro del sistema, servido por la API bajo /estudio/. Las fotos salen de la
-    // Fototeca (la única biblioteca) y las piezas exportadas vuelven a ella.
+    // Prensa (2026-10-06): las piezas de prensa y los editores de piezas, fotos y videos (módulos Awana, Tullpu y
+    // Kuyuy desde E2–E5, 2026-10-21). Las fotos salen de la Mediateca (la única biblioteca) y lo exportado se guarda
+    // solo en ella (ámbito «prensa»).
     id: 'prensa',
     nombre: 'Prensa',
     corto: 'Prensa',
@@ -262,6 +136,8 @@ export const MODULOS: Modulo[] = [
       { etiqueta: 'Fotos', ruta: '/prensa?vista=foto', icono: AutoFixHighOutlinedIcon, ayuda: 'Editor de fotos: capas, selecciones, curvas, retoque' },
       { etiqueta: 'Video', ruta: '/prensa?vista=video', icono: MovieFilterOutlinedIcon, ayuda: 'Editor de video: línea de tiempo, títulos, subtítulos automáticos' },
       { etiqueta: 'Formatos y marcos', ruta: '/prensa?vista=media', icono: CropOutlinedIcon, ayuda: 'Encuadre rápido, marcos y rótulos para redes' },
+      // Lo exportado vive solo en la Mediateca (2026-10-20): se ve en su panel «Prensa», no en una pantalla aparte.
+      { etiqueta: 'En la Mediateca', ruta: '/fototeca?prensa=todo', icono: PhotoLibraryOutlinedIcon, ayuda: 'Posts, historias, portadas y videos exportados del estudio' },
     ],
   },
   {
@@ -275,25 +151,10 @@ export const MODULOS: Modulo[] = [
     descripcion: 'Cómo se conectan documentos, proyectos, semanas, personas e instituciones: buscar, enfocar y navegar.',
     opciones: [],
   },
-  {
-    // El mismo observatorio de la web con la identidad de la entidad. Sus vistas
-    // son las opciones del módulo (una sola navegación, Edison 2026-10-06): la
-    // barra propia del observatorio se oculta dentro del sistema y la página
-    // traduce `?vista=` al enlace interno (#catalogo, #comparar…).
-    id: 'observatorio',
-    nombre: 'Observatorio de datos',
-    corto: 'Observatorio',
-    ruta: '/observatorio',
-    icono: InsightsOutlinedIcon,
-    descripcion: 'Indicadores de fuentes oficiales con su serie, su método y su fuente, para sustentar los proyectos.',
-    opciones: [
-      { etiqueta: 'Panorama', ruta: '/observatorio', icono: SpaceDashboardOutlinedIcon, ayuda: 'Qué hay en el acervo, por tema, y quién produce cada cifra' },
-      { etiqueta: 'Catálogo', ruta: '/observatorio?vista=catalogo', icono: ViewListOutlinedIcon, ayuda: 'Todos los indicadores, filtrables por tema, institución y territorio' },
-      { etiqueta: 'Comparar', ruta: '/observatorio?vista=comparar', icono: StackedLineChartOutlinedIcon, ayuda: 'Hasta seis series en un mismo eje' },
-      { etiqueta: 'Fuentes', ruta: '/observatorio?vista=fuentes', icono: SourceOutlinedIcon, ayuda: 'Las instituciones que publican los datos y los estudios que las citan' },
-      { etiqueta: 'Método', ruta: '/observatorio?vista=metodo', icono: ScienceOutlinedIcon, ayuda: 'Cómo llega una cifra al observatorio y qué no se le puede pedir' },
-    ],
-  },
+  // El Observatorio entra por su manifiesto (Qhawana, su repositorio desde el 2026-10-22: @qillqa/qhawana/modulo).
+  desdeManifiesto(QHAWANA),
+  // El kit de transmisiones entra por su manifiesto (Wayra, su repositorio: @qillqa/wayra/modulo). En E5, bajo Prensa.
+  desdeManifiesto(WAYRA),
   {
     id: 'directorio',
     nombre: 'Directorio institucional',
@@ -362,11 +223,11 @@ export const MODULOS: Modulo[] = [
 
 export const modulo = (id: IdModulo): Modulo => MODULOS.find((m) => m.id === id)!
 
-export const esAdmin = () => localStorage.getItem('sgdp_rol') === 'administrador'
+export const esAdmin = () => localStorage.getItem('qillqa_rol') === 'administrador'
 
 /** Los módulos que la cuenta puede ver. */
 export const modulosVisibles = () => {
-  const rol = localStorage.getItem('sgdp_rol') ?? ''
+  const rol = localStorage.getItem('qillqa_rol') ?? ''
   return MODULOS.filter(
     (m) =>
       !m.oculto &&

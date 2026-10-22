@@ -13,11 +13,10 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import obtener_sesion
-from app.modelos import Documento, Proyecto, ProyectoSeccion, Usuario
+from app.modelos import Usuario
 from app.seguridad import usuario_actual
 from app.servicios import presencia as svc
-from app.servicios.numeracion import numero_mostrado
-from app.tipos import tipo_config
+from tiqsi.modulo import opcional
 
 router = APIRouter(prefix="/api/presencia", tags=["presencia"])
 
@@ -50,23 +49,26 @@ async def _lista(sesion: AsyncSession, yo: int, admin: bool = False) -> list[dic
     # Número del documento que cada quien tiene abierto («en OF-012»).
     ids = {l.documento_id for l in latidos.values() if l and l.documento_id}
     numeros: dict[int, str] = {}
-    if ids:
-        docs = (await sesion.execute(select(Documento).where(Documento.id.in_(ids)))).scalars()
+    documentos = opcional("documentos.v1") if ids else None
+    if documentos is not None:
         # Un borrador no tiene número: «Oficio (borrador)» se lee mejor en una
-        # línea que «Oficio S/N-2026-2027-…».
+        # línea que «Oficio S/N-2026-2027-…». El documento es de Gestión documental: por su contrato.
         numeros = {
-            d.id: numero_mostrado(d) if d.numero is not None or d.origen == "framework"
-            else f"{tipo_config(d.tipo).get('nombre', d.tipo)} (borrador)"
-            for d in docs
+            i: d["mostrado"] if d["numero"] is not None or d["origen"] == "framework"
+            else f"{d['nombre_tipo'] or d['tipo']} (borrador)"
+            for i, d in (await documentos.descripciones(ids)).items()
         }
     # Proyecto y parte («En PL-2026-001 · Fundamentos»).
     pids = {l.proyecto_id for l in latidos.values() if l and l.proyecto_id}
     proyectos: dict[int, str] = {}
     titulos: dict[tuple[int, str], str] = {}
-    if pids:
-        proyectos = dict((await sesion.execute(select(Proyecto.id, Proyecto.codigo).where(Proyecto.id.in_(pids)))).all())
-        for pid, clave, titulo in (await sesion.execute(select(ProyectoSeccion.proyecto_id, ProyectoSeccion.clave, ProyectoSeccion.titulo).where(ProyectoSeccion.proyecto_id.in_(pids)))).all():
-            titulos[(pid, clave)] = titulo
+    de_proyectos = opcional("proyectos.v1") if pids else None
+    if de_proyectos is not None:
+        for pid, p in (await de_proyectos.secciones(pids)).items():
+            if p["codigo"] is not None:
+                proyectos[pid] = p["codigo"]
+            for clave, titulo in p["secciones"].items():
+                titulos[(pid, clave)] = titulo
     filas = []
     for u in usuarios:
         latido = latidos[u.id]

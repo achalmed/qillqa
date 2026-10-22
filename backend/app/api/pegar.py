@@ -22,7 +22,15 @@ from app.seguridad import usuario_actual
 from app.servicios import pegado as svc
 from app.servicios.pegado.asignar import con_anexos
 from app.servicios.pegado.comparar import etiquetas_de
-from app.servicios.tareas_reglas import vinculo_valido
+from app.servicios.pegado.validar import vinculo_valido
+
+# Lo que puede ser la entidad de un pegado, además de los vínculos: una pieza de prensa (Awana E4b, 2026-10-20: su web deja
+# la constancia por aquí; antes la guardaba el backend de Prensa sin pasar por esta puerta).
+_ENTIDAD_PIEZA = __import__("re").compile(r"^pieza:\d{1,9}$")
+
+
+def _entidad_valida(entidad: str) -> bool:
+    return vinculo_valido(entidad) or bool(_ENTIDAD_PIEZA.match((entidad or "").strip()))
 
 router = APIRouter(prefix="/api/pegar", tags=["pegar"])
 
@@ -95,7 +103,7 @@ async def registrar(datos: Registro, usuario: Usuario = Depends(usuario_actual),
     """La constancia de un pegado aplicado: la web lo llama justo después de que el módulo
     guardó, con la entidad que resultó (`entrada:12`, `evento:7`)."""
     _puede_escribir(usuario)
-    if datos.entidad and not vinculo_valido(datos.entidad):
+    if datos.entidad and not _entidad_valida(datos.entidad):
         raise HTTPException(422, "La entidad no tiene la forma `tipo:id`.")
     if datos.tipo not in svc.cargar():
         raise HTTPException(422, f"El formato «{datos.tipo}» no existe.")
@@ -113,7 +121,7 @@ async def registrar(datos: Registro, usuario: Usuario = Depends(usuario_actual),
 async def historial(entidad: str = Query(..., max_length=80), usuario: Usuario = Depends(usuario_actual),
                     sesion: AsyncSession = Depends(obtener_sesion)) -> dict:
     """Los pegados aplicados sobre una entidad, del más reciente al más antiguo."""
-    if not vinculo_valido(entidad):
+    if not _entidad_valida(entidad):
         raise HTTPException(422, "La entidad no tiene la forma `tipo:id`.")
     filas = (await sesion.execute(
         select(Pegado, Usuario.nombre_completo).join(Usuario, Usuario.id == Pegado.usuario_id, isouter=True)
@@ -139,7 +147,7 @@ async def prompt_de(tipo: str, _: Usuario = Depends(usuario_actual)) -> dict:
         raise HTTPException(404, "Formato desconocido.")
     esquema = svc.esquema_de(tipo)
     ruta_rel = esquema.prompt  # «prompts/06 legislativo/prompt_13_….md», relativa al vault
-    # api → app → backend → sgdp → ~/Documents: el repo de prompts es hermano de sgdp (en un
+    # api → app → backend → qillqa → ~/Documents: el repo de prompts es hermano de qillqa (en un
     # contenedor la ruta es más corta: sin PROMPTS_DIR, el prompt queda «no disponible»).
     padres = _Path(__file__).resolve().parents
     raiz = _Path(os.environ.get("PROMPTS_DIR") or (padres[4] if len(padres) > 4 else padres[-1]) / "prompts")

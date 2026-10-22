@@ -4,7 +4,7 @@ titulo: "Redacción administrativa: reglas de estilo de los documentos"
 estado: activo
 ---
 
-# Guía de redacción administrativa del despacho (SGDP)
+# Guía de redacción administrativa del despacho (Qillqa)
 
 **Fuente única y autoritativa** de las reglas de revisión ortográfica y de
 redacción administrativa que se aplican a los documentos del despacho
@@ -34,7 +34,7 @@ cambiar el contenido, la argumentación, la sustancia legal o la intención:
   **NO se cambia** y se señala en el reporte de entrega.
 
 La sustancia es del autor (el diputado); la intervención es editorial de
-forma. Como los documentos nacen `origen='sgdp'` (editables), cualquier
+forma. Como los documentos nacen `origen='qillqa'` (editables), cualquier
 corrección se revierte desde la web sin perder el número.
 
 ---
@@ -199,4 +199,4 @@ No se sustituyen por las fórmulas alternativas de los prompts
   «transcripción verbatim». Pedido de Edison. Primer documento procesado con
   ella: OF-0027 (MEF, FONCOR). Los oficios 0016–0026 se hicieron con la
   política verbatim anterior y pueden repasarse a pedido (los 0018–0027 son
-  `sgdp` editables → corrección por API + regenerar, sin perder número).
+  `qillqa` editables → corrección por API + regenerar, sin perder número).

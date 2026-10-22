@@ -11,7 +11,7 @@ os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://x:y@127.0.0.1/z")
 os.environ.setdefault("JWT_SECRET", "prueba")
 
 from app.servicios import pegado  # noqa: E402
-from app.servicios import tareas_reglas as r  # noqa: E402
+from minka import tareas_reglas as r  # noqa: E402
 
 PLAN = """Resultado del acta:
 
@@ -114,6 +114,6 @@ def test_clave_tarea_compara_sin_tildes_ni_puntuacion():
 
 
 def test_el_chat_lleva_el_plan_a_tareas():
-    from app.servicios.chat import RUTA_MODULO
+    from app.servicios.registro_chat import RUTA_MODULO
 
     assert RUTA_MODULO["plan-de-tareas"] == ("Tareas", "/tareas?pegar={mid}")

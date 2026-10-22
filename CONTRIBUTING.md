@@ -35,7 +35,7 @@ Para la API y la web fuera de Docker, y para compilar PDF con TeX Live en tu má
 ( cd backend && .venv/bin/python -m pytest -q tests )   # pruebas del backend (sin base de datos)
 ( cd frontend && node --test pruebas/*.test.ts )        # pruebas de la web (Node 22)
 ( cd frontend && npx tsc --noEmit )                      # tipos
-make -C marco_documental plantillas                      # todas las plantillas compilan
+make -C ../qillqasqa/marco_documental plantillas         # todas las plantillas compilan
 ```
 
 Si cambias el comportamiento, añade o ajusta la prueba que lo demuestra.
@@ -46,7 +46,7 @@ Si cambias el comportamiento, añade o ajusta la prueba que lo demuestra.
   Los nombres de funciones y variables también (`numerar_documento`, no `number_document`).
 - **Python**: PEP 8 y tipado donde ayude.
 - **TypeScript/React**: componentes funcionales, MUI; sin dependencias nuevas sin justificarlas en el PR.
-- **LaTeX**: solo LuaLaTeX + Biber; se compila con `marco_documental/scripts/build.sh`, nunca con
+- **LaTeX**: solo LuaLaTeX + Biber; se compila con `../qillqasqa/marco_documental/scripts/build.sh`, nunca con
   `lualatex` directo.
 - **Ninguna ruta absoluta de una máquina** en el código: todo llega por variables de entorno (`.env`).
 - **Numeración**: el número oficial lo asigna el sistema (`POST /api/documentos/{id}/generar`); ningún

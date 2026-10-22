@@ -132,6 +132,23 @@ async def para_sitio(sesion: AsyncSession, url_o_host: str, institucion_ids: lis
     return salida
 
 
+async def _para_sitio(url_o_host: str, institucion_ids: list[int] | None = None) -> list[dict]:
+    from app.db import SesionAsincrona
+
+    async with SesionAsincrona() as sesion:
+        return await para_sitio(sesion, url_o_host, institucion_ids)
+
+
+def _credenciales_v1():
+    from tiqsi import Superficie
+
+    return Superficie("credenciales.v1", {"para_sitio": lambda: _para_sitio}, donde="api/contrasenas.py")
+
+
+# «credenciales.v1»: las cuentas de un sitio, para la mesa de partes de Gestión documental (Qillqasqa Q4c, 2026-10-21).
+CREDENCIALES_V1 = _credenciales_v1()
+
+
 @router.get("")
 async def listar(usuario: Usuario = Depends(usuario_actual), sesion: AsyncSession = Depends(obtener_sesion)) -> list[dict]:
     no_invitado(usuario)

@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
+# Entorno verde (fase 10.1 de docs/plataforma/propuesta-repositorios.md): esta copia NO opera producción;
+# su API se maneja con scripts/verde.sh. La marca .verde (local, sin versionar) lo indica.
+for _v in "$(dirname "${BASH_SOURCE[0]}")/.verde" "$(dirname "${BASH_SOURCE[0]}")/../.verde"; do
+  [[ -f "$_v" ]] && { echo "Entorno verde: este script opera producción; use scripts/verde.sh." >&2; exit 1; }
+done
 # =====================================================================
-#  iniciar.sh  --  Arranca el SGDP en "modo laptop" con UN comando.
+#  iniciar.sh  --  Arranca Qillqa en "modo laptop" con UN comando.
 # ---------------------------------------------------------------------
 #  - Base de datos PostgreSQL (contenedor Docker)
 #  - API (FastAPI, en el entorno Python local)
@@ -17,7 +22,7 @@ cd "$DIR"
 # El Marco Documental es un repositorio propio (2026-09-15, M10 D1): su ruta y la del
 # perfil del despacho vienen de .env (MDD_RUTA, MDD_PERFIL); no vive dentro de este repo.
 # shellcheck disable=SC1091
-source "$DIR/entorno.sh"; sgdp_cargar_env || exit 1          # ADR-15 (ola 9): el .env vive en la carpeta de operaciones
+source "$DIR/entorno.sh"; qillqa_cargar_env || exit 1          # ADR-15 (ola 9): el .env vive en la carpeta de operaciones
 mkdir -p "$DIR/logs"
 MDD="$(cd "${MDD_RUTA:?Defina MDD_RUTA en .env (ruta del marco documental)}" && pwd)"
 [[ -f "$MDD/scripts/build.sh" ]] || { echo "MDD_RUTA no apunta a un marco documental: $MDD" >&2; exit 1; }
@@ -40,13 +45,13 @@ fi
 
 # --- Node y npm en arranques NO interactivos -------------------------
 # node/npm los instala nvm en ~/.nvm, y nvm solo entra al PATH desde
-# .zshrc/.bashrc. El servicio del usuario (sgdp.service ->
+# .zshrc/.bashrc. El servicio del usuario (qillqa.service ->
 # arranque_automatico.sh) arranca con el PATH minimo de systemd, sin nvm:
 # el 2026-09-10 «npm run build» murio con «npm: orden no encontrada»
 # —web-build.log tenia esa sola linea—, la web nunca subio al 5173 y el
 # despacho quedo sin sistema aunque el enlace de Tailscale seguia
 # publicado. A mano funcionaba, que es justo lo que despista: el PATH del
-# terminal NO es el del arranque. Se resuelve aqui y no en sgdp.service
+# terminal NO es el del arranque. Se resuelve aqui y no en qillqa.service
 # para no congelar la version de node dentro del archivo del servicio.
 if ! command -v npm >/dev/null 2>&1; then
   NODE_BIN=""
@@ -70,13 +75,13 @@ if ! command -v npm >/dev/null 2>&1; then
   exit 1
 fi
 
-# --- La configuracion (clave de la BD, etc.) ya está cargada por entorno.sh (SGDP_ENV) -------------
+# --- La configuracion (clave de la BD, etc.) ya está cargada por entorno.sh (QILLQA_ENV) -------------
 
 echo "== 1/3  Base de datos (PostgreSQL en Docker) =="
 docker compose up -d db
 # Esperar a que la BD acepte conexiones
 for i in $(seq 1 30); do
-  if docker compose exec -T db pg_isready -U "${POSTGRES_USER:-sgdp}" -d "${POSTGRES_DB:-sgdp}" >/dev/null 2>&1; then
+  if docker compose exec -T db pg_isready -U "${POSTGRES_USER:-qillqa}" -d "${POSTGRES_DB:-qillqa}" >/dev/null 2>&1; then
     break
   fi
   sleep 1
@@ -86,7 +91,7 @@ echo "== 2/3  API (FastAPI) =="
 # Crear el entorno Python la primera vez, o RECREARLO si quedó roto.
 # Un venv graba en sus lanzadores (backend/.venv/bin/uvicorn, pip, …) la ruta
 # ABSOLUTA con la que se creó; si la carpeta del proyecto se mueve o cambia de
-# nombre (pasó el 2026-09-06 y en la mudanza M10 D2 a ~/Documents/sgdp), esos lanzadores apuntan a
+# nombre (pasó el 2026-09-06 y en la mudanza M10 D2 a ~/Documents/qillqa), esos lanzadores apuntan a
 # un python que ya no existe y la API muere al instante con «not found» en
 # api.log, dejando la web en modo «Sin servidor». Es un artefacto derivado de
 # requirements.txt, así que se regenera sin pérdida.
@@ -99,19 +104,20 @@ if [[ ! -d backend/.venv ]]; then
   python3 -m venv backend/.venv
   backend/.venv/bin/pip install --quiet -r backend/requirements.txt
 fi
-export DATABASE_URL="postgresql+asyncpg://${POSTGRES_USER:-sgdp}:${POSTGRES_PASSWORD}@127.0.0.1:5432/${POSTGRES_DB:-sgdp}"
+export DATABASE_URL="postgresql+asyncpg://${POSTGRES_USER:-qillqa}:${POSTGRES_PASSWORD}@127.0.0.1:5432/${POSTGRES_DB:-qillqa}"
 export MDD_RUTA="$MDD"
 export MDD_PERFIL="${MDD_PERFIL:-}"
-# Prensa (2026-10-06): el estudio de Identidad Visual (editor de piezas y de fotos y videos)
-# corre en 127.0.0.1:$ESTUDIO_PUERTO y la API lo publica bajo /estudio/ (api/prensa.py). La
-# carpeta del repo es IDENTIDAD_VISUAL_DIR del .env o, si falta, la de core/env.sh del espacio
-# de trabajo. Se enciende solo con IDENTIDAD_PERFIL: el perfil dice dónde están el banco de
-# fotos y las salidas de prensa (sin él, el estudio escribiría dentro de su propio repo).
+# Prensa: sus editores (Awana, Tullpu y Kuyuy; editores E2–E5, 2026-10-21) corren en la API. Su kit común (tokens,
+# fuentes, logos, marcos) es UNANCHA_DIR o, si falta, la identidad visual (IDENTIDAD_VISUAL_DIR del .env o de
+# core/env.sh), que tiene la misma forma; el perfil (IDENTIDAD_PERFIL) dice dónde están su banco y sus salidas.
 if [[ -z "${IDENTIDAD_VISUAL_DIR:-}" && -f "$DIR/../core/env.sh" ]]; then
   IDENTIDAD_VISUAL_DIR="$(bash -c 'source "$1" >/dev/null 2>&1 && printf %s "${IDENTIDAD_VISUAL_DIR:-}"' _ "$DIR/../core/env.sh" || true)"
 fi
+export UNANCHA_DIR="${UNANCHA_DIR:-${IDENTIDAD_VISUAL_DIR:-}}"
+# Dónde está cada página de los editores (los enlaces de una a otra).
+export ESTUDIO_OTRAS_PAGINAS="${ESTUDIO_OTRAS_PAGINAS:-foto.html=/api/fotos/,media.html=/api/fotos/,video.html=/api/videos/,editor.html=/api/piezas/editor/}"
+# El estudio aparte (8099) se retiró en E5: si quedó vivo de un arranque anterior, se apaga (solo si es el estudio).
 ESTUDIO_PUERTO="${ESTUDIO_PUERTO:-8099}"
-export ESTUDIO_URL="${ESTUDIO_URL:-http://127.0.0.1:$ESTUDIO_PUERTO}"
 # Apagar una API anterior si sigue viva (por su puerto, sin auto-matarse).
 API_PID="$(ss -ltnp 2>/dev/null | grep ':8000' | grep -oP 'pid=\K[0-9]+' | head -1 || true)"
 [[ -n "${API_PID:-}" ]] && kill "$API_PID" 2>/dev/null && sleep 2 || true
@@ -148,29 +154,24 @@ COLAB_PID="$(ss -ltnp 2>/dev/null | grep ':8001 ' | grep -oP 'pid=\K[0-9]+' | he
 [[ -n "${COLAB_PID:-}" ]] && kill "$COLAB_PID" 2>/dev/null && sleep 1 || true
 # Sin subshell ni cd: node resuelve node_modules desde la carpeta del archivo,
 # y un «( … & )» se queda de padre del servidor reteniendo la salida.
-SGDP_API="http://127.0.0.1:8000" COLAB_PUERTO=8001 nohup node frontend/colab/servidor.ts \
+# El servidor vive en Qillqasqa desde el 2026-10-22 (web/colab/), junto a la carpeta de Qillqa o en QILLQASQA_DIR.
+QILLQA_API="http://127.0.0.1:8000" COLAB_PUERTO=8001 nohup node "${QILLQASQA_DIR:-$DIR/../qillqasqa}/web/colab/servidor.ts" \
   > "$DIR/logs/colab.log" 2>&1 < /dev/null 9>&- &
-# Estudio de Prensa: se relanza como el de edición simultánea (sin subshell, fd 9 cerrado). Solo
-# se apaga lo que en su puerto sea el servidor del estudio, nunca otra cosa.
+# El estudio aparte (retirado en E5): solo se apaga lo que en su puerto sea su servidor, nunca otra cosa.
 EST_PID="$(ss -ltnp 2>/dev/null | grep ":$ESTUDIO_PUERTO " | grep -oP 'pid=\K[0-9]+' | head -1 || true)"
 if [[ -n "${EST_PID:-}" ]] && tr '\0' ' ' < "/proc/$EST_PID/cmdline" 2>/dev/null | grep -q 'servidor/servidor.py'; then
   kill "$EST_PID" 2>/dev/null && sleep 1 || true
 fi
-ESTUDIO_SRV="${IDENTIDAD_VISUAL_DIR:-}/editor/servidor/servidor.py"
-if [[ -n "${IDENTIDAD_VISUAL_DIR:-}" && -f "$ESTUDIO_SRV" && -n "${IDENTIDAD_PERFIL:-}" && -f "${IDENTIDAD_PERFIL:-}" ]]; then
-  EDITOR_PUERTO="$ESTUDIO_PUERTO" EDITOR_HOST=127.0.0.1 nohup python3 "$ESTUDIO_SRV" \
-    > "$DIR/logs/estudio.log" 2>&1 < /dev/null 9>&- &
-else
-  echo "   [aviso] Prensa sin estudio: defina IDENTIDAD_PERFIL (perfil.json de identidad) en .env" >&2
-fi
+[[ -n "${IDENTIDAD_PERFIL:-}" && -f "${IDENTIDAD_PERFIL:-}" ]] \
+  || echo "   [aviso] Prensa sin editores: defina IDENTIDAD_PERFIL (perfil.json de identidad) en .env" >&2
 WEB_PID="$(ss -ltnp 2>/dev/null | grep ':5173' | grep -oP 'pid=\K[0-9]+' | head -1 || true)"
 [[ -n "${WEB_PID:-}" ]] && kill "$WEB_PID" 2>/dev/null && sleep 1 || true
 # Se sirve el BUILD, no el servidor de desarrollo. Dos razones, las dos del
 # despacho y no de comodidad: (1) el modo sin conexión necesita un service
 # worker, que no convive con la recarga en caliente; (2) esa misma recarga en
 # caliente refrescaba las pestañas de las secretarias en mitad de un documento.
-# Con SGDP_DEV=1 se levanta el servidor de desarrollo (para programar).
-if [[ "${SGDP_DEV:-}" == "1" ]]; then
+# Con QILLQA_DEV=1 se levanta el servidor de desarrollo (para programar).
+if [[ "${QILLQA_DEV:-}" == "1" ]]; then
   echo "   (modo desarrollo: recarga en caliente, SIN modo sin conexión)"
   ( cd frontend && VITE_API_PROXY="http://127.0.0.1:8000" nohup npm run dev -- --host \
     > "$DIR/logs/web.log" 2>&1 9>&- & ) 9>&-
@@ -188,7 +189,7 @@ sleep 3
 IP="$(hostname -I 2>/dev/null | tr ' ' '\n' | grep -E '^(192|10|172\.(1[6-9]|2[0-9]|3[01]))\.' | grep -v '^172.1[78]\.' | head -1 || true)"
 echo ""
 echo "======================================================================"
-echo "  SGDP EN MARCHA"
+echo "  Qillqa EN MARCHA"
 echo "  En esta computadora:   http://localhost:5173"
 [[ -n "$IP" ]] && echo "  En la misma red local: http://$IP:5173"
 echo ""

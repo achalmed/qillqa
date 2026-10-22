@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
-# scripts/openproject_token.sh — enciende la integración con OpenProject: crea un token de API para una cuenta ADMINISTRADORA de OpenProject y lo guarda en el .env del SGDP sin mostrarlo; luego reinicia la API.
+# Entorno verde (fase 10.1 de docs/plataforma/propuesta-repositorios.md): esta copia NO opera producción;
+# su API se maneja con scripts/verde.sh. La marca .verde (local, sin versionar) lo indica.
+for _v in "$(dirname "${BASH_SOURCE[0]}")/.verde" "$(dirname "${BASH_SOURCE[0]}")/../.verde"; do
+  [[ -f "$_v" ]] && { echo "Entorno verde: este script opera producción; use scripts/verde.sh." >&2; exit 1; }
+done
+# scripts/openproject_token.sh — enciende la integración con OpenProject: crea un token de API para una cuenta ADMINISTRADORA de OpenProject y lo guarda en el .env de Qillqa sin mostrarlo; luego reinicia la API.
 #
 # Lo corre una PERSONA (es una credencial): el asistente no genera ni maneja tokens.
 # Equivale a «OpenProject → Mi cuenta → Tokens de acceso → API → Generar» y pegarlo en
@@ -69,7 +74,7 @@ if [[ "$REINICIAR" == 1 ]]; then
   [[ -n "$pid" ]] && kill $pid && sleep 3
   (cd "$RAIZ" && setsid nohup ./iniciar.sh > /dev/null 2>&1 < /dev/null &)
   if curl -s -m 5 --retry 40 --retry-delay 2 --retry-connrefused http://127.0.0.1:8000/api/health > /dev/null; then
-    echo "✅ API en marcha. Vea el estado en el SGDP → Administración → OpenProject."
+    echo "✅ API en marcha. Vea el estado en Qillqa → Administración → OpenProject."
   else
     echo "⚠ La API no respondió todavía; revise api.log." >&2
   fi

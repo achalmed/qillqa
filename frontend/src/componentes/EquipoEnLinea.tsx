@@ -93,7 +93,7 @@ export function haceCuanto(iso: string | null, ahora = Date.now()): string {
 export function usePresencia(documentoId?: number, lugar?: LugarProyecto, activo = true): Persona[] {
   const [equipo, setEquipo] = useState<Persona[]>([])
   const latir = useCallback(() => {
-    if (!activo || !localStorage.getItem('sgdp_token')) return
+    if (!activo || !localStorage.getItem('qillqa_token')) return
     api<Persona[]>('/api/presencia', {
       method: 'POST',
       body: JSON.stringify({
@@ -108,8 +108,8 @@ export function usePresencia(documentoId?: number, lugar?: LugarProyecto, activo
         // El rol puede haber cambiado desde el último inicio de sesión (lo
         // cambia el administrador): la pantalla lo adopta sin volver a entrar.
         const yo = lista.find((p) => p.yo)
-        if (yo && yo.rol && localStorage.getItem('sgdp_rol') !== yo.rol) {
-          localStorage.setItem('sgdp_rol', yo.rol)
+        if (yo && yo.rol && localStorage.getItem('qillqa_rol') !== yo.rol) {
+          localStorage.setItem('qillqa_rol', yo.rol)
         }
       })
       .catch(() => {})

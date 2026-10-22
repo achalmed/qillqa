@@ -169,7 +169,7 @@ export default function VistaContactos({
   const ancha = useMediaQuery(tema.breakpoints.up('md'))
   const navegar = useNavigate()
   const [consulta, setConsulta] = useSearchParams()
-  const invitado = localStorage.getItem('sgdp_rol') === 'invitado'
+  const invitado = localStorage.getItem('qillqa_rol') === 'invitado'
   const [q, setQ] = useState('')
   const [etiqueta, setEtiqueta] = useState('')
   const [soloFavoritos, setSoloFavoritos] = useState(false)

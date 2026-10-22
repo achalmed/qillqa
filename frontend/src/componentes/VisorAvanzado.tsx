@@ -198,7 +198,7 @@ const ESTILO_CAPA_TEXTO = {
   '& .textLayer ::selection': { background: `${PALETA.acento}47` },
   '& .textLayer br::selection': { background: 'transparent' },
   '& .textLayer .endOfContent': { display: 'block', position: 'absolute', inset: '100% 0 0', zIndex: 0, cursor: 'default', userSelect: 'none' },
-  '& .textLayer span.sgdp-coincide': {
+  '& .textLayer span.qillqa-coincide': {
     borderRadius: '2px',
     background: PALETA.resaltado,
     boxShadow: `0 0 0 2px ${PALETA.doradoLinea}`,
@@ -224,7 +224,7 @@ function resaltar(capa: HTMLElement | null, consulta: string) {
   const q = normalizar(consulta).trim()
   capa.querySelectorAll('span').forEach((s) => {
     const si = !!q && !s.classList.contains('markedContent') && normalizar(s.textContent ?? '').includes(q)
-    s.classList.toggle('sgdp-coincide', si)
+    s.classList.toggle('qillqa-coincide', si)
   })
 }
 

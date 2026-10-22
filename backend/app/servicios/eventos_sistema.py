@@ -5,7 +5,8 @@ Un módulo que hace algo relevante llama a `emitir(sesion, nombre, entidad, dato
 dentro de su transacción (sin commit: el módulo lo da). `emitir` guarda el hecho en
 `eventos_sistema` con una `clave` única (idempotencia: si ya existe, no hace nada) y aplica las
 reglas activas de `reglas_evento` para ese nombre: `notificar` (campana), `tarea` (crea una
-tarea) o `publicar` (un canal del chat; se engancha en la fase 8 por `GANCHOS["publicar"]`).
+tarea) o `publicar` (un canal del chat: lo compone Qillqa y lo publica el chat tras el commit,
+servicios/avisos_chat.py).
 Las notificaciones que cada módulo ya daba a mano siguen igual: las reglas añaden lo
 configurable, no reemplazan lo que funciona (se migrarán una a una).
 
@@ -17,14 +18,13 @@ from __future__ import annotations
 import logging
 import re
 from datetime import datetime, timezone
-from typing import Awaitable, Callable
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modelos import Ajuste, EventoSistema, ReglaEvento, Usuario
 
-log = logging.getLogger("sgdp.eventos")
+log = logging.getLogger("qillqa.eventos")
 
 # Vocabulario: nombre → (qué es, campos que viajan en `datos` y sirven en la plantilla y la condición).
 VOCABULARIO: dict[str, dict] = {
@@ -35,6 +35,8 @@ VOCABULARIO: dict[str, dict] = {
     "entrada.vencida": {"que": "Venció el plazo de un recibido sin respuesta", "campos": ["asunto", "responsable_id", "plazo"]},
     "entrada.respondida": {"que": "Un recibido quedó respondido", "campos": ["asunto", "responsable_id", "documento"]},
     "documento.numerado": {"que": "Un documento recibió su número oficial", "campos": ["numero", "tipo", "asunto", "responsable_id", "autor_id"]},
+    "documento.eliminado": {"que": "Se eliminó un documento", "campos": ["etiqueta"]},
+    "proyecto.eliminado": {"que": "Se eliminó un proyecto de ley", "campos": ["etiqueta"]},
     "documento.estado": {"que": "Un documento cambió de estado", "campos": ["numero", "tipo", "asunto", "estado", "estado_anterior", "responsable_id", "autor_id"]},
     "documento.actuacion": {"que": "Se anotó una actuación del seguimiento", "campos": ["numero", "clase", "texto", "fecha", "fuente", "responsable_id"]},
     # Estado del expediente (2026-10-18): al aplicar el pegado de seguimiento, dónde está el documento y qué falta.
@@ -57,9 +59,6 @@ ACCIONES = ("notificar", "tarea", "publicar", "telegram")
 PROPAGAN = {"documento.numerado", "documento.estado"}
 DESTINOS_FIJOS = ("responsable", "autor", "equipo", "administradores")
 ROLES = ("administrador", "secretaria", "asesor", "diputado", "prensa")
-
-# Gancho de la fase 8: `publicar(sesion, regla, evento) -> str` (descripción de lo hecho).
-GANCHOS: dict[str, Callable[..., Awaitable[str]]] = {}
 
 # Reglas de fábrica: se siembran una vez (`ajustes.reglas_evento_fabrica`); si alguien las borra o
 # apaga, se respeta. Nada de la entidad: solo roles y campos.
@@ -148,7 +147,7 @@ def plantilla(texto: str, datos: dict) -> str:
 def cumple(condicion: dict | None, datos: dict) -> bool:
     """La condición es un mapa {campo: valor | [valores]}; vacía = siempre. Se compara sin
     tildes ni mayúsculas."""
-    from app.servicios.entradas import normalizar
+    from app.servicios.lectura import normalizar
 
     for campo, esperado in (condicion or {}).items():
         actual = normalizar(str(datos.get(campo) if datos.get(campo) is not None else ""))
@@ -209,47 +208,39 @@ async def _aplicar(sesion: AsyncSession, regla: ReglaEvento, ev: EventoSistema) 
         if not await modulos.activo(sesion, mid):
             return f"{regla.accion}→(módulo apagado)"
     if regla.accion == "tarea":
-        from app.modelos_tareas import Tarea
-        from app.servicios import tareas as svc_tareas
-        from app.servicios import tareas_reglas as reglas
+        # Por el contrato de Tareas y Agenda (fase 10.2b): idempotente por su clave, una entrega repetida no duplica.
+        from tiqsi.modulo import opcional
 
+        tareas = opcional("tareas.v1")
+        if tareas is None:
+            return "tarea→(sin Tareas y Agenda)"
         ids = await destinatarios(sesion, regla.destino, ev.datos, ev.emitido_por)
         responsable = next(iter(ids), None) or ev.emitido_por
-        vence, con_hora = (reglas.plazo(str(ev.datos["plazo"])[:10], None, svc_tareas.zona()) if ev.datos.get("plazo") else (None, False))
-        t = Tarea(titulo=texto[:300], descripcion=f"Creada por la regla «{regla.nombre}».", estado="por_hacer", prioridad="normal",
-                  responsable_id=responsable, vence_en=vence, con_hora=con_hora, origen="regla",
-                  externo_id=f"regla:{regla.id}:{ev.clave}"[:300], creado_por=ev.emitido_por, etiquetas=[], checklist=[])
-        sesion.add(t)
-        await sesion.flush()
-        if ev.entidad:
-            await svc_tareas.poner_vinculos(sesion, f"tarea:{t.id}", [ev.entidad], ev.emitido_por)
-        return f"tarea→{t.id}"
+        tid = await tareas.crear(texto[:300], descripcion=f"Creada por la regla «{regla.nombre}».", responsable_id=responsable,
+                                 plazo=str(ev.datos["plazo"])[:10] if ev.datos.get("plazo") else None, origen="regla",
+                                 externo_id=f"regla:{regla.id}:{ev.clave}", creado_por=ev.emitido_por,
+                                 vinculos=[ev.entidad] if ev.entidad else None)
+        return f"tarea→{tid}"
     if regla.accion == "telegram":
-        from app.servicios import redaccion_chat, telegram
-        from app.servicios.chat import usa_redaccion
+        # El puente de Telegram es del chat (Rimay R2): el texto lo compone Qillqa y lo envía el chat por su contrato.
+        from tiqsi.modulo import opcional
 
-        if not telegram.activo():
+        from app.servicios import redaccion_chat
+        from app.servicios.avisos_chat import usa_redaccion
+
+        conversaciones = opcional("conversaciones.v1")
+        if conversaciones is None or not conversaciones.telegram_activo():
             return "telegram→(sin token)"
         if usa_redaccion(regla):  # el mismo mensaje que el chat, como se pegaba en el grupo
             texto = await redaccion_chat.componer(sesion, ev.nombre, ev.entidad, ev.datos) or texto
-        ok = await telegram.enviar(texto)
+        ok = await conversaciones.telegram(texto)
         return "telegram→enviado" if ok else "telegram→falló"
     if regla.accion == "publicar":
-        gancho = GANCHOS.get("publicar")
-        if gancho is None:
-            return "publicar→(sin chat todavía)"
-        return await gancho(sesion, regla, ev)
+        # Lo compone Qillqa y lo publica el chat tras el commit, por su contrato (servicios/avisos_chat.py, Rimay R1).
+        from app.servicios import avisos_chat
+
+        return await avisos_chat.publicar_por_regla(sesion, regla, ev)
     return "ninguna"
-
-
-def datos_documento(doc, usuario) -> dict:
-    """Los campos que viajan con los eventos de un documento (el cambio manual de estado en
-    api/documentos.py y los automáticos de servicios/envio.py: un solo lugar)."""
-    from app.servicios.numeracion import numero_mostrado
-    from app.tipos import asunto_de
-
-    return {"numero": numero_mostrado(doc) or "", "tipo": doc.tipo, "asunto": asunto_de(doc.tipo, doc.campos) or "",
-            "responsable_id": doc.responsable_id, "autor_id": getattr(doc, "creado_por", None) or (usuario.id if usuario else None)}
 
 
 async def emitir(sesion: AsyncSession, nombre: str, entidad: str, datos: dict | None = None,
@@ -298,6 +289,49 @@ async def emitir_seguro(sesion: AsyncSession, nombre: str, entidad: str, datos: 
         from app.servicios import etiquetas
 
         await etiquetas.propagar(sesion, entidad)
+
+
+async def desde_bus(evento) -> None:
+    """Lo que un módulo aislado cuenta por su bandeja de salida (Tareas y Agenda: «tarea.asignada», «evento.creado»,
+    «evento.recordatorio», «agenda.programacion_diaria»; fase 10.2b, 2026-10-20) entra aquí como un evento del sistema
+    y se le aplican sus reglas, como cuando el módulo llamaba a `emitir` en su transacción. Lo que Qillqa misma reparte
+    (origen «qillqa») ya pasó por aquí: no se repite. La clave hace que una segunda entrega no haga nada; un fallo se
+    propaga para que el repartidor lo reintente."""
+    if evento.origen == "qillqa":
+        return
+    from app.db import SesionAsincrona
+
+    d = evento.datos or {}
+    async with SesionAsincrona() as sesion:
+        ev = await emitir(sesion, evento.tipo, str(d.get("entidad") or ""), d.get("datos") or {},
+                          clave=d.get("clave") or None, usuario_id=d.get("usuario_id"))
+        if ev is not None:
+            # Ya está en el bus (lo puso el módulo): la bandeja de Qillqa no lo reparte otra vez (Punku P1b: Tareas y
+            # Agenda escucha «entrada.registrada» y lo recibiría dos veces).
+            ev.repartido_en = datetime.now(timezone.utc)
+        await sesion.commit()
+
+
+async def desde_qillqasqa(evento) -> None:
+    """Lo que Gestión documental, Proyectos de ley y la Semana cuentan por su bandeja (Qillqasqa Q4a, 2026-10-21) entra
+    aquí como un evento del sistema: sus reglas y, si cambia lo que se muestra de la entidad (PROPAGAN), los mensajes
+    del chat que la presentan. Viaja como los eventos del sistema ({…datos, entidad, emitido_por, clave}). Ya está en
+    el bus: la bandeja de Qillqa no lo reparte otra vez. La clave hace que una segunda entrega no haga nada."""
+    if evento.origen != "qillqasqa":
+        return
+    from app.db import SesionAsincrona
+
+    d = dict(evento.datos or {})
+    entidad, quien, clave = str(d.pop("entidad", "") or ""), d.pop("emitido_por", None), d.pop("clave", None)
+    async with SesionAsincrona() as sesion:
+        ev = await emitir(sesion, evento.tipo, entidad, d, clave=clave or None, usuario_id=quien)
+        if ev is not None:
+            ev.repartido_en = datetime.now(timezone.utc)
+            if evento.tipo in PROPAGAN:
+                from app.servicios import etiquetas
+
+                await etiquetas.propagar(sesion, entidad)
+        await sesion.commit()
 
 
 async def sembrar_fabrica(sesion: AsyncSession) -> int:

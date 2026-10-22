@@ -23,8 +23,8 @@ export interface EstadoModulo {
 
 type Mapa = Record<string, { efectivo: boolean; mensaje: string }>
 
-const CLAVE = 'sgdp_modulos'
-const EVENTO = 'sgdp-modulos'
+const CLAVE = 'qillqa_modulos'
+const EVENTO = 'qillqa-modulos'
 
 export const mapaDe = (lista: EstadoModulo[]): Mapa =>
   Object.fromEntries(lista.map((m) => [m.id, { efectivo: m.efectivo, mensaje: m.mensaje }]))

@@ -46,7 +46,7 @@ const SECCIONES: Record<string, { titulo: string; texto: string }> = {
 // que el backend rechazaría sobre mi propia cuenta (autobloqueo).
 function miIdDesdeToken(): number {
   try {
-    const t = localStorage.getItem('sgdp_token') ?? ''
+    const t = localStorage.getItem('qillqa_token') ?? ''
     return Number(JSON.parse(atob(t.split('.')[1])).sub)
   } catch {
     return -1

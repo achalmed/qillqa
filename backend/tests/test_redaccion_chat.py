@@ -11,7 +11,8 @@ from zoneinfo import ZoneInfo
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://x:y@127.0.0.1/z")
 os.environ.setdefault("JWT_SECRET", "prueba")
 
-from app.servicios import chat, redaccion_chat as r  # noqa: E402
+from rimay import chat
+from app.servicios import avisos_chat, redaccion_chat as r  # noqa: E402
 
 LIMA = ZoneInfo("America/Lima")
 
@@ -101,15 +102,17 @@ def test_documento_programacion_y_firma():
     assert "🕘 *09:00* · Reunión · Sala" in viejo
     assert r.firma_de("entrada.registrada") == "Mesa de Partes" and r.firma_de("documento.seguimiento") == "Seguimiento"
     assert r.firma_de("documento.estado") == "Documentos" and r.firma_de("evento.recordatorio") == "Agenda"
-    assert r.fecha_movimiento([{"fecha": "2026-09-01", "clase": "envio"}, {"fecha": "2026-09-05", "clase": "derivacion"},
-                               {"fecha": "2026-09-09", "clase": "llamada"}]) == "2026-09-05"
+    from qillqasqa.servicios.actuaciones import fecha_movimiento   # de Gestión documental desde Qillqasqa Q4a
+
+    assert fecha_movimiento([{"fecha": "2026-09-01", "clase": "envio"}, {"fecha": "2026-09-05", "clase": "derivacion"},
+                             {"fecha": "2026-09-09", "clase": "llamada"}]) == "2026-09-05"
 
 
 def test_la_regla_cambiada_por_quien_administra_manda():
-    assert chat.usa_redaccion(NS(texto="", de_fabrica=""))
-    assert chat.usa_redaccion(NS(texto="Nuevo recibido de {remitente}: «{asunto}» · {atencion} · plazo {plazo}", de_fabrica="canal-recibidos"))
-    assert not chat.usa_redaccion(NS(texto="Llegó: {asunto}", de_fabrica="canal-recibidos"))
-    assert not chat.usa_redaccion(NS(texto="Algo: {asunto}", de_fabrica=""))
+    assert avisos_chat.usa_redaccion(NS(texto="", de_fabrica=""))
+    assert avisos_chat.usa_redaccion(NS(texto="Nuevo recibido de {remitente}: «{asunto}» · {atencion} · plazo {plazo}", de_fabrica="canal-recibidos"))
+    assert not avisos_chat.usa_redaccion(NS(texto="Llegó: {asunto}", de_fabrica="canal-recibidos"))
+    assert not avisos_chat.usa_redaccion(NS(texto="Algo: {asunto}", de_fabrica=""))
 
 
 def test_temas_propios_con_nombre_del_entorno():
@@ -130,5 +133,5 @@ def test_tarea_creada_y_regla_del_mensaje():
     assert t.startswith("📋 *TAREA CREADA*\n\n📌 *Revisar el oficio*")
     assert "⏳ Vence: Martes 20/10/2026 a las 10:00 h (2 días)" in t and "🚦 Prioridad: 🔴 ALTA" in t and t.endswith("- Cotejar con el cargo.")
     assert "Prioridad" not in r.tarea({"titulo": "X", "prioridad": "normal"}, date(2026, 10, 18), "creada")
-    assert chat.regla_del_mensaje(["3:notificar→2", "21:publicar→canal:33:mensaje:812"], 812) == 21
-    assert chat.regla_del_mensaje(["21:publicar→canal:33:mensaje:812"], 813) is None
+    assert avisos_chat.regla_del_mensaje(["3:notificar→2", "21:publicar→canal:33:mensaje:812"], 812) == 21
+    assert avisos_chat.regla_del_mensaje(["21:publicar→canal:33:mensaje:812"], 813) is None

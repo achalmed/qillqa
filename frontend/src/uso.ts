@@ -65,7 +65,7 @@ function anotar(h: Omit<HechoUso, 'momento' | 'aparato' | 'ancho' | 'alto' | 've
 
 /** Manda lo acumulado. Con `cerrando`, por sendBeacon (sobrevive a cerrar la pestaña). */
 export function enviar(cerrando = false): void {
-  const token = localStorage.getItem('sgdp_token')
+  const token = localStorage.getItem('qillqa_token')
   if (!token || cola.length === 0) { cola = []; return }
   const cuerpo = JSON.stringify({ sesion: token, eventos: cola })
   cola = []

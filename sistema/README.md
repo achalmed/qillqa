@@ -2,20 +2,20 @@
 tipo: readme
 estado: activo
 ---
-# sistema/ — plantilla de la unidad systemd de usuario `sgdp.service` (arranque y publicación al encender)
+# sistema/ — plantilla de la unidad systemd de usuario `qillqa.service` (arranque y publicación al encender)
 
-La unidad real vive en `~/.config/systemd/user/sgdp.service` y la escribe `instalar_enlace_fijo.sh`
-(paso 4) con la ruta del repo; `sgdp.service.ejemplo` es la misma unidad con `%h/Documents/sgdp`
+La unidad real (`qillqa.service`, en la carpeta de unidades de usuario de systemd) la escribe `instalar_enlace_fijo.sh`
+(paso 4) con la ruta del repo; `qillqa.service.ejemplo` es la misma unidad con `%h/Documents/qillqa`
 (systemd expande `%h` al *home* del usuario) para instalarla a mano o comprobar la existente.
 
 ## Uso
 
 ```bash
-sed "s#%h/Documents/sgdp#$PWD#g" sistema/sgdp.service.ejemplo > ~/.config/systemd/user/sgdp.service
-systemctl --user daemon-reload && systemctl --user enable --now sgdp.service
+sed "s#%h/Documents/qillqa#$PWD#g" sistema/qillqa.service.ejemplo > ~/.config/systemd/user/qillqa.service
+systemctl --user daemon-reload && systemctl --user enable --now qillqa.service
 sudo loginctl enable-linger "$USER"        # arranca al encender, sin sesión gráfica
-systemctl --user status sgdp.service        # active (exited) = arrancó y publicó
-journalctl --user -u sgdp.service -n 50     # y arranque.log en la raíz del repo
+systemctl --user status qillqa.service        # active (exited) = arrancó y publicó
+journalctl --user -u qillqa.service -n 50     # y arranque.log en la raíz del repo
 ```
 
 `ExecStart` llama a `arranque_automatico.sh`, que espera hasta 20 minutos a internet, Docker y

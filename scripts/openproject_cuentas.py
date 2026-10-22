@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-"""scripts/openproject_cuentas.py — crea en OpenProject las cuentas del equipo a partir del SGDP (usuario, correo, cargo y rol) y de los nombres completos de los informes de representación; simula por defecto.
+"""scripts/openproject_cuentas.py — crea en OpenProject las cuentas del equipo a partir de Qillqa (usuario, correo, cargo y rol) y de los nombres completos de los informes de representación; simula por defecto.
 
 Cada cuenta nueva:
-  · login = el usuario del SGDP y el MISMO correo: así la integración la vincula sola
-    (servicios/openproject_sync.py) y los encargos del SGDP llegan con responsable;
-  · nombre completo: el del SGDP o, si en un informe de representación (`responsables`
+  · login = el usuario de Qillqa y el MISMO correo: así la integración la vincula sola
+    (servicios/openproject_sync.py) y los encargos de Qillqa llegan con responsable;
+  · nombre completo: el de Qillqa o, si en un informe de representación (`responsables`
     de cada `expediente.yaml`) aparece la misma persona con más apellidos, ese;
-  · rol de proyecto según el rol y el cargo del SGDP, y los proyectos que el perfil de
+  · rol de proyecto según el rol y el cargo de Qillqa, y los proyectos que el perfil de
     OpenProject da a ese rol (`roles_proyectos`); nunca administradora;
   · una contraseña temporal PROPIA, que OpenProject obliga a cambiar en el primer ingreso.
 
 No toca a quien ya tiene cuenta en OpenProject (por usuario, correo o nombre completo:
 si el correo difiere, lo dice, para igualarlo y que se vincule). Salta a quien no tiene
-correo en el SGDP y a los invitados.
+correo en Qillqa y a los invitados.
 
 Lo corre una PERSONA (crea cuentas y contraseñas: el asistente no lo hace). Las claves
 temporales NO se muestran en pantalla: van a un archivo con permiso 600 que se entrega
@@ -21,7 +21,7 @@ a cada persona y luego se borra.
 Uso:
   python3 scripts/openproject_cuentas.py             # simula: muestra a quién crearía y con qué rol
   python3 scripts/openproject_cuentas.py --aplicar   # crea las cuentas (pide confirmación)
-Rutas: el .env del SGDP (base, ISR_RAIZ) y, por core/env.py (DESPACHO_DIR), `<despacho>/operaciones/openproject/.env`
+Rutas: el .env de Qillqa (base, ISR_RAIZ) y, por core/env.py (DESPACHO_DIR), `<despacho>/operaciones/openproject/.env`
 (OPENPROJECT_PERFIL y OPENPROJECT_CONTENEDOR).
 """
 
@@ -42,7 +42,7 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parents[1]
 
-# Rol del SGDP (y pistas del cargo) → rol de proyecto de OpenProject (seeds/14_roles.rb).
+# Rol de Qillqa (y pistas del cargo) → rol de proyecto de OpenProject (seeds/14_roles.rb).
 ROL_POR_ROL = {"diputado": "Diputado", "secretaria": "Asistente Administrativo", "asesor": "Asesor Legislativo", "administrador": "Asesor Legislativo"}
 ROL_POR_CARGO = [
     (r"jefe|jefa", "Jefe de Despacho"),
@@ -69,18 +69,18 @@ def normal(texto: str) -> str:
     return re.sub(r"\s+", " ", re.sub(r"[^a-z ]", " ", t)).strip()
 
 
-def nombre_completo(sgdp_nombre: str, nombres_isr: list[str]) -> str:
+def nombre_completo(qillqa_nombre: str, nombres_isr: list[str]) -> str:
     """El nombre más completo de la persona: el de un informe que contiene TODAS las
-    palabras del nombre del SGDP (al menos dos), o el del SGDP."""
-    propias = set(normal(sgdp_nombre).split())
+    palabras del nombre de Qillqa (al menos dos), o el de Qillqa."""
+    propias = set(normal(qillqa_nombre).split())
     if len(propias) < 2:
-        return sgdp_nombre.strip()
+        return qillqa_nombre.strip()
     candidatos = [n for n in nombres_isr if propias <= set(normal(n).split())]
-    return max(candidatos, key=lambda n: len(n.split()), default=sgdp_nombre.strip())
+    return max(candidatos, key=lambda n: len(n.split()), default=qillqa_nombre.strip())
 
 
 def partir(nombre: str, nombres: str = "", apellidos: str = "") -> tuple[str, str]:
-    """(nombres, apellidos). Con los dos campos del SGDP, esos; si no, los dos últimos
+    """(nombres, apellidos). Con los dos campos de Qillqa, esos; si no, los dos últimos
     términos son los apellidos (uso peruano: paterno y materno)."""
     if nombres.strip() and apellidos.strip() and len(nombre.split()) <= len(f"{nombres} {apellidos}".split()):
         return nombres.strip(), apellidos.strip()
@@ -91,13 +91,13 @@ def partir(nombre: str, nombres: str = "", apellidos: str = "") -> tuple[str, st
     return " ".join(p[:corte]), " ".join(p[corte:])
 
 
-def rol_op(rol_sgdp: str, cargo: str) -> str | None:
-    if rol_sgdp == "invitado":
+def rol_op(rol_qillqa: str, cargo: str) -> str | None:
+    if rol_qillqa == "invitado":
         return None
     for patron, rol in ROL_POR_CARGO:
-        if re.search(patron, cargo or "", re.IGNORECASE) and rol_sgdp != "diputado":
+        if re.search(patron, cargo or "", re.IGNORECASE) and rol_qillqa != "diputado":
             return rol
-    return ROL_POR_ROL.get(rol_sgdp, "Colaborador")
+    return ROL_POR_ROL.get(rol_qillqa, "Colaborador")
 
 
 def clave_temporal(largo: int = 14) -> str:
@@ -114,7 +114,7 @@ def ya_tiene(u: dict, op_usuarios: list[dict]) -> dict | None:
     for o in op_usuarios:
         if o["login"].lower() == u["login"].lower() or (u["correo"] and o["mail"].lower() == u["correo"].lower()):
             return o
-        if normal(f"{o['firstname']} {o['lastname']}") and normal(f"{o['firstname']} {o['lastname']}") in (normal(u["nombre_completo"]), normal(u["nombre_sgdp"])):
+        if normal(f"{o['firstname']} {o['lastname']}") and normal(f"{o['firstname']} {o['lastname']}") in (normal(u["nombre_completo"]), normal(u["nombre_qillqa"])):
             return o
     return None
 
@@ -144,13 +144,13 @@ def core_env():
     return m
 
 
-def usuarios_sgdp(env: dict) -> list[dict]:
+def usuarios_qillqa(env: dict) -> list[dict]:
     sql = ("SELECT COALESCE(json_agg(u ORDER BY u.id), '[]') FROM (SELECT id, nombre_usuario, nombre_completo, nombres, apellidos, "
            "email, cargo, rol FROM usuarios WHERE activo) u")
     r = subprocess.run(["docker", "compose", "exec", "-T", "db", "psql", "-U", env["POSTGRES_USER"], "-d", env["POSTGRES_DB"], "-At", "-c", sql],
                        cwd=RAIZ, capture_output=True, text=True)
     if r.returncode:
-        sys.exit(f"❌ No pude leer los usuarios del SGDP: {r.stderr.strip()[:200]}")
+        sys.exit(f"❌ No pude leer los usuarios de Qillqa: {r.stderr.strip()[:200]}")
     return json.loads(r.stdout.strip() or "[]")
 
 
@@ -231,16 +231,16 @@ def main() -> None:
     contenedor = op_env.get("OPENPROJECT_CONTENEDOR") or "openproject"
     proyectos_rol = roles_proyectos(op_env)
 
-    sgdp = usuarios_sgdp(env)
+    qillqa = usuarios_qillqa(env)
     isr = nombres_isr(env, Path(cenv.DESPACHO_DIR))
     op_usuarios = json.loads(next((l[4:] for l in rails(contenedor, LISTAR).splitlines() if l.startswith("OPU=")), "[]"))
 
     crear, informe = [], []
-    for u in sgdp:
+    for u in qillqa:
         login = u["nombre_usuario"]
         rol = rol_op(u.get("rol") or "", u.get("cargo") or "")
         completo = nombre_completo(u.get("nombre_completo") or "", isr)
-        fila = {"login": login, "nombre_sgdp": u.get("nombre_completo") or "", "nombre_completo": completo, "correo": (u.get("email") or "").strip(), "rol": rol}
+        fila = {"login": login, "nombre_qillqa": u.get("nombre_completo") or "", "nombre_completo": completo, "correo": (u.get("email") or "").strip(), "rol": rol}
         if rol is None:
             informe.append((login, completo, "—", "se omite: cuenta de invitado"))
             continue
@@ -248,18 +248,18 @@ def main() -> None:
         if existente:
             nota = f"ya tiene cuenta: {existente['login']}"
             if fila["correo"] and existente["mail"].lower() != fila["correo"].lower():
-                nota += f" (correo distinto: iguálelo en el SGDP o en OpenProject para vincularla)"
+                nota += f" (correo distinto: iguálelo en Qillqa o en OpenProject para vincularla)"
             informe.append((login, completo, "—", nota))
             continue
         if not fila["correo"]:
-            informe.append((login, completo, rol, "se omite: sin correo en el SGDP (agréguelo en Administración)"))
+            informe.append((login, completo, rol, "se omite: sin correo en Qillqa (agréguelo en Administración)"))
             continue
         nombre, apellido = partir(completo, u.get("nombres") or "", u.get("apellidos") or "")
         proyectos = proyectos_rol.get(rol, ["despacho"])
         crear.append({**fila, "nombre": nombre, "apellido": apellido, "proyectos": proyectos})
         informe.append((login, f"{nombre} {apellido}", rol, f"se crea · {'todos los proyectos' if proyectos == 'todos' else ', '.join(proyectos)}"))
 
-    print(f"Cuentas del SGDP: {len(sgdp)} · nombres completos de los informes: {len(isr)} · cuentas en OpenProject: {len(op_usuarios)}\n")
+    print(f"Cuentas de Qillqa: {len(qillqa)} · nombres completos de los informes: {len(isr)} · cuentas en OpenProject: {len(op_usuarios)}\n")
     ancho = max([len(f[1]) for f in informe] + [10])
     for login, nombre, rol, nota in informe:
         print(f"  {login:<16} {nombre:<{ancho}}  {rol:<26} {nota}")
@@ -279,7 +279,7 @@ def main() -> None:
     resultados = {r["login"]: r for r in (json.loads(l[4:]) for l in salida.splitlines() if l.startswith("RES="))}
 
     # Las claves temporales van a un archivo privado, nunca a la pantalla.
-    estado = Path(os.environ.get("XDG_STATE_HOME") or Path.home() / ".local" / "state") / "sgdp"
+    estado = Path(os.environ.get("XDG_STATE_HOME") or Path.home() / ".local" / "state") / "qillqa"
     estado.mkdir(parents=True, exist_ok=True)
     os.chmod(estado, 0o700)
     archivo = estado / f"openproject_cuentas_{datetime.now():%Y%m%d-%H%M}.txt"
@@ -298,7 +298,7 @@ def main() -> None:
     for c in crear:
         c.pop("clave", None)
     print(f"\n✅ Claves temporales en {archivo} (permiso 600; no se muestran aquí).")
-    print("   La integración las vincula sola en menos de 2 minutos: SGDP → Administración → OpenProject.")
+    print("   La integración las vincula sola en menos de 2 minutos: Qillqa → Administración → OpenProject.")
 
 
 if __name__ == "__main__":

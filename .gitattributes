@@ -1,4 +1,4 @@
-# .gitattributes — sgdp: normalización de texto, binarios, diffs por lenguaje y lo generado.
+# .gitattributes — qillqa: normalización de texto, binarios, diffs por lenguaje y lo generado.
 
 # ===== Normalización de fin de línea =====
 # Todo lo que git detecte como texto se guarda con LF; en Linux se trabaja con LF y así no entran CRLF
@@ -35,13 +35,11 @@ iniciar.sh text eol=lf
 # linguist-generated pliega estos archivos en la revisión y los excluye de las estadísticas de lenguaje;
 # -diff evita que un cambio regenerado llene el diff. Nunca se editan a mano: se regeneran con su herramienta.
 docs/historial/exposicion-2026-09-04/guion_orador.md linguist-generated=true -diff
-docs/historial/exposicion-2026-09-04/presentacion-sgdp.html linguist-generated=true -diff
+docs/historial/exposicion-2026-09-04/presentacion-qillqa.html linguist-generated=true -diff
 
 # ===== Clasificación de lenguajes (GitHub Linguist) =====
 # Plantillas Jinja (.j2) del generador del informe-sr: son plantillas, no código del proyecto.
 *.j2 linguist-language=Jinja
-# Las clases y plantillas LaTeX del marco cuentan como TeX, no como documentación.
-marco_documental/templates/** linguist-documentation=false
 
 # ===== Exportación (git archive) =====
 # Lo que no viaja en un paquete de distribución del código.

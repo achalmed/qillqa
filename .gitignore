@@ -1,4 +1,4 @@
-# Secretos locales: un despliegue local sin despacho (el del despacho vive en SGDP_OPERACIONES; entorno.sh, ADR-15)
+# Secretos locales: un despliegue local sin despacho (el del despacho vive en QILLQA_OPERACIONES; entorno.sh, ADR-15)
 .env
 # Registros de arranque y de los túneles (ola 9): logs/; los *.log de la raíz son de procesos arrancados antes
 logs/
@@ -27,9 +27,9 @@ dist/
 bin/*
 !bin/README.md
 
-# El Marco Documental vive en marco_documental/ (subtree; M10 D9) con su propio .gitignore; el archivo
+# El Marco Documental vive en Qillqasqa desde el 2026-10-22 (../qillqasqa/marco_documental); el archivo
 # documental vive en el despacho (MDD_DOCUMENTOS): aquí no hay nada de LaTeX que ignorar.
-# El despliegue del despacho (operaciones/sgdp: .env y respaldos/) se resuelve por SGDP_OPERACIONES, sin enlaces (ola 9).
+# El despliegue del despacho (operaciones/qillqa: .env y respaldos/) se resuelve por QILLQA_OPERACIONES, sin enlaces (ola 9).
 backend/.pytest_cache/
 
 # Registros de operación del renombrado masivo (datos, no código): quedan junto al script
@@ -38,7 +38,7 @@ scripts/siembra/renombrado_*.json
 # Observatorio con el tema del despacho: lo genera scripts/observatorio.py (datos de datafw)
 frontend/public/obs/
 
-# Temporal (§5): volcados de la base de un despliegue local sin despacho (el del despacho va a SGDP_RESPALDOS)
+# Temporal (§5): volcados de la base de un despliegue local sin despacho (el del despacho va a QILLQA_RESPALDOS)
 respaldos
 
 # Herramienta local del asistente (configuración de vista previa y permisos): no es del proyecto

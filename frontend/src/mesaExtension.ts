@@ -6,8 +6,10 @@
 // la mesa y se avisa cómo instalarla.
 import { api } from './api'
 
-/** La extensión marca la página de Qillqa con data-sgdp-extension al cargar. */
-export const extensionInstalada = (): boolean => Boolean(document.documentElement.dataset.sgdpExtension)
+/** La extensión marca la página de Qillqa con data-qillqa-extension al cargar; la instalada antes del 2026-10-22, con
+ * data-sgdp-extension (se deja de leer en la fase 7). */
+export const extensionInstalada = (): boolean =>
+  Boolean(document.documentElement.dataset.qillqaExtension || document.documentElement.dataset.sgdpExtension)
 
 /** Abre la mesa de partes (desde un clic) y, si hay extensión, le pasa el documento. */
 export async function abrirMesaDePartes(documentoId: number, url: string): Promise<'extension' | 'sin-extension'> {
@@ -17,7 +19,7 @@ export async function abrirMesaDePartes(documentoId: number, url: string): Promi
   if (!extensionInstalada()) return 'sin-extension'
   const paquete = await api(`/api/mesa/documentos/${documentoId}`)
   window.postMessage(
-    { sgdp: 'mesa', url, paquete, token: localStorage.getItem('sgdp_token') ?? '', api: location.origin },
+    { qillqa: 'mesa', url, paquete, token: localStorage.getItem('qillqa_token') ?? '', api: location.origin },
     location.origin,
   )
   return 'extension'

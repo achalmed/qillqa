@@ -1,15 +1,15 @@
 ---
 tipo: doc
-titulo: "Manual de uso del SGDP: operación (encender, compartir, cuentas, respaldos) y uso diario"
+titulo: "Manual de uso de Qillqa: operación (encender, compartir, cuentas, respaldos) y uso diario"
 estado: activo
 ---
-# Manual de uso del SGDP
+# Manual de uso de Qillqa
 
 Dos partes: **A. Operación**, para quien administra el sistema en la laptop-servidor, y **B. Uso
 diario**, para el equipo del despacho (puede copiarse desde ahí y enviarse). Los comandos son los
 del README (`README.md` §Uso); este manual dice cuándo y por qué se usan. Nada aquí es de un
 despacho concreto: las cuentas, el enlace y la dirección del servidor viven en
-`<despacho>/operaciones/sgdp/README.md`.
+`<despacho>/operaciones/qillqa/README.md`.
 
 ## Parte A — Operación
 
@@ -17,7 +17,7 @@ despacho concreto: las cuentas, el enlace y la dirección del servidor viven en
 
 Una página web para que el equipo del despacho genere los documentos oficiales (oficios,
 memorandos, informes, solicitudes, actas) desde el navegador, **sin tocar LaTeX**. El formato
-(membrete, sello, firma) lo pone el Marco Documental (`marco_documental/`) con el perfil del
+(membrete, sello, firma) lo pone el Marco Documental (`../qillqasqa/marco_documental/`) con el perfil del
 despacho (`MDD_PERFIL`); las personas solo escriben el contenido.
 
 ### 2. Requisitos (una sola vez)
@@ -43,7 +43,7 @@ API y web mueren: volver a `./iniciar.sh` (idempotente).
 
 `./instalar_enlace_fijo.sh`, una sola vez: instala Tailscale, conecta la laptop a la cuenta del
 despacho, publica el sistema con Funnel en una dirección **fija** `https://<laptop>.<red>.ts.net`
-y deja el arranque automático (`sgdp.service`, ver `sistema/README.md`). Desde entonces el enlace
+y deja el arranque automático (`qillqa.service`, ver `sistema/README.md`). Desde entonces el enlace
 es siempre el mismo, se manda una vez, se publica solo al encender la laptop y vuelve a responder
 solo cuando vuelve el internet. Con la laptop apagada, nadie entra. Todo va cifrado (HTTPS), sin
 abrir puertos del router y detrás de usuario y contraseña. Detalle y aviso opcional por Telegram
@@ -54,13 +54,13 @@ abrir puertos del router y detrás de usuario y contraseña. Detalle y aviso opc
 | Ver cuál es el enlace | `./enlace.sh --ver` |
 | Publicar a mano | `./enlace.sh` |
 | Dejar de publicar (el enlace queda reservado) | `./enlace.sh --apagar` |
-| Ver si el arranque automático está bien | `systemctl --user status sgdp.service` |
+| Ver si el arranque automático está bien | `systemctl --user status qillqa.service` |
 | Túnel temporal de respaldo (enlace nuevo cada vez) | `./compartir.sh` |
 
 ### 5. Cuentas y contraseñas
 
 Cada persona tiene una **cuenta propia** con su cargo; del cargo salen los permisos
-(`backend/app/flujo.py`): **Administrador**, todo (eliminar, convertir documentos del archivo,
+(`../qillqasqa/qillqasqa/flujo.py`): **Administrador**, todo (eliminar, convertir documentos del archivo,
 gestionar cuentas y directorio); **Diputado** y **Asesor**, revisar, observar y aprobar;
 **Secretaría**, redactar, generar, enviar y registrar cargos. «Administrador del sistema» es una
 casilla aparte, no un cargo.
@@ -88,10 +88,10 @@ casilla aparte, no un cargo.
 ### 6. Mantenimiento
 
 - **Respaldos**: `./respaldar.sh` guarda un volcado de la base en `respaldos/` (enlace a
-  `<despacho>/operaciones/sgdp/respaldos/`). Los PDF y `.tex` viven en el archivo documental
+  `<despacho>/operaciones/qillqa/respaldos/`). Los PDF y `.tex` viven en el archivo documental
   (`MDD_DOCUMENTOS`): copiarlo también a un disco externo cada cierto tiempo. La instalación del
   despacho programa `respaldar.sh` a diario (`cron`, con rotación; lo documenta el README de su
-  carpeta operaciones/sgdp),
+  carpeta operaciones/qillqa),
   pero el destino sigue en la misma laptop: el respaldo fuera de la máquina está pendiente
   (`docs/decisiones.md` §Pendientes).
 - **Registros**: `api.log` (en `logs/`) (API), `web.log` (en `logs/`) y `web-build.log` (en `logs/`) (web), `colab.log` (en `logs/`) (edición
@@ -266,7 +266,7 @@ formulario queda aprendido para esa mesa: el siguiente «Autocompletar formulari
 
 **Firmados que vuelven en el USB.** Si el firmador deja «…[R].pdf» junto a los originales en la carpeta
 sincronizada, al pulsar «Sincronizar ahora» esos firmados se incorporan solos a sus documentos y se
-apartan a la carpeta *.sgdp-importados*; lo que no se pudo identificar queda donde estaba, con el motivo.
+apartan a la carpeta *.qillqa-importados*; lo que no se pudo identificar queda donde estaba, con el motivo.
 
 **Varios documentos.** En la bandeja, al marcar varios: «Qué bajar» elige PDF, firmados, cargos o
 expedientes, y «Comparar» los muestra lado a lado (hasta cuatro).
@@ -409,7 +409,7 @@ documento contesta a uno recibido.
   firmar («Firmado desactualizado»).
 - **Ficha del proyecto**: se elige, no se escribe. Autor (viene del perfil del despacho), grupo
   parlamentario, cámara, comisiones (las 16 ordinarias de la Cámara de Diputados) y firmas de
-  respaldo (diputados del directorio) son desplegables; los documentos del SGDP se vinculan con un
+  respaldo (diputados del directorio) son desplegables; los documentos de Qillqa se vinculan con un
   buscador. Si falta una opción, se puede escribir.
 - **Edición simultánea**: el interruptor está en la cabecera del proyecto y dice su estado
   («Encendida» en verde / «Apagada»).
@@ -436,10 +436,10 @@ documento contesta a uno recibido.
   tiene el archivo en la biblioteca Calibre, la fuente muestra `calibre:N` (dónde está el archivo). En
   «Referencia» también puede escribir una clave — `zotero:ABCD1234` (una obra de Zotero),
   `calibre:10086` (un archivo de la biblioteca), `datafw:estudio@v1#indicador` (un paquete de datos),
-  `sgdp:doc:272` (un documento del sistema)— y el proyecto muestra su título real. Zotero debe estar
+  `qillqa:doc:272` (un documento del sistema)— y el proyecto muestra su título real. Zotero debe estar
   abierto en el servidor para que formatee él; cerrado, se lee una copia de su base y el buscador lo
   avisa. Si nada de eso está en el equipo, se ve la clave tal cual.
-- **Aviso de llegadas (solo el administrador)**: un tono suave y el mensaje «Entró al SGDP: …»
+- **Aviso de llegadas (solo el administrador)**: un tono suave y el mensaje «Entró a Qillqa: …»
   cuando alguien abre el sistema (tarda hasta un minuto). Se apaga o se prueba en la ventana del
   equipo («Avisarme cuando alguien entre» · «Probar»). Nadie más lo oye ni lo ve. El navegador
   solo deja sonar después de un primer clic en la página; con la pestaña oculta y el permiso
@@ -475,11 +475,11 @@ subir la firma (hasta 2 cm, lo que pide la firma digital), quitar aire de la cab
 párrafos, poner interlineado 1,0 y bajar la letra hasta 10 pt; si aun así no cabe, acorta un
 poco la primera hoja para que la firma vaya acompañada de texto. Un aviso dice qué ajuste usó.
 
-#### Enviar por Mesa de Partes: la extensión del SGDP
+#### Enviar por Mesa de Partes: la extensión de Qillqa
 
 Con la extensión instalada (una vez por computadora: Directorio → Mesas de partes → «Descargar
 la extensión» y sus cuatro pasos), **«Abrir mesa de partes»** de un documento abre la página de
-la entidad y el panel del SGDP **aparece solo dentro de ella**: «Autocompletar formulario» llena
+la entidad y el panel de Qillqa **aparece solo dentro de ella**: «Autocompletar formulario» llena
 los campos que reconoce (con borde dorado, sin enviar nada), «Autocompletar ingreso» pone el
 usuario y la clave, cada dato se copia con un clic y se puede descargar el firmado para
 adjuntarlo. El panel se mueve arrastrando su cabecera, se minimiza con «—» y se cierra con «✕».
@@ -494,7 +494,7 @@ DNI, fechas, ubigeo, correo, celular… También abre la mesa de partes, copia s
 clave (si el administrador los guardó), descarga el firmado o **abre su ubicación** (en la
 computadora donde corre el sistema).
 
-**Autocompletar**: la primera vez, arrastre el botón «Autocompletar SGDP» (en la ventana o en
+**Autocompletar**: la primera vez, arrastre el botón «Autocompletar Qillqa» (en la ventana o en
 Directorio → Mesas de partes) a la barra de marcadores. Después, en la ventana pulse
 «Preparar autocompletado» y, en la página de la mesa de partes, pulse ese marcador: llena los
 campos vacíos que reconoce (con borde dorado) y no envía nada. Revise antes de enviar.
@@ -521,7 +521,7 @@ KeePassXC (después hay que borrar ese archivo: tiene las claves sin cifrar). La
 guardan cifradas y cada vez que alguien ve, copia o autocompleta una queda en «Quién la usó».
 Un sitio es **una sola cuenta** aunque se entre de varias formas (con DNI, con correo, con
 usuario…): cada forma de ingreso lleva su propia clave («Editar» → «Otra forma de ingreso»).
-Con la extensión del SGDP, al abrir la página de ingreso de un sitio guardado aparece
+Con la extensión de Qillqa, al abrir la página de ingreso de un sitio guardado aparece
 «Autocompletar acceso» con cada forma («Entrar con DNI», «Entrar con Correo»): un clic pone el
 usuario y la clave. La extensión se instala en Chrome, Edge, Zen o Firefox (Directorio → Mesas
 de partes).
@@ -685,7 +685,7 @@ Lo elegido queda escrito como se cita («Ley N° 27795, Ley de Demarcación y Or
 un subrayado tenue que en el PDF no sale, y **queda relacionado** al guardar: aparece en el mapa del
 documento o del proyecto sin registrarlo otra vez. Si borra la cita, la relación se quita al guardar. Una
 obra de Zotero sale con la cita en el texto que da Zotero («(Bobbio, 1985)») y su referencia APA en nota
-al pie (con Zotero cerrado, las arma el SGDP desde una copia de su base); en un proyecto de ley, la norma
+al pie (con Zotero cerrado, las arma Qillqa desde una copia de su base); en un proyecto de ley, la norma
 o la obra citada pasa sola a sus **Fuentes**. «@obra» (o «@cita») seguido
 del autor o el título busca solo en Zotero: «@obra cotler».
 
@@ -711,7 +711,7 @@ institución, con los favoritos arriba y una letra por grupo.
 - **Nuevo contacto o Editar**: nombre, celular, correo, institución y cargo; **Ver más** para el resto
   (etiquetas, tratamiento, área, teléfono fijo, anexo, correo alterno, oficina, notas y si se sugiere al
   redactar). Toque el círculo de arriba para poner la **foto**. Si ya hay alguien con ese nombre, celular o
-  correo, lo avisa con «Abrir». De quien tiene cuenta en el SGDP, el nombre, cargo, correo y celular se
+  correo, lo avisa con «Abrir». De quien tiene cuenta en Qillqa, el nombre, cargo, correo y celular se
   cambian en **Mi perfil** o en Administración.
 - **Etiquetas** (grupos): escríbalas en «Ver más → Etiquetas» (Enter agrega una nueva): Prensa, Comisión de
   Educación, Gobierno regional… «⋮ → Etiquetas» las renombra o las quita de todos.
@@ -739,7 +739,7 @@ arriba a la derecha están desplegar todo, solo dos niveles, ajustar a la pantal
 En «Directorio → **Distritos**», los distritos de Ayacucho con su ley y fecha de creación; «Orden → Aniversario
 más próximo» muestra los que vienen. En el Inicio aparecen los que cumplen años de creación en las próximas dos
 semanas (para preparar el saludo del despacho). La fecha es la de su ley de creación: confirme con la
-municipalidad si celebra otro día. Para añadir otro departamento, se agrega su CSV en `backend/app/catalogos/`.
+municipalidad si celebra otro día. Para añadir otro departamento, se agrega su CSV en `../qillqasqa/qillqasqa/catalogos/`.
 
 ### Mesa de Partes (antes «Recibidos»)
 
@@ -860,7 +860,9 @@ semana entra también a la Fototeca; el administrador trae lo anterior con «Tra
 Los **videos** (MP4, MOV, WEBM) se suben igual y se guardan una sola vez; en la cuadrícula llevan ▶ y su
 duración, y el selector «Fotos y videos / Solo fotos / Solo videos» los separa. Al abrir uno se reproduce
 ahí mismo (se puede adelantar); no se edita en la Fototeca —se edita en Prensa— y el botón de descarga
-baja el original. Los videos que exporta Prensa llegan solos al álbum «Piezas de prensa».
+baja el original. Todo lo que se exporta en Prensa (posts, historias, portadas, videos) se guarda solo en
+la Mediateca, con nombre por fecha: se ve en su panel, sección **Prensa**, por formato, con la red y el
+nombre que se le dio como etiquetas y título; si salió de una foto, aparece también entre sus versiones.
 
 **Subir fotos de una semana de representación.** Al subir, el sistema pregunta si son de una Semana de
 Representación y de qué actividad: entran a la Mediateca y, además, al banco de trabajo de esa semana
@@ -1100,9 +1102,9 @@ permite cambiarla. Cada mañana, «Programación del día» trae las actividades
 En lo que usted envía, **✓** es enviado, **✓✓** recibido y **✓✓ en azul** leído; mantenga pulsado un
 mensaje suyo → «Info» para ver quién lo leyó. **Avisos en el celular**: Mi perfil → «Avisos en este
 dispositivo» → Activar (o «Activar» en la franja del chat, la primera vez); funciona con el enlace
-https del SGDP y, en iPhone, con el SGDP instalado en la pantalla de inicio. El SGDP suena con sus
+https de Qillqa y, en iPhone, con Qillqa instalado en la pantalla de inicio. Qillqa suena con sus
 propios sonidos al enviar y al llegar un mensaje (se apagan en Mi perfil); el sonido del aviso en el
-celular lo pone el teléfono, pero la vibración (dos toques cortos y uno largo) es la del SGDP.
+celular lo pone el teléfono, pero la vibración (dos toques cortos y uno largo) es la de Qillqa.
 
 ### La vista: celular, tableta o escritorio
 

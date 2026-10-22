@@ -12,7 +12,7 @@ import { api } from '../../api'
 import { rutaFoto } from '../../perfil'
 
 const RENOVAR_MS = 5 * 60 * 1000
-const EVENTO_TARJETA = 'sgdp:tarjeta'
+const EVENTO_TARJETA = 'qillqa:tarjeta'
 
 let versiones: Record<string, string> = {}
 let pedidoEn = 0
@@ -30,7 +30,7 @@ const avisar = () => oyentes.forEach((f) => f())
 
 /** Pide (o renueva) el mapa de fotos. `forzar`: sin esperar los 5 minutos. */
 export function refrescarFotos(forzar = false): Promise<void> {
-  if (!localStorage.getItem('sgdp_token')) return Promise.resolve()
+  if (!localStorage.getItem('qillqa_token')) return Promise.resolve()
   if (enCurso) return enCurso
   if (!forzar && pedidoEn && Date.now() - pedidoEn < RENOVAR_MS) return Promise.resolve()
   pedidoEn = Date.now()
@@ -60,7 +60,7 @@ function urlDe(id: number, version: string): Promise<string | null> {
   const clave = `${id}:${version}`
   let p = urls.get(clave)
   if (!p) {
-    const token = localStorage.getItem('sgdp_token')
+    const token = localStorage.getItem('qillqa_token')
     p = fetch(rutaFoto(id), { headers: token ? { Authorization: `Bearer ${token}` } : {} })
       .then((r) => (r.ok ? r.blob() : null))
       .then((b) => (b ? URL.createObjectURL(b) : null))

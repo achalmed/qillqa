@@ -2,37 +2,39 @@
 que mira cada pestaña (para no avisar lo que ya se tiene delante) y los temas nuevos de fábrica."""
 import asyncio
 
-from app.servicios import chat, difusor, eventos_sistema, programacion
+from minka import programacion
+from rimay import chat
+from app.servicios import avisos_chat, difusor, eventos_sistema
 
 
 def test_tarjeta_numerado_sin_repetir_el_numero():
-    t = chat.tarjeta_de("documento.numerado", {"numero": "Oficio N°0142-2026", "asunto": "Traslada y solicita información"})
+    t = avisos_chat.tarjeta_de("documento.numerado", {"numero": "Oficio N°0142-2026", "asunto": "Traslada y solicita información"})
     assert t == {"que": "Numerado", "icono": "numerado", "titulo": "Oficio N°0142-2026", "detalle": "Traslada y solicita información", "meta": []}
 
 
 def test_tarjeta_estado_firmado_enviado_y_otro():
-    assert chat.tarjeta_de("documento.estado", {"numero": "N1", "estado": "FIRMADO", "asunto": "A"})["que"] == "Firmado"
-    assert chat.tarjeta_de("documento.estado", {"numero": "N1", "estado": "ENVIADO", "asunto": "A"})["icono"] == "enviado"
-    assert chat.tarjeta_de("documento.estado", {"numero": "N1", "estado": "OBSERVADO_ENVIADO"})["que"] == "Pasó a observado enviado"
+    assert avisos_chat.tarjeta_de("documento.estado", {"numero": "N1", "estado": "FIRMADO", "asunto": "A"})["que"] == "Firmado"
+    assert avisos_chat.tarjeta_de("documento.estado", {"numero": "N1", "estado": "ENVIADO", "asunto": "A"})["icono"] == "enviado"
+    assert avisos_chat.tarjeta_de("documento.estado", {"numero": "N1", "estado": "OBSERVADO_ENVIADO"})["que"] == "Pasó a observado enviado"
 
 
 def test_tarjeta_recibido_con_meta_legible():
-    t = chat.tarjeta_de("entrada.registrada", {"remitente": "Ministerio X", "asunto": "Invita", "atencion": "responder", "plazo": "2026-10-14"})
+    t = avisos_chat.tarjeta_de("entrada.registrada", {"remitente": "Ministerio X", "asunto": "Invita", "atencion": "responder", "plazo": "2026-10-14"})
     assert t["que"] == "Llegó" and t["titulo"] == "Ministerio X" and t["detalle"] == "Invita"
     assert t["meta"] == ["por responder", "plazo mié 14/10"]
 
 
 def test_tarjeta_evento_y_programacion():
-    t = chat.tarjeta_de("evento.creado", {"titulo": "Sesión", "inicio": "2026-10-14T10:30:00-05:00", "lugar": "Hemiciclo"})
+    t = avisos_chat.tarjeta_de("evento.creado", {"titulo": "Sesión", "inicio": "2026-10-14T10:30:00-05:00", "lugar": "Hemiciclo"})
     assert t["que"] == "Agendado" and t["meta"] == ["mié 14/10 10:30", "Hemiciclo"]
-    p = chat.tarjeta_de("agenda.programacion_diaria", {"fecha": "2026-10-13", "n": 2, "resumen": "08:00 A\n10:00 B"})
+    p = avisos_chat.tarjeta_de("agenda.programacion_diaria", {"fecha": "2026-10-13", "n": 2, "resumen": "08:00 A\n10:00 B"})
     assert p["titulo"] == "mar 13/10" and p["detalle"] == "08:00 A\n10:00 B" and p["meta"] == ["2 actividad(es)"]
 
 
 def test_tarjeta_de_anuncios_y_sin_tarjeta():
-    t = chat.tarjeta_de("", {}, "Tarea creada: Revisar el oficio · vence lun 14/10 · Ana")
+    t = avisos_chat.tarjeta_de("", {}, "Tarea creada: Revisar el oficio · vence lun 14/10 · Ana")
     assert t == {"que": "Tarea creada", "icono": "tarea", "titulo": "Revisar el oficio", "detalle": "", "meta": ["vence lun 14/10", "Ana"]}
-    assert chat.tarjeta_de("", {}, "Reconocí un formato «Agenda»: 2 actividad(es).") == {}
+    assert avisos_chat.tarjeta_de("", {}, "Reconocí un formato «Agenda»: 2 actividad(es).") == {}
 
 
 def test_toda_regla_de_fabrica_publica_en_un_canal_de_fabrica():

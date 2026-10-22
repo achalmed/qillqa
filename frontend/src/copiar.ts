@@ -58,7 +58,7 @@ export const totalPaginasCopiado = (): number => ultimoTotal
  * y del visor rápido de la bandeja (2026-10-19), que la muestra en vez de copiarla.
  */
 export async function traerPaginaComoImagen(ruta: string): Promise<{ blob: Blob; total: number }> {
-  const token = localStorage.getItem('sgdp_token')
+  const token = localStorage.getItem('qillqa_token')
   // `no-cache` = guardar y revalidar: el navegador manda el ETag de la copia que tiene y el servidor
   // responde 304 sin rasterizar cuando el PDF no cambió (2026-10-19); `fetch` entrega entonces la copia
   // guardada como un 200 con las cabeceras del 304 (`X-Total-Paginas` viaja también ahí).
@@ -127,7 +127,7 @@ export async function copiarArchivoImagen(ruta: string): Promise<number> {
     throw new Error('Este navegador no permite copiar imágenes; use el botón de descargar.')
   }
   const traer = async () => {
-    const token = localStorage.getItem('sgdp_token')
+    const token = localStorage.getItem('qillqa_token')
     const r = await fetch(ruta, {
       cache: 'no-cache',
       headers: token ? { Authorization: `Bearer ${token}` } : {},

@@ -60,7 +60,8 @@ def test_modulo_de_ruta():
     assert modulos.modulo_de_ruta("/api/chat") == "chat"
     assert modulos.modulo_de_ruta("/api/agenda.ics") == "tareas"
     assert modulos.modulo_de_ruta("/api/agenda/eventos") == "tareas"
-    assert modulos.modulo_de_ruta("/estudio/index.html") == "prensa"
+    # Los editores de Prensa, cada uno con su interruptor (el estudio aparte, /estudio/, se retiró en E5).
+    assert modulos.modulo_de_ruta("/api/fotos/foto.html") == "fotos" and modulos.modulo_de_ruta("/api/piezas/editor/x") == "piezas"
     assert modulos.modulo_de_ruta("/api/mesa-virtual/config") == "recibidos"
     # El núcleo nunca se apaga: documentos, directorio, perfil, la propia API de módulos, la pública.
     for ruta in ("/api/documentos/1", "/api/directorio/personas", "/api/cuenta/perfil", "/api/modulos",

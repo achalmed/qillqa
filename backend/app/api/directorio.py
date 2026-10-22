@@ -23,7 +23,7 @@ from app.config import config, raiz_documentos
 from app.db import obtener_sesion
 from app.modelos import ContactoFavorito, Enlace, Institucion, Persona, Usuario
 from app.seguridad import solo_administrador, usuario_actual
-from app.servicios import bitacora
+from app.servicios.eventos_bandeja import anotar_bitacora
 from app.servicios import contactos as svc_contactos
 from app.servicios import directorio as svc
 from app.servicios import mesas_partes as mp
@@ -151,8 +151,8 @@ async def importar(
     """Siembra/actualiza el directorio desde la carpeta de marcadores
     (`config.bookmarks_ruta`). Idempotente. SOLO administrador."""
     res = await svc.importar(sesion, Path(config.bookmarks_ruta))
-    bitacora.registrar(
-        sesion, None, usuario, "directorio",
+    await anotar_bitacora(
+        sesion, usuario, "directorio",
         f"Importación del directorio desde marcadores: "
         f"+{res['instituciones']} instituciones, {res['actualizadas']} actualizadas, "
         f"+{res['personas']} personas, +{res['enlaces']} enlaces",
@@ -272,8 +272,8 @@ async def cargar_organigrama(
     raiz.url_fuente = datos.url_fuente or raiz.url_fuente
     raiz.fecha_consulta = datos.fecha_consulta or raiz.fecha_consulta
     raiz.norma = datos.norma or raiz.norma
-    bitacora.registrar(
-        sesion, None, usuario, "directorio",
+    await anotar_bitacora(
+        sesion, usuario, "directorio",
         f"Organigrama de «{raiz.nombre}»: {res['creados']} nuevos, "
         f"{res['actualizados']} actualizados, {res['desactivados']} desactivados"
         + (f" · fuente: {datos.fuente}" if datos.fuente else ""),
@@ -312,8 +312,8 @@ async def crear_institucion(
     inst = Institucion(origen="manual", **datos.model_dump())
     sesion.add(inst)
     await sesion.flush()
-    bitacora.registrar(
-        sesion, None, usuario, "directorio",
+    await anotar_bitacora(
+        sesion, usuario, "directorio",
         f"Agregó al directorio la institución «{inst.nombre}»",
     )
     await sesion.commit()
@@ -332,8 +332,8 @@ async def editar_institucion(
         raise HTTPException(404, "La institución no existe.")
     for campo, valor in datos.model_dump().items():
         setattr(inst, campo, valor)
-    bitacora.registrar(
-        sesion, None, usuario, "directorio",
+    await anotar_bitacora(
+        sesion, usuario, "directorio",
         f"Actualizó en el directorio la institución «{inst.nombre}»",
     )
     await sesion.commit()
@@ -409,8 +409,8 @@ async def crear_persona(
                 etiquetas=svc_contactos.limpiar_etiquetas(datos.etiquetas or []))
     sesion.add(p)
     await sesion.flush()
-    bitacora.registrar(
-        sesion, None, usuario, "directorio",
+    await anotar_bitacora(
+        sesion, usuario, "directorio",
         f"Agregó al directorio a «{p.nombre}» ({p.cargo or 'sin cargo'})",
     )
     await sesion.commit()
@@ -444,8 +444,8 @@ async def editar_persona(
         setattr(p, campo, valor)
     if datos.etiquetas is not None:
         p.etiquetas = svc_contactos.limpiar_etiquetas(datos.etiquetas)
-    bitacora.registrar(
-        sesion, None, usuario, "directorio",
+    await anotar_bitacora(
+        sesion, usuario, "directorio",
         f"Actualizó en el directorio: {anterior} → "
         f"«{p.nombre}» ({p.cargo or 'sin cargo'})",
     )
@@ -560,8 +560,8 @@ async def poner_mesa_partes(
     if inst is None:
         raise HTTPException(404, "La institución no existe.")
     inst.url_mesa_partes = url
-    bitacora.registrar(
-        sesion, None, usuario, "directorio",
+    await anotar_bitacora(
+        sesion, usuario, "directorio",
         f"Puso la mesa de partes de «{inst.nombre}»" if url else f"Quitó la mesa de partes de «{inst.nombre}»",
     )
     await sesion.commit()
@@ -604,7 +604,7 @@ async def poner_recepcion(
         inst = Institucion(nombre=datos.nombre_nuevo.strip(), origen="manual")
         sesion.add(inst)
         await sesion.flush()
-        bitacora.registrar(sesion, None, usuario, "directorio", f"Creó la institución «{inst.nombre}» desde la mesa de partes")
+        await anotar_bitacora(sesion, usuario, "directorio", f"Creó la institución «{inst.nombre}» desde la mesa de partes")
     else:
         inst = await sesion.get(Institucion, inst_id)
         if inst is None:
@@ -614,7 +614,7 @@ async def poner_recepcion(
     inst.recepcion_nota = datos.nota.strip()
     if datos.canal == "virtual" or url:
         inst.url_mesa_partes = url
-    bitacora.registrar(sesion, None, usuario, "directorio", f"Puso cómo recibe documentos «{inst.nombre}»: {datos.canal or 'sin dato'}")
+    await anotar_bitacora(sesion, usuario, "directorio", f"Puso cómo recibe documentos «{inst.nombre}»: {datos.canal or 'sin dato'}")
     await sesion.commit()
     return svc.resumen_inst(inst)
 
@@ -626,22 +626,17 @@ async def mesas_faltantes(
 ) -> dict:
     """De los documentos EXTERNOS (lo interno va por el STD): las instituciones destinatarias SIN
     mesa de partes (con los documentos que van a ellas) y los destinatarios que no se reconocen."""
-    from app.modelos import Documento
-    from app.servicios.numeracion import numero_mostrado
-
-    from app.servicios import ambito as svc_ambito
+    from tiqsi.modulo import opcional
 
     d = await mp.cargar(sesion)
-    congreso = await svc_ambito.indice_congreso(sesion)
     sin_mesa: dict[int, dict] = {}
     sin_reconocer: dict[str, dict] = {}
-    docs = (await sesion.execute(select(Documento).where(Documento.oculto.is_(False)))).scalars().all()
-    for doc in docs:
-        # Lo interno del Congreso va por el STD, no por mesa de partes (Edison 2026-10-06).
-        if svc_ambito.clasificar(doc, congreso) == svc_ambito.INTERNO:
-            continue
-        numero = numero_mostrado(doc) if doc.numero is not None else f"Borrador {doc.id}"
-        for r in mp.resolver(doc.campos or {}, d):
+    # Los documentos que van fuera del Congreso (lo interno va por el STD, no por mesa de partes; Edison 2026-10-06)
+    # son de Gestión documental: por «documentos.v1» (Qillqasqa Q3b, 2026-10-21).
+    documentos = opcional("documentos.v1")
+    for doc in await documentos.externos() if documentos is not None else ():
+        numero = doc["numero"]
+        for r in mp.resolver(doc["campos"], d):
             if r["institucion"] is None:
                 texto = " · ".join(x for x in (r["destino"]["nombre"], r["destino"]["cargo"], r["destino"]["institucion"]) if x)
                 if texto:
@@ -734,7 +729,7 @@ async def subir_foto(
     destino.write_bytes(jpeg)
     anterior = _ruta_foto(p.foto or "")
     p.foto = str(relativa)
-    bitacora.registrar(sesion, None, usuario, "directorio", f"Puso la foto de «{p.nombre}» en el directorio")
+    await anotar_bitacora(sesion, usuario, "directorio", f"Puso la foto de «{p.nombre}» en el directorio")
     await sesion.commit()
     if anterior is not None and anterior != destino.resolve():
         anterior.unlink(missing_ok=True)
@@ -809,8 +804,8 @@ async def renombrar_etiqueta(
             continue
         p.etiquetas = svc_contactos.limpiar_etiquetas([*(x if svc_contactos.plano(x) != de else (nueva[0] if nueva else "") for x in actuales)])
         n += 1
-    bitacora.registrar(sesion, None, usuario, "directorio",
-                       f"Renombró la etiqueta «{datos.de}» a «{nueva[0]}» ({n} personas)" if nueva else f"Quitó la etiqueta «{datos.de}» ({n} personas)")
+    await anotar_bitacora(sesion, usuario, "directorio",
+                          f"Renombró la etiqueta «{datos.de}» a «{nueva[0]}» ({n} personas)" if nueva else f"Quitó la etiqueta «{datos.de}» ({n} personas)")
     await sesion.commit()
     return {"personas": n}
 
@@ -929,8 +924,8 @@ async def importar_contactos(
             res["creados"] += 1
         if c.favorito and await sesion.get(ContactoFavorito, {"usuario_id": usuario.id, "persona_id": p.id}) is None:
             sesion.add(ContactoFavorito(usuario_id=usuario.id, persona_id=p.id))
-    bitacora.registrar(sesion, None, usuario, "directorio",
-                       f"Importó contactos: {res['creados']} nuevos, {res['fusionados']} fusionados, {res['omitidos']} omitidos")
+    await anotar_bitacora(sesion, usuario, "directorio",
+                          f"Importó contactos: {res['creados']} nuevos, {res['fusionados']} fusionados, {res['omitidos']} omitidos")
     await sesion.commit()
     return res
 

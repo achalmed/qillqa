@@ -1,7 +1,7 @@
-# .editorconfig — sgdp: convenciones de edición por tipo de archivo (https://editorconfig.org).
+# .editorconfig — qillqa: convenciones de edición por tipo de archivo (https://editorconfig.org).
 
 # Este archivo manda: el editor no sigue buscando .editorconfig en ~/Documents ni más arriba
-# (el espacio de trabajo tiene repositorios anidados y marco_documental/ es un subtree de este).
+# (el espacio de trabajo tiene repositorios anidados).
 root = true
 
 # ===== Valores por defecto para todo archivo de texto =====

@@ -19,7 +19,7 @@ test('se guardan las lecturas de las pantallas, también el chat', () => {
 
 test('nunca: mesa de partes pública, tokens, sesiones, claves, presencia ni sondeos del chat', () => {
   for (const r of ['/api/publico/mesa/tramite/ABC', '/api/auth/login', '/api/agenda/token', '/api/colab/acceso?documento=x',
-    '/api/contrasenas', '/api/contrasenas/3/accesos', '/api/prensa/sesion', '/api/presencia', '/api/health',
+    '/api/contrasenas', '/api/contrasenas/3/accesos', '/api/prensa/sesion', '/api/fotos/sesion', '/api/videos/sesion', '/api/piezas/editor/sesion', '/api/presencia', '/api/health',
     '/api/chat/canales/41/mensajes?desde_id=9&limite=200', '/api/chat/canales/41/mensajes?antes_id=9', '/api/chat/buscar?q=hola',
     '/api/admin/solicitudes-clave', '/api/agenda.ics?token=x', '/api/documentos/3/pdf', '/api/fototeca', '/api/documentos/3/adjuntos/1']) {
     assert.equal(cacheable(r), false, r)

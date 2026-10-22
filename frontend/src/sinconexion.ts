@@ -29,68 +29,10 @@
  * guardado de un documento rechazado se aparta para «Cargar mis cambios».
  */
 
-const CLAVE_COLA = 'sgdp_cola_sin_conexion'
+const CLAVE_COLA = 'qillqa_cola_sin_conexion'
 
-/**
- * Contenido de un documento APARTADO en este equipo porque el servidor lo
- * rechazó por conflicto de versiones (409 `documento_modificado`): alguien lo
- * guardó desde otro lugar. El editor lo ofrece al abrir el documento
- * («Cargar mis cambios» / «Descartar»). Nunca se descarta solo.
- */
-export interface ContenidoApartado {
-  campos: Record<string, string>
-  cuerpo: object
-  version_base?: number
-  apartado_en: number
-}
-
-export const claveConflicto = (documentoId: string | number): string =>
-  `sgdp_conflicto_${documentoId}`
-
-/** Los apartados anteriores de un documento (2026-10-12): antes, cada choque nuevo REEMPLAZABA al
- * apartado que la persona aún no había cargado y lo escrito entre un choque y otro se perdía (el
- * 12 de octubre, con la edición simultánea caída, hubo quince choques seguidos en un oficio). Ahora
- * el que se reemplaza pasa a esta lista (los cinco más recientes) y el editor los ofrece. */
-export const claveApartadosAnteriores = (documentoId: string | number): string =>
-  `sgdp_conflicto_${documentoId}_anteriores`
-
-const MAX_ANTERIORES = 5
-
-export function leerApartadosAnteriores(documentoId: string | number): ContenidoApartado[] {
-  try {
-    const lista = JSON.parse(localStorage.getItem(claveApartadosAnteriores(documentoId)) || '[]')
-    return Array.isArray(lista) ? (lista as ContenidoApartado[]) : []
-  } catch {
-    return []
-  }
-}
-
-export function escribirApartadosAnteriores(documentoId: string | number, lista: ContenidoApartado[]): void {
-  try {
-    if (lista.length) localStorage.setItem(claveApartadosAnteriores(documentoId), JSON.stringify(lista.slice(0, MAX_ANTERIORES)))
-    else localStorage.removeItem(claveApartadosAnteriores(documentoId))
-  } catch {
-    /* sin sitio: el apartado vigente sigue */
-  }
-}
-
-const mismoContenido = (a: Pick<ContenidoApartado, 'campos' | 'cuerpo'>, b: Pick<ContenidoApartado, 'campos' | 'cuerpo'>) =>
-  JSON.stringify(a.campos ?? {}) === JSON.stringify(b.campos ?? {}) && JSON.stringify(a.cuerpo ?? {}) === JSON.stringify(b.cuerpo ?? {})
-
-/** Aparta lo de este equipo tras un choque, sin perder el apartado que aún no se cargó. */
-export function guardarApartado(documentoId: string | number, apartado: ContenidoApartado): void {
-  const clave = claveConflicto(documentoId)
-  try {
-    const previo = localStorage.getItem(clave)
-    if (previo) {
-      const viejo = JSON.parse(previo) as ContenidoApartado
-      if (!mismoContenido(viejo, apartado)) escribirApartadosAnteriores(documentoId, [viejo, ...leerApartadosAnteriores(documentoId)])
-    }
-  } catch {
-    /* apartado previo ilegible: se reemplaza */
-  }
-  localStorage.setItem(clave, JSON.stringify(apartado))
-}
+import { guardarApartado, type ContenidoApartado } from './apartados.ts'
+export { claveApartadosAnteriores, claveConflicto, escribirApartadosAnteriores, guardarApartado, leerApartadosAnteriores, type ContenidoApartado } from './apartados.ts'
 
 function apartarConflicto(ruta: string, cuerpo: string): boolean {
   const m = /\/api\/documentos\/(\d+)/.exec(ruta)
@@ -124,7 +66,7 @@ export interface CambioPendiente {
   creado_en: number
 }
 
-const cuentaActual = (): string => (localStorage.getItem('sgdp_usuario') ?? '').trim().toLowerCase()
+const cuentaActual = (): string => (localStorage.getItem('qillqa_usuario') ?? '').trim().toLowerCase()
 
 /** ¿Este cambio se puede enviar con la sesión de `cuenta`? (los de antes no tenían cuenta). */
 export const esDeLaCuenta = (c: Pick<CambioPendiente, 'cuenta'>, cuenta: string): boolean => !c.cuenta || c.cuenta === cuenta
@@ -219,7 +161,7 @@ export function quitar(id: string): void {
 // Lo que el servidor rechazó al subir la cola (403, 422…). Antes se descartaba y solo se decía su
 // rótulo; Edison: «avisa de conflictos sin perder nada». Ahora queda aquí, por cuenta, con su
 // cuerpo, hasta que la persona lo copie o lo descarte (FranjaSinConexion → «Ver»).
-const CLAVE_NO_ENVIADOS = 'sgdp_no_enviados'
+const CLAVE_NO_ENVIADOS = 'qillqa_no_enviados'
 const MAX_NO_ENVIADOS = 30
 
 export interface NoEnviado extends CambioPendiente {
@@ -309,7 +251,7 @@ async function motivoDe(r: Response): Promise<string> {
 }
 
 async function subirCola(): Promise<Resultado> {
-  const token = localStorage.getItem('sgdp_token')
+  const token = localStorage.getItem('qillqa_token')
   if (!token) return { subidos: 0, rechazados: [], conflictos: [] }
   let subidos = 0
   const rechazados: string[] = []
@@ -348,7 +290,7 @@ async function subirCola(): Promise<Resultado> {
 }
 
 /**
- * El guardado de un documento subió (2026-10-18): el respaldo local `sgdp_respaldo_<id>` del editor
+ * El guardado de un documento subió (2026-10-18): el respaldo local `qillqa_respaldo_<id>` del editor
  * guardaba la versión BASE de antes, así que al reabrir se descartaba («hay una versión más
  * reciente») aunque su contenido fuera el que acababa de subir. Si el respaldo es lo mismo que subió,
  * se retira; si tiene algo más nuevo (se siguió escribiendo tras encolar), se le pone la versión que el
@@ -370,7 +312,7 @@ export function respaldoTrasSubir(respaldo: string | null, cuerpoSubido: string,
 async function conciliarRespaldo(cambio: CambioPendiente, r: Response): Promise<void> {
   const m = /^\/api\/documentos\/(\d+)$/.exec(cambio.ruta)
   if (!m) return
-  const clave = `sgdp_respaldo_${m[1]}`
+  const clave = `qillqa_respaldo_${m[1]}`
   let version: number | null = null
   try {
     const d = (await r.clone().json()) as { version?: number } | null
@@ -390,7 +332,7 @@ async function conciliarRespaldo(cambio: CambioPendiente, r: Response): Promise<
 // --- aviso a la interfaz ----------------------------------------------
 // Un evento propio: la barra de estado se entera de la cola sin que cada
 // pantalla tenga que consultarla en un temporizador.
-const EVENTO = 'sgdp:cola'
+const EVENTO = 'qillqa:cola'
 function avisar(): void {
   window.dispatchEvent(new CustomEvent(EVENTO))
 }

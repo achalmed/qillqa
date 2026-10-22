@@ -5,20 +5,23 @@ en docker-compose.yml / .env). Ningun modulo debe leer os.environ
 directamente: siempre a traves de `config`.
 """
 
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings
 
 
 class Configuracion(BaseSettings):
     """Valores de entorno con defaults seguros para desarrollo."""
 
-    database_url: str = "postgresql+asyncpg://sgdp:sgdp@db:5432/sgdp"
-    nombre_sistema: str = "Qillqa — Gestión documental"
+    database_url: str = "postgresql+asyncpg://qillqa:qillqa@db:5432/qillqa"
+    nombre_sistema: str = "Qillqa"
 
     # Autenticacion
     jwt_secret: str = "cambiar-en-produccion"
     # Claves de las mesas de partes (servicios/boveda.py, 2026-10-08): clave Fernet propia. Si
     # falta, se deriva de jwt_secret; cambiar jwt_secret sin definir esta deja ilegibles las claves.
-    sgdp_boveda_clave: str = ""
+    # Lectura doble (2026-10-22): el .env de producción la trae con su nombre viejo, SGDP_BOVEDA_CLAVE; cambia de
+    # nombre, NUNCA de valor (con otro, las claves guardadas de las mesas de partes quedan ilegibles).
+    qillqa_boveda_clave: str = Field("", validation_alias=AliasChoices("QILLQA_BOVEDA_CLAVE", "SGDP_BOVEDA_CLAVE"))
     horas_sesion: int = 12
     # Cuenta administradora inicial: la siembra la crea si no existe (ADMIN_USUARIO / ADMIN_CLAVE en
     # .env; sin clave, la clave inicial es el propio usuario y se obliga a cambiarla). DOC7 2026-09-20.
@@ -73,12 +76,24 @@ class Configuracion(BaseSettings):
     # (miniaturas, vistas, exportaciones). Si falta, la hermana `fototeca/` del archivo
     # documental, como `representacion/`.
     fototeca_dir: str = ""
+    # Mediateca central (2026-10-19; docs/plataforma/mediateca-central.md): carpeta propia, fuera de los
+    # repos (por omisión <PICTURES_DIR>/mediateca; core/env.sh la declara), y base propia en el mismo
+    # PostgreSQL. Sin MEDIATECA_DATABASE_URL, la de DATABASE_URL con otra base: `mediateca` si la
+    # documental se llama `qillqa`, o `<base>_mediateca` (la instancia de prueba: `qillqa_prueba_mediateca`).
+    mediateca_dir: str = ""
+    pictures_dir: str = ""
+    mediateca_database_url: str = ""
+    # Detección local de caras de la Mediateca (2026-10-19, opcional; servicios/caras.py): la propone OpenCV y una
+    # persona la confirma. Si la API no trae `cv2`, se lanza el detector con este intérprete (como `isr_python`).
+    # CARAS_MODELO: un YuNet (.onnx) o una cascada de Haar (.xml); vacío = la cascada frontal de OpenCV.
+    caras_python: str = "python3"
+    caras_modelo: str = ""
     # Rendiciones de cuentas (2026-10-18, Edison: «fuera de la carpeta de la Semana, en una carpeta propia
     # de la entidad»): los PDF y Excel que genera el sistema y las fotos y PDF de los comprobantes, por año y
     # comisión (`docs/arquitectura.md` §32). Si falta, la hermana `rendiciones/` del archivo documental.
     rendiciones_dir: str = ""
     # Caché en disco de las páginas rasterizadas del visor rápido (2026-10-19; servicios/imagen.py):
-    # IMAGENES_CACHE_DIR o, si falta, $XDG_CACHE_HOME/sgdp/imagenes (~/.cache/sgdp/imagenes). Es una
+    # IMAGENES_CACHE_DIR o, si falta, $XDG_CACHE_HOME/qillqa/imagenes (~/.cache/qillqa/imagenes). Es una
     # copia desechable: borrar la carpeta solo cuesta volver a rasterizar. Vacío en IMAGENES_CACHE_MB
     # (0) lo apaga. Nunca dentro de la carpeta de un documento ni del archivo documental.
     imagenes_cache_dir: str = ""
@@ -104,16 +119,8 @@ class Configuracion(BaseSettings):
     # Zona horaria con que se leen las fechas del EXIF (vienen sin zona) y se agrupan por día.
     zona_horaria: str = "America/Lima"
 
-    # Prensa (2026-10-06): el estudio de Identidad Visual (editor de piezas y de fotos y videos,
-    # `identidad-visual/editor/servidor/servidor.py`) corre aparte y la API lo publica bajo
-    # /estudio/ (api/prensa.py). Sin servidor arriba, el módulo lo dice y nada más se rompe.
-    estudio_url: str = "http://127.0.0.1:8099"
-    # Banco de fotos del estudio, donde «Usar en Prensa» deja la foto de la Fototeca (subcarpeta
-    # fototeca/). Si falta, `rutas.banco` del perfil de identidad (IDENTIDAD_PERFIL → perfil.json).
-    estudio_banco: str = ""
-    identidad_perfil: str = ""
-    # Cuántas fotos de la Fototeca (públicas o del álbum «Prensa») ofrece el selector del estudio.
-    estudio_limite_fotos: int = 300
+    # Prensa: sus editores (Awana, Tullpu, Kuyuy) son módulos con su configuración (ruray.comun, en su repositorio; el
+    # perfil, IDENTIDAD_PERFIL, y el kit, UNANCHA_DIR, les llegan por el entorno). El estudio aparte se retiró en E5.
 
     # OpenProject (planificación de la entidad, suite `openproject/`; 2026-10-02). Sin URL o sin
     # token la integración queda APAGADA y Qillqa funciona igual. El token es el de una cuenta
@@ -125,7 +132,7 @@ class Configuracion(BaseSettings):
     # la de arriba. La API puede ir por localhost y la gente por el nombre de la LAN.
     openproject_url_publica: str = ""
     # Dirección de Qillqa para los enlaces «Abrir en Qillqa» que se escriben en OpenProject.
-    sgdp_url_publica: str = ""
+    qillqa_url_publica: str = Field("", validation_alias=AliasChoices("QILLQA_URL_PUBLICA", "SGDP_URL_PUBLICA"))
     # Avisos push (Web Push, 2026-10-13; servicios/push.py). Sin estas, el sistema genera su par
     # VAPID la primera vez y lo guarda cifrado en `ajustes`; definirlas fija el par (p. ej., al
     # mudar la base). VAPID_CONTACTO: un correo o la dirección https de Qillqa para el servicio de push.
@@ -150,9 +157,30 @@ def raiz_informes_sr() -> "Path":
 
 
 def raiz_fototeca() -> "Path":
-    """Carpeta de la Fototeca: FOTOTECA_DIR o, si falta, <archivo documental>/../fototeca."""
+    """Carpeta de la Mediateca (2026-10-19): MEDIATECA_DIR; si falta, <PICTURES_DIR>/mediateca o
+    ~/Pictures/mediateca. FOTOTECA_DIR (la carpeta de antes, con originales por SHA-256) solo la usa
+    el migrador (scripts/mediateca/migrar.py)."""
+    from pathlib import Path
+    if config.mediateca_dir:
+        return Path(config.mediateca_dir).expanduser()
+    return (Path(config.pictures_dir).expanduser() if config.pictures_dir else Path.home() / "Pictures") / "mediateca"
+
+
+def raiz_fototeca_anterior() -> "Path":
+    """La carpeta de la Fototeca de antes de la Mediateca central: FOTOTECA_DIR o <archivo documental>/../fototeca."""
     from pathlib import Path
     return Path(config.fototeca_dir) if config.fototeca_dir else raiz_documentos().parent / "fototeca"
+
+
+def url_mediateca() -> str:
+    """La URL de la base de la Mediateca (ver `mediateca_database_url`)."""
+    if config.mediateca_database_url:
+        return config.mediateca_database_url
+    base, _, nombre = config.database_url.rpartition("/")
+    nombre, signo, parametros = nombre.partition("?")
+    # La documental de producción se llama aún «sgdp» hasta que el corte la renombre: su Mediateca es «mediateca».
+    nueva = "mediateca" if nombre in ("qillqa", "sgdp") else f"{nombre}_mediateca"
+    return f"{base}/{nueva}{signo}{parametros}"
 
 
 def raiz_rendiciones() -> "Path":
@@ -163,7 +191,7 @@ def raiz_rendiciones() -> "Path":
 
 def raiz_cache_imagenes() -> "Path | None":
     """Carpeta del caché de páginas rasterizadas: IMAGENES_CACHE_DIR o, si falta,
-    $XDG_CACHE_HOME/sgdp/imagenes (por omisión ~/.cache/sgdp/imagenes). None = caché apagado
+    $XDG_CACHE_HOME/qillqa/imagenes (por omisión ~/.cache/qillqa/imagenes). None = caché apagado
     (IMAGENES_CACHE_MB=0)."""
     from pathlib import Path
     if config.imagenes_cache_mb <= 0:
@@ -171,7 +199,7 @@ def raiz_cache_imagenes() -> "Path | None":
     if config.imagenes_cache_dir:
         return Path(config.imagenes_cache_dir)
     base = Path(config.xdg_cache_home) if config.xdg_cache_home else Path.home() / ".cache"
-    return base / "sgdp" / "imagenes"
+    return base / "qillqa" / "imagenes"
 
 
 def raiz_documentos() -> "Path":

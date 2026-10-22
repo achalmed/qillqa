@@ -20,7 +20,7 @@ export const APARIENCIAS: { id: Apariencia; nombre: string }[] = [
   { id: 'auto', nombre: 'Como el aparato' },
 ]
 
-const CLAVE = 'sgdp_apariencia'
+const CLAVE = 'qillqa_apariencia'
 
 /** El modo que corresponde a una apariencia: la automática sigue al aparato. */
 export function modoEfectivo(apariencia: Apariencia, prefiereOscuro: boolean): Modo {

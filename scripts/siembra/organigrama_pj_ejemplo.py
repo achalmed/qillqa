@@ -111,7 +111,7 @@ def req(method, path, tok=None, body=None):
 
 
 def main():
-    tok = req("POST", "/api/auth/login", body={"usuario": os.environ.get("SGDP_USUARIO", "admin"), "clave": os.environ["SGDP_CLAVE"]})["token"]
+    tok = req("POST", "/api/auth/login", body={"usuario": os.environ.get("QILLQA_USUARIO", "admin"), "clave": os.environ["QILLQA_CLAVE"]})["token"]
     todas = req("GET", "/api/directorio/instituciones?q=&limite=5000", tok)
     pj = next(i for i in todas if i["nombre"] == "Poder Judicial" or i["siglas"] == "PJ")
     print(f"Poder Judicial: id={pj['id']} «{pj['nombre']}»")

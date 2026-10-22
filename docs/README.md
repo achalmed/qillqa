@@ -9,7 +9,7 @@
 | [redaccion-administrativa.md](redaccion-administrativa.md) | reglas de estilo de los documentos oficiales |
 | [organigramas.md](organigramas.md) | cómo cargar organigramas oficiales en el Directorio |
 
-El motor LaTeX tiene su propia documentación en [`../marco_documental/README.md`](../marco_documental/README.md).
+El motor LaTeX vive en Qillqasqa y tiene su propia documentación en [`marco_documental/README.md`](https://github.com/achalmed/qillqasqa/tree/main/marco_documental).
 Cómo contribuir y cómo escribir el README de una carpeta: [`../CONTRIBUTING.md`](../CONTRIBUTING.md).
 
 > Algunos ejemplos usan documentos del ámbito legislativo (oficios, proyectos de ley); las reglas valen

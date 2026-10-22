@@ -4,6 +4,7 @@ import * as cache from './cachelecturas'
 import { abrirDeCarpeta, enLaCarpeta, versionDeRespuesta } from './sync/carpetaLocal'
 import { guardarEn, type Destino } from './descargas'
 import { marcarApagado, moduloApagadoDe } from './modulos'
+import { ErrorApi } from '@qillqa/tiqsi'
 
 /**
  * Error de la API que CONSERVA el detalle estructurado del servidor.
@@ -12,18 +13,11 @@ import { marcarApagado, moduloApagadoDe } from './modulos'
  * viene con la lista de copias a confirmar, y la interfaz necesita esos datos
  * para abrir el diálogo en vez de limitarse a mostrar un texto rojo.
  */
-export class ErrorApi extends Error {
-  detalle: unknown
-  estado: number
-  constructor(mensaje: string, detalle: unknown, estado: number) {
-    super(mensaje)
-    this.name = 'ErrorApi'
-    this.detalle = detalle
-    this.estado = estado
-  }
-}
+// Es la clase del contrato de Tiqsi (fase 10.2b): la MISMA en Qillqa y en los módulos aislados, para que
+// `e instanceof ErrorApi` valga en ambos lados.
+export { ErrorApi }
 
-const token = () => localStorage.getItem('sgdp_token')
+const token = () => localStorage.getItem('qillqa_token')
 
 // «Lo último visto» (cachelecturas.ts): las copias de antes vivían en localStorage y se retiran; y
 // si se abre sin sesión, no debe quedar nada de nadie (el cierre de sesión pudo cortarse a medias).
@@ -51,21 +45,24 @@ export function cerrarSesion(): void {
       keepalive: true,
     }).catch(() => {})
   }
-  // La sesión del estudio de Prensa es una cookie aparte (solo /estudio/): se borra también.
-  void fetch('/api/prensa/sesion', { method: 'DELETE', keepalive: true }).catch(() => {})
+  // Las sesiones de los editores de Prensa son cookies aparte (Tullpu, Kuyuy y Awana, solo en su carpeta): se borran también.
+  void fetch('/api/fotos/sesion', { method: 'DELETE', keepalive: true }).catch(() => {})
+  void fetch('/api/videos/sesion', { method: 'DELETE', keepalive: true }).catch(() => {})
+  void fetch('/api/piezas/editor/sesion', { method: 'DELETE', keepalive: true }).catch(() => {})
   claveTemporal = ''
-  localStorage.removeItem('sgdp_token')
-  localStorage.removeItem('sgdp_usuario')
-  localStorage.removeItem('sgdp_nombre')
-  localStorage.removeItem('sgdp_rol')
-  localStorage.removeItem('sgdp_clave_temporal')
-  localStorage.removeItem('sgdp_datos_pendientes')
-  localStorage.removeItem('sgdp_preferencias')
-  localStorage.removeItem('sgdp_pasos_ingreso')
+  localStorage.removeItem('qillqa_token')
+  localStorage.removeItem('qillqa_usuario')
+  localStorage.removeItem('qillqa_nombre')
+  localStorage.removeItem('qillqa_rol')
+  localStorage.removeItem('qillqa_clave_temporal')
+  localStorage.removeItem('qillqa_datos_pendientes')
+  localStorage.removeItem('qillqa_preferencias')
+  localStorage.removeItem('qillqa_pasos_ingreso')
   // El modo sin conexión guarda las respuestas de /api para poder mostrarlas
   // sin servidor. Son datos de ESTE usuario y el equipo puede ser compartido:
   // al cerrar sesión se borran (ver public/sw.js).
-  navigator.serviceWorker?.controller?.postMessage('sgdp:limpiar-api')
+  navigator.serviceWorker?.controller?.postMessage('qillqa:limpiar-api')
+  navigator.serviceWorker?.controller?.postMessage('sgdp:limpiar-api')   // un worker de antes del 2026-10-22 aún activo
   void cache.limpiar()
   // La bandeja guarda sus filas en sessionStorage para volver rápido: son de
   // ESTE usuario y no deben asomarse a quien entre después en la pestaña.
@@ -83,9 +80,9 @@ export function cerrarSesion(): void {
  * `navigator.onLine` no sirve para esto: dice si hay interfaz de red, no si el
  * servidor contesta —y el caso típico de la entidad es tener wifi pero la
  * laptop-servidor apagada—. Esta marca la pone el service worker en la
- * respuesta (`X-SGDP-Cache`), así que es la señal fiable.
+ * respuesta (`X-Qillqa-Cache`), así que es la señal fiable.
  */
-export const EVENTO_CACHE = 'sgdp:cache'
+export const EVENTO_CACHE = 'qillqa:cache'
 let sirviendoDeCache = false
 /** Cuándo se guardó la copia que se está mostrando (para «mostrando lo guardado a las HH:MM»). */
 let guardadoDeLaCopia: number | null = null
@@ -121,7 +118,8 @@ export function confirmarServidor(): void {
 function marcarOrigen(respuesta: Response): void {
   // El service worker marca lo que sirvió de su propio caché; una respuesta
   // sin esa marca vino del servidor de verdad.
-  marcarCache(respuesta.headers.get('X-SGDP-Cache') !== null)
+  // `X-SGDP-Cache`: la pone un worker de antes del 2026-10-22 hasta que el navegador lo cambie por el nuevo.
+  marcarCache(respuesta.headers.get('X-Qillqa-Cache') !== null || respuesta.headers.get('X-SGDP-Cache') !== null)
 }
 
 // El servidor responde 428 `clave_temporal` mientras la cuenta siga usando la
@@ -130,7 +128,7 @@ function marcarOrigen(respuesta: Response): void {
 // localStorage es solo para que la pantalla sepa que NO puede cancelarse; la
 // que manda de verdad es la respuesta del servidor.
 function exigirClavePropia(): void {
-  localStorage.setItem('sgdp_clave_temporal', 'si')
+  localStorage.setItem('qillqa_clave_temporal', 'si')
   if (!window.location.pathname.startsWith('/clave')) {
     window.location.href = '/clave'
   }
@@ -138,7 +136,7 @@ function exigirClavePropia(): void {
 
 // 428 `datos_pendientes` (2026-10-18): la contraseña ya es propia, pero falta el paso de bienvenida.
 function exigirDatos(): void {
-  localStorage.setItem('sgdp_datos_pendientes', 'si')
+  localStorage.setItem('qillqa_datos_pendientes', 'si')
   if (!/^\/(bienvenida|clave)/.test(window.location.pathname)) {
     window.location.href = '/bienvenida'
   }
@@ -166,12 +164,9 @@ function servidorCaido(estado: number, respuesta?: Response): boolean {
   return !/uvicorn/i.test(servidor)
 }
 
-/** El mismo criterio para quien ya tiene un `ErrorApi`: ¿fue «sin servidor» o el servidor hablando? */
-export function esSinServidor(error: unknown): boolean {
-  if (!(error instanceof ErrorApi)) return true
-  const codigo = (error.detalle as { codigo?: string } | undefined)?.codigo
-  return codigo === 'sin_conexion' || codigo === 'sin_servidor' || error.estado === 502 || error.estado === 503 || error.estado === 504
-}
+/** El mismo criterio para quien ya tiene un `ErrorApi`: ¿fue «sin servidor» o el servidor hablando? Vive en Tiqsi
+ *  web (los módulos aislados lo usan igual, fase 10.2b). */
+export { esSinServidor } from '@qillqa/tiqsi'
 
 /**
  * Lo que se espera al servidor en una LECTURA antes de mostrar la copia guardada (si la hay). Con

@@ -264,7 +264,7 @@ export function DialogoMesaDePartes({ documentoId, alCerrar }: { documentoId: nu
         {doc?.numero_completo && <Typography variant="body2" color="text.secondary">{doc.numero_completo}</Typography>}
       </DialogTitle>
       <DialogContent>
-        {!extensionInstalada() && localStorage.getItem('sgdp_rol') !== 'invitado' && (
+        {!extensionInstalada() && localStorage.getItem('qillqa_rol') !== 'invitado' && (
           <Alert
             severity="info"
             icon={<ExtensionOutlinedIcon />}
@@ -283,7 +283,7 @@ export function DialogoMesaDePartes({ documentoId, alCerrar }: { documentoId: nu
       </DialogContent>
       <DialogActions sx={{ flexWrap: 'wrap', gap: 1 }}>
         {/* Ventana siempre encima con los datos para copiar o autocompletar (VentanaApoyo.tsx). */}
-        {documentoId !== null && localStorage.getItem('sgdp_rol') !== 'invitado' && (
+        {documentoId !== null && localStorage.getItem('qillqa_rol') !== 'invitado' && (
           <Button
             size="small"
             color="inherit"

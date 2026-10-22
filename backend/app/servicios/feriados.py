@@ -85,3 +85,18 @@ def entre(desde: date, hasta: date) -> list[dict]:
     for anio in range(desde.year, hasta.year + 1):
         salida += [x for x in del_anio(anio) if desde.isoformat() <= x["fecha"] <= hasta.isoformat()]
     return salida
+
+
+def dias_habiles(desde: date, dias: int) -> date:
+    """`dias` hábiles después de `desde`: salta sábados, domingos y los feriados y días no laborables del Perú
+    (auditoría 2026-10-10, RC-03). Lo usan Mesa de Partes y, por «calendario.v1», Rendición de cuentas."""
+    no_laborables = {
+        f["fecha"] for f in entre(desde, desde + timedelta(days=dias * 3 + 14))
+        if f["tipo"] in ("feriado", "no_laborable")
+    }
+    d = desde
+    while dias > 0:
+        d += timedelta(days=1)
+        if d.weekday() < 5 and d.isoformat() not in no_laborables:
+            dias -= 1
+    return d

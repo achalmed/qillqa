@@ -5,7 +5,7 @@
 import Avatar from '@mui/material/Avatar'
 import type { SxProps, Theme } from '@mui/material/styles'
 import { iniciales } from '../EquipoEnLinea'
-import { colorDePersona } from '../chat/mensajes'
+import { colorDePersona } from '@qillqa/rimay/publico'
 import { useFotoDe } from './fotos'
 
 export default function AvatarPersona({ id, nombre, tamano = 36, sx }: { id: number | null | undefined; nombre: string; tamano?: number; sx?: SxProps<Theme> }) {

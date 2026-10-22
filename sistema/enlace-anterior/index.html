@@ -1,0 +1,33 @@
+<!doctype html>
+<!-- sistema/enlace-anterior/index.html — puente de la mudanza del enlace (docs/acceso-permanente.md §Mudanza del enlace):
+     en el nombre de nodo anterior, lleva a la misma ruta en https://qillqa-despacho.<la misma red>.ts.net. No guarda ni pide
+     nada; la red (<red>.ts.net) se toma de la propia dirección, así que aquí no hay datos de nadie. -->
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Qillqa se mudó</title>
+    <style>
+      :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+      body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: Canvas; color: CanvasText; }
+      main { max-width: 32rem; padding: 2rem; text-align: center; line-height: 1.5; }
+      a { font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Qillqa tiene una dirección nueva</h1>
+      <p>Lo estamos llevando a <a id="nueva" href="#">la dirección nueva</a>. Guárdela en sus marcadores; si tenía la
+        aplicación instalada, instálela de nuevo desde allí. Entrará una vez con su clave: sus documentos siguen igual.</p>
+    </main>
+    <script>
+      (function () {
+        var partes = location.hostname.split('.')
+        partes[0] = 'qillqa-despacho'
+        var destino = location.protocol + '//' + partes.join('.') + location.pathname + location.search + location.hash
+        var a = document.getElementById('nueva'); a.href = destino; a.textContent = partes.join('.')
+        setTimeout(function () { location.replace(destino) }, 4000)
+      })()
+    </script>
+  </body>
+</html>

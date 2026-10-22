@@ -13,13 +13,13 @@
  */
 import { lazy, type ComponentType } from 'react'
 
-const CLAVE_RECARGA = 'sgdp_recarga_trozo'
+const CLAVE_RECARGA = 'qillqa_recarga_trozo'
 /** Una recarga por esta ventana de tiempo: si el trozo sigue sin llegar, no se entra en bucle. */
 const VENTANA_MS = 30_000
 
 declare global {
   interface Window {
-    __sgdpMontada?: boolean
+    __qillqaMontada?: boolean
   }
 }
 
@@ -64,5 +64,5 @@ export function vigilarTrozos(): void {
 
 /** El vigía deja de contar. La pantalla de carga de index.html la reemplaza React al pintar. */
 export function marcarMontada(): void {
-  window.__sgdpMontada = true
+  window.__qillqaMontada = true
 }

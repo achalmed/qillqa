@@ -137,7 +137,7 @@ export function FichaInstitucion({
   alVerPersona?: (p: Persona) => void
   alCerrar?: () => void
 }) {
-  const esAdmin = localStorage.getItem('sgdp_rol') === 'administrador'
+  const esAdmin = localStorage.getItem('qillqa_rol') === 'administrador'
   const [enlaces, setEnlaces] = useState<EnlaceInst[]>([])
   const [personas, setPersonas] = useState<Persona[] | null>(null)
   const [nuevo, setNuevo] = useState({ tipo: 'otro', url: '', etiqueta: '' })

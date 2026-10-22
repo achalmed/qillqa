@@ -24,13 +24,15 @@ os.environ.setdefault("JWT_SECRET", "prueba")
 
 import pytest  # noqa: E402
 
-from app.config import config  # noqa: E402
-from app.servicios import eliminacion  # noqa: E402
-from app.servicios import fototeca as ft  # noqa: E402
-from app.servicios import prensa as pr  # noqa: E402
-from app.servicios import vigencia as v  # noqa: E402
+from rikchay.config import config  # noqa: E402  (la configuración propia de la Mediateca, fase 10.2b)
+from qillqasqa.servicios import eliminacion  # noqa: E402
+from rikchay import fototeca as ft  # noqa: E402
+from ruray import mediateca as pr  # noqa: E402
+from qillqasqa.servicios import vigencia as v  # noqa: E402
 
 RAIZ_APP = Path(__file__).resolve().parents[1] / "app"
+# Gestión documental y Proyectos de ley, en su repositorio desde el 2026-10-22 (Qillqasqa): su código se lee del paquete.
+RAIZ_QILLQASQA = Path(__import__("qillqasqa").__file__).resolve().parent
 
 
 # --- 1. Relaciones de lo que se elimina ------------------------------------------------------
@@ -60,8 +62,8 @@ def test_el_mapa_no_dibuja_lo_marcado():
     fuente = (RAIZ_APP / "servicios" / "grafo.py").read_text(encoding="utf-8")
     assert 'datos.get("destino_eliminado")' in fuente
     # Y la limpieza la llaman las dos puertas: eliminar un documento y retirar un proyecto.
-    assert "limpiar_relaciones(sesion, f\"doc:{doc_id}\"" in (RAIZ_APP / "servicios" / "eliminacion.py").read_text(encoding="utf-8")
-    assert "limpiar_relaciones(sesion, f\"pl:{p.id}\"" in (RAIZ_APP / "api" / "proyectos.py").read_text(encoding="utf-8")
+    assert "limpiar_relaciones(sesion, f\"doc:{doc_id}\"" in (RAIZ_QILLQASQA / "servicios" / "eliminacion.py").read_text(encoding="utf-8")
+    assert "limpiar_relaciones(sesion, f\"pl:{p.id}\"" in (RAIZ_QILLQASQA / "api" / "proyectos.py").read_text(encoding="utf-8")
 
 
 # --- 5. Heredado eliminado: nada queda huérfano en adjuntos/ -----------------------------------
@@ -133,7 +135,7 @@ def test_expediente_sin_manifiesto_por_nombre_y_fecha(tmp_path):
 
 def test_huella_con_filas_igual_que_sin_ellas():
     """La bandeja calcula con los adjuntos ya leídos: misma huella que el cálculo de siempre."""
-    doc = SimpleNamespace(id=1, origen="sgdp", tipo="oficio", numero=7, periodo="2026-2027",
+    doc = SimpleNamespace(id=1, origen="qillqa", tipo="oficio", numero=7, periodo="2026-2027",
                           campos={"asunto": "A", "anexo": "Lo indicado"}, cuerpo={"type": "doc"})
     filas = [_adj(2, etiqueta="Informe"), _adj(1, etiqueta="Acta"), _adj(3, categoria="firmado"),
              _adj(4, categoria="recepcion")]
@@ -158,14 +160,14 @@ def test_predeterminado_solo_al_crear():
     camino (compilar, generar, la huella) lo consulta. Cambiarlo no toca lo ya creado:
     ni su PDF ni su huella, firmado o no."""
     usos = []
-    for ruta in RAIZ_APP.rglob("*.py"):
-        texto = ruta.read_text(encoding="utf-8")
-        if "formato_defecto(" in texto:
-            usos.append(ruta.relative_to(RAIZ_APP).as_posix())
+    for raiz in (RAIZ_APP, RAIZ_QILLQASQA):
+        for ruta in raiz.rglob("*.py"):
+            if "formato_defecto(" in ruta.read_text(encoding="utf-8"):
+                usos.append(ruta.relative_to(raiz).as_posix())
     assert sorted(usos) == ["api/ajustes.py", "api/documentos.py"]
-    documentos = (RAIZ_APP / "api" / "documentos.py").read_text(encoding="utf-8")
+    documentos = (RAIZ_QILLQASQA / "api" / "documentos.py").read_text(encoding="utf-8")
     assert documentos.count("formato_defecto(") == 1
-    generador = (RAIZ_APP / "latex" / "generador.py").read_text(encoding="utf-8")
+    generador = (RAIZ_QILLQASQA / "latex" / "generador.py").read_text(encoding="utf-8")
     assert "formato_defecto" not in generador and "fmt_defecto" not in generador
 
 
@@ -232,7 +234,7 @@ def video_tmp(tmp_path, monkeypatch):
     if not (shutil.which("ffmpeg") and shutil.which("ffprobe")):
         pytest.skip("sin ffmpeg")
     pytest.importorskip("PIL")
-    monkeypatch.setattr(config, "fototeca_dir", str(tmp_path / "fototeca"))
+    monkeypatch.setattr(config, "mediateca_dir", str(tmp_path / "fototeca"))
     ruta = tmp_path / "clip.mp4"
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "testsrc=size=320x180:rate=10:duration=2",
                     "-pix_fmt", "yuv420p", str(ruta)], check=True, timeout=60)
@@ -254,25 +256,24 @@ def test_video_leer_poster_y_miniatura(video_tmp):
         assert m.size == (320, 180)
 
 
-def test_enlace_firmado_del_video():
-    from app.api import fototeca as api_ft
-    from app.servicios.prensa import firmar_sesion
+def test_enlace_firmado_del_video(monkeypatch):
+    from rikchay import api as api_ft
+    from tullpu.api import EDITOR
+    from ruray import comun as estudio_comun
 
     firma = api_ft.firmar_video(12)
     assert api_ft.leer_firma_video(firma) == 12
     assert api_ft.leer_firma_video(firma + "x") is None
     vencida = api_ft.firmar_video(12, datetime.now(timezone.utc) - timedelta(hours=api_ft.HORAS_ENLACE + 1))
     assert api_ft.leer_firma_video(vencida) is None
-    # La cookie del estudio (otra audiencia) no abre videos.
-    assert api_ft.leer_firma_video(firmar_sesion(12, "prensa")[0]) is None
+    # La cookie de un editor (otra audiencia; E5: la del estudio aparte se retiró) no abre videos.
+    monkeypatch.setattr(estudio_comun.config, "jwt_secret", "s" * 48)
+    assert api_ft.leer_firma_video(estudio_comun.firmar_sesion(EDITOR, 12, "prensa")[0]) is None
 
 
 def test_videos_de_prensa_a_la_fototeca():
-    assert pr.ruta_de_url("/estudio/redes/facebook/2026-10-06-pieza.mp4") == "redes/facebook/2026-10-06-pieza.mp4"
-    assert pr.ruta_de_url("/redes/x/a.mp4?v=1") == "redes/x/a.mp4"
-    assert pr.ruta_de_url("/estudio/../secreto.mp4") is None
-    assert pr.es_video("a.mp4") and not pr.es_video("a.png")
-    assert "editor de video" in pr.descripcion_video("Facebook", True)
+    assert pr.metadatos_pieza(canal="Facebook", medio="video", ancho=1080, alto=1920)["descripcion"] \
+        == "Video hecho en el estudio de Prensa para Facebook."
     t = pr.TrabajosDeVideo()
     t.anotar("ab12", 3, {"canal": "facebook", "nombre": "Saludo.mp4"}, proyecto=False)
     assert "ab12" in t

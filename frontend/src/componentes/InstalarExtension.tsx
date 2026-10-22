@@ -17,7 +17,7 @@ const PASOS = {
   chrome: [
     'Descomprima el archivo descargado en una carpeta que no vaya a borrar.',
     'Abra chrome://extensions (en Edge, edge://extensions) y active «Modo de desarrollador».',
-    'Pulse «Cargar descomprimida» y elija la carpeta sgdp-mesa-de-partes.',
+    'Pulse «Cargar descomprimida» y elija la carpeta qillqa-mesa-de-partes.',
     'Vuelva aquí y pulse «Ya la instalé».',
   ],
   firefox: [
@@ -37,7 +37,7 @@ export function InstalarExtension({ alError }: { alError?: (texto: string) => vo
   const descargar = () =>
     void descargarDirecto(
       ff ? '/api/mesa/extension.zip?navegador=firefox' : '/api/mesa/extension.zip',
-      ff ? 'sgdp-mesa-de-partes.xpi' : 'sgdp-mesa-de-partes.zip',
+      ff ? 'qillqa-mesa-de-partes.xpi' : 'qillqa-mesa-de-partes.zip',
     ).catch((e) => alError?.(e instanceof Error ? e.message : 'No se pudo descargar.'))
   return (
     <Box>

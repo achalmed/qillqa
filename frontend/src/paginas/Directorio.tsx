@@ -435,7 +435,7 @@ export default function Directorio() {
   // Todos los roles ven, buscan, crean y editan (Fase 2). Solo el administrador
   // importa en masa, desactiva y gestiona enlaces; esas acciones se ocultan al
   // resto (el backend igual las rechaza con 403). Pedido de Edison 2026-08-31.
-  const esAdmin = localStorage.getItem('sgdp_rol') === 'administrador'
+  const esAdmin = localStorage.getItem('qillqa_rol') === 'administrador'
   // La pestaña vive en la dirección (`?pestana=instituciones|jerarquia|distritos`; sin ella,
   // los contactos; `personas`, el nombre de antes, también): la franja del Marco la cambia.
   const [consulta, setConsulta] = useSearchParams()

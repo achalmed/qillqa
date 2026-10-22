@@ -2,10 +2,10 @@
 tipo: readme
 estado: activo
 ---
-# latex/ — imagen TeX Live del modo completo (contenedor `latex`), con `marco_documental/` montado en `/framework`
+# latex/ — imagen TeX Live del modo completo (contenedor `latex`), con `../qillqasqa/marco_documental/` montado en `/framework`
 
 `Dockerfile` parte de `texlive/texlive` (LuaLaTeX + fontspec) y añade `python3` y `make`, las únicas
-dependencias de `marco_documental/scripts/build.sh`. En el modo laptop (TeX del host) este servicio no
+dependencias de `../qillqasqa/marco_documental/scripts/build.sh`. En el modo laptop (TeX del host) este servicio no
 hace falta: la API compila directamente. Uso: `docker compose up -d --build latex` y, para la prueba
 de humo, `docker compose exec latex bash -c 'cp -r /framework /tmp/fw && cd /tmp/fw && make plantillas'`.
 

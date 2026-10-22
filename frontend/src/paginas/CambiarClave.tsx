@@ -34,7 +34,7 @@ const LARGO_MINIMO = 8
 
 export default function CambiarClave() {
   const navegar = useNavigate()
-  const obligatorio = localStorage.getItem('sgdp_clave_temporal') === 'si'
+  const obligatorio = localStorage.getItem('qillqa_clave_temporal') === 'si'
   // Recién llegados del login con la clave temporal: ya está escrita (solo en
   // memoria) y la persona empieza por la nueva. Tras un refresco se pide.
   const [actual, setActual] = useState(() => (obligatorio ? claveTemporalRecordada() : ''))
@@ -56,7 +56,7 @@ export default function CambiarClave() {
       .then(() => {
         // Una copia del caché (sin servidor) no prueba nada: se ignora.
         if (leyendoDeCache()) return
-        localStorage.removeItem('sgdp_clave_temporal')
+        localStorage.removeItem('qillqa_clave_temporal')
         navegar('/', { replace: true })
       })
       .catch(() => {})
@@ -85,12 +85,12 @@ export default function CambiarClave() {
           clave_nueva: limpiaNueva,
         }),
       })
-      localStorage.setItem('sgdp_token', r.token)
-      localStorage.removeItem('sgdp_clave_temporal')
+      localStorage.setItem('qillqa_token', r.token)
+      localStorage.removeItem('qillqa_clave_temporal')
       recordarClaveTemporal('')
       // Paso 2 del primer ingreso: sus datos (2026-10-18).
       if (r.debe_completar_datos) {
-        localStorage.setItem('sgdp_datos_pendientes', 'si')
+        localStorage.setItem('qillqa_datos_pendientes', 'si')
         navegar('/bienvenida', { replace: true })
         return
       }
@@ -131,7 +131,7 @@ export default function CambiarClave() {
         type="text"
         name="username"
         autoComplete="username"
-        value={localStorage.getItem('sgdp_usuario') ?? ''}
+        value={localStorage.getItem('qillqa_usuario') ?? ''}
         readOnly
         hidden
       />

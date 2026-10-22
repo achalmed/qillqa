@@ -78,13 +78,13 @@ import {
   type TipoNodo,
 } from '../componentes/grafo/estilo'
 import { MenuNodo, TarjetaNodo, focoDe, idDocumento, urlArchivo, useArchivos, useClicNodo, type MenuAbierto } from '../componentes/grafo/Interaccion'
-import { ETIQUETA_ESTADO_PROYECTO } from './Proyecto'
+import { ETIQUETA_ESTADO_PROYECTO } from '@qillqa/qillqasqa/publico'
 import { MODO } from '../paleta'
 import { RUTA_ESTADISTICAS, textoCorrespondencia, textoRespuesta } from '../correspondencia'
 import InsightsOutlinedIcon from '@mui/icons-material/InsightsOutlined'
 
 // Tipos, colores y dibujo: los comunes con la ventanita del mapa local.
-const TEMA_GUARDADO = 'sgdp_mapa_tema'
+const TEMA_GUARDADO = 'qillqa_mapa_tema'
 
 // --- página ----------------------------------------------------------------
 

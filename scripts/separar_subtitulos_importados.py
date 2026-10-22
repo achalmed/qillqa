@@ -10,7 +10,7 @@ y lo sobrante vuelve al comienzo del párrafo que sigue. Cada parte corregida se
 VERSIÓN nueva con nota (la historia no se reescribe), por la API, como la web.
 
 Uso (simula por omisión; --aplicar guarda):
-  SGDP_API=http://127.0.0.1:8000 SGDP_USUARIO=… SGDP_CLAVE=… \\
+  QILLQA_API=http://127.0.0.1:8000 QILLQA_USUARIO=… QILLQA_CLAVE=… \\
     python3 scripts/separar_subtitulos_importados.py <id del proyecto> <PDF presentado> [--aplicar]
 """
 from __future__ import annotations
@@ -89,7 +89,7 @@ def main() -> int:
     ap.add_argument("--aplicar", action="store_true", help="guardar (sin esto, solo muestra qué cambiaría)")
     a = ap.parse_args()
     originales = subtitulos_del_original(a.pdf)
-    api = Api(os.environ.get("SGDP_API", "http://127.0.0.1:8000"), os.environ["SGDP_USUARIO"], os.environ["SGDP_CLAVE"])
+    api = Api(os.environ.get("QILLQA_API", "http://127.0.0.1:8000"), os.environ["QILLQA_USUARIO"], os.environ["QILLQA_CLAVE"])
     p = api.pedir(f"/api/proyectos/{a.proyecto}")
     total = 0
     for s in p["secciones"]:

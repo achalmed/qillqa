@@ -3,9 +3,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from tiqsi.modulo import opcional
 
 from app.db import obtener_sesion
-from app.modelos import Documento, Notificacion, Usuario
+from app.modelos import Notificacion, Usuario
 from app.seguridad import usuario_actual
 from app.servicios import notificaciones as svc
 
@@ -33,10 +34,9 @@ async def listar(
     ids = {n.documento_id for n in filas if n.documento_id}
     numeros: dict[int, str] = {}
     if ids:
-        docs = (await sesion.execute(select(Documento).where(Documento.id.in_(ids)))).scalars().all()
-        from app.servicios.numeracion import numero_mostrado
-
-        numeros = {d.id: numero_mostrado(d) for d in docs}
+        # El número es de Gestión documental: por «documentos.v1» (Qillqasqa Q3b, 2026-10-21).
+        documentos = opcional("documentos.v1")
+        numeros = {i: d["mostrado"] for i, d in (await documentos.descripciones(ids)).items()} if documentos else {}
     # El texto del aviso es historia (lo que pasó, como pasó); lo vinculado (`destino`) se nombra
     # con su valor VIGENTE en la línea de abajo (servicios/etiquetas.py, 2026-10-12).
     from app.servicios import etiquetas

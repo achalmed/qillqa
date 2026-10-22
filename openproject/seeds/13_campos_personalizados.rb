@@ -1,6 +1,6 @@
 # seeds/13_campos_personalizados.rb — openproject_despacho: campos personalizados de work package; las opciones que dependen del despacho vienen del perfil (idempotente).
 #
-# La «cola» que conecta OpenProject con los sistemas de registro del despacho (SGDP, informes)
+# La «cola» que conecta OpenProject con los sistemas de registro del despacho (Qillqa, informes)
 # SIN duplicar la verdad: claves de enlace (N° Documento, Código EXP, Código Reporte, Ruta en disco)
 # y clasificadores. Las listas Origen, Distrito/Provincia y Tipo documental se leen de
 # PERFIL["campos"]["origen" | "distrito" | "tipo_documental"].

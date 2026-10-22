@@ -1,5 +1,5 @@
 # =====================================================================
-#  latex/Dockerfile  --  Motor documental del SGDP
+#  latex/Dockerfile  --  Motor documental de Qillqa
 # ---------------------------------------------------------------------
 #  TeX Live completo (incluye LuaLaTeX + fontspec) mas las dos unicas
 #  dependencias externas de scripts/build.sh del Marco Documental:

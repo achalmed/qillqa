@@ -55,11 +55,23 @@ CATALOGO: list[dict] = [
     {"id": "fototeca", "nombre": "Mediateca", "que": "Fotos y videos de la entidad; la usan la Semana y Prensa.",
      "rutas": ["/api/fototeca"], "activo": True},
     {"id": "prensa", "nombre": "Prensa", "que": "Piezas de prensa y el estudio de diseño.",
-     "rutas": ["/api/prensa", "/estudio"], "activo": True},
+     "rutas": [], "activo": True},
+    # El kit de OBS (Wayra, editores E1, 2026-10-20): sus piezas son públicas (OBS no inicia sesión).
+    {"id": "obs", "nombre": "Kit de transmisiones", "que": "Rótulos, tarjetas y overlays para transmitir con OBS.",
+     "rutas": ["/api/obs"], "publico": True, "activo": True},
+    # El editor de fotos (Tullpu, editores E2a, 2026-10-20): foto.html y el revelado de media.html, con su cookie.
+    {"id": "fotos", "nombre": "Editor de fotos", "que": "Fotos por capas y el revelado con la plantilla de la marca.",
+     "rutas": ["/api/fotos"], "activo": True},
+    # El editor de videos (Kuyuy, editores E3, 2026-10-20): video.html y la cola de video, con su cookie.
+    {"id": "videos", "nombre": "Editor de videos", "que": "Videos con pistas, títulos y subtítulos; recortes con la marca.",
+     "rutas": ["/api/videos"], "activo": True},
+    # El editor de piezas (Awana, editores E4a, 2026-10-20): editor.html, con su cookie; en E4b, las piezas de prensa.
+    {"id": "piezas", "nombre": "Editor de piezas", "que": "Publicaciones con las plantillas de la marca.",
+     "rutas": ["/api/piezas"], "activo": True},
     {"id": "mapa", "nombre": "Mapa de relaciones", "que": "Cómo se conectan documentos, proyectos y personas.",
      "rutas": ["/api/grafo"], "activo": True},
     {"id": "observatorio", "nombre": "Observatorio de datos", "que": "Indicadores de fuentes oficiales.",
-     "rutas": [], "activo": True},
+     "rutas": ["/api/observatorio"], "activo": True},
     {"id": "contrasenas", "nombre": "Contraseñas", "que": "Claves cifradas de las mesas de partes.",
      "rutas": ["/api/contrasenas"], "activo": True},
 ]

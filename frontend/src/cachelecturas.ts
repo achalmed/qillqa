@@ -62,7 +62,7 @@ export function archivoGuardable(ruta: string): boolean {
   return !NUNCA.slice(1).some((re) => re.test(ruta))
 }
 
-/** La cuenta normalizada (la de `sgdp_usuario`); vacía = no se guarda nada. */
+/** La cuenta normalizada (la de `qillqa_usuario`); vacía = no se guarda nada. */
 export function normalizarCuenta(cuenta: string | null | undefined): string {
   return (cuenta ?? '').trim().toLowerCase()
 }
@@ -147,7 +147,7 @@ export function almacenEnMemoria(): Almacen {
   }
 }
 
-const BD = 'sgdp-sin-conexion'
+const BD = 'qillqa-sin-conexion'
 const DATOS = 'lecturas'
 const INDICE = 'indice'
 
@@ -231,7 +231,7 @@ async function usar<T>(fn: (a: Almacen) => Promise<T>): Promise<T> {
 /** Para las pruebas: otro almacén y otra fuente de la cuenta. */
 let leerCuenta = (): string => {
   try {
-    return normalizarCuenta(localStorage.getItem('sgdp_usuario'))
+    return normalizarCuenta(localStorage.getItem('qillqa_usuario'))
   } catch {
     return ''
   }
@@ -343,11 +343,11 @@ export async function limpiar(): Promise<void> {
   }
 }
 
-/** Las copias de antes de 2026-10-13 vivían en localStorage (sgdp_lectura:*): se retiran. */
+/** Las copias de antes de 2026-10-13 vivían en localStorage (qillqa_lectura:*): se retiran. */
 export function retirarCopiasViejas(): void {
   try {
     Object.keys(localStorage)
-      .filter((k) => k.startsWith('sgdp_lectura:'))
+      .filter((k) => k.startsWith('qillqa_lectura:'))
       .forEach((k) => localStorage.removeItem(k))
   } catch {
     /* sin localStorage */

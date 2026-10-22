@@ -2,7 +2,7 @@
 buscando las contraseñas y usuarios de las mesas de partes»).
 
 Cifrado simétrico autenticado con Fernet (AES-128-CBC + HMAC-SHA256, de `cryptography`). La
-clave sale de SGDP_BOVEDA_CLAVE (una clave Fernet: `python -c "from cryptography.fernet import
+clave sale de QILLQA_BOVEDA_CLAVE (una clave Fernet: `python -c "from cryptography.fernet import
 Fernet; print(Fernet.generate_key().decode())"`); si no está, se deriva de JWT_SECRET con HKDF,
 así funciona sin configurar nada, pero entonces cambiar JWT_SECRET deja ilegibles las claves
 guardadas. La base de datos y sus respaldos solo ven texto cifrado.
@@ -20,10 +20,10 @@ from app.config import config
 
 @lru_cache(maxsize=1)
 def _fernet() -> Fernet:
-    propia = (config.sgdp_boveda_clave or "").strip()
+    propia = (config.qillqa_boveda_clave or "").strip()
     if propia:
         return Fernet(propia.encode())
-    derivada = HKDF(algorithm=hashes.SHA256(), length=32, salt=b"sgdp-boveda", info=b"mesas-de-partes").derive(
+    derivada = HKDF(algorithm=hashes.SHA256(), length=32, salt=b"qillqa-boveda", info=b"mesas-de-partes").derive(
         config.jwt_secret.encode()
     )
     return Fernet(base64.urlsafe_b64encode(derivada))
@@ -40,4 +40,4 @@ def descifrar(cifrado: str) -> str:
     try:
         return _fernet().decrypt(cifrado.encode()).decode()
     except InvalidToken as error:
-        raise ValueError("No se pudo descifrar la clave: ¿cambió SGDP_BOVEDA_CLAVE o JWT_SECRET?") from error
+        raise ValueError("No se pudo descifrar la clave: ¿cambió QILLQA_BOVEDA_CLAVE o JWT_SECRET?") from error

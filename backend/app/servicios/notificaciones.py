@@ -53,10 +53,36 @@ def crear(
 
             if push.sin_la_app_a_la_vista({usuario_id}):
                 push.programar({usuario_id}, push.carga("Qillqa", texto, push.ruta_aviso(documento_id, proyecto_id, destino),
-                                                        f"aviso-{destino or tipo or 'sgdp'}"[:60], clase="aviso"), retraso=1.0)
+                                                        f"aviso-{destino or tipo or 'qillqa'}"[:60], clase="aviso"), retraso=1.0)
         except Exception:  # noqa: BLE001  nunca por un aviso push
             pass
     return n
+
+
+async def desde_bus(evento) -> None:
+    """Un aviso que un módulo aislado deja por su bandeja de salida («aviso.nuevo»: Tareas y Agenda; fase 10.2b,
+    2026-10-20; Gestión documental y Proyectos de ley, con su documento o su proyecto, desde Qillqasqa Q4a) entra a la
+    campana, en vivo y al celular como cualquier otro."""
+    from app.db import SesionAsincrona
+
+    d = evento.datos or {}
+    async with SesionAsincrona() as sesion:
+        crear(sesion, d.get("usuario_id"), str(d.get("texto") or ""), str(d.get("tipo") or ""),
+              documento_id=d.get("documento_id"), evitar=d.get("evitar"), proyecto_id=d.get("proyecto_id"),
+              destino=str(d.get("destino") or ""))
+        await sesion.commit()
+
+
+async def destinos_recientes(tipo: str, horas: int) -> set[str]:
+    """«avisos.v1».destinos_recientes: lo avisado con `tipo` en las últimas `horas` (para no avisarlo dos veces)."""
+    from datetime import datetime, timedelta, timezone
+
+    from app.db import SesionAsincrona
+
+    desde = datetime.now(timezone.utc) - timedelta(hours=horas)
+    async with SesionAsincrona() as sesion:
+        return set((await sesion.execute(select(Notificacion.destino).where(
+            Notificacion.tipo == tipo, Notificacion.creado_en >= desde))).scalars().all()) - {""}
 
 
 async def pendientes(sesion: AsyncSession, usuario_id: int) -> int:

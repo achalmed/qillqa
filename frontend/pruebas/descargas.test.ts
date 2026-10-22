@@ -6,8 +6,8 @@ import { carpetaDesaparecida, tipoParaGuardar } from '../src/descargas.ts'
 
 test('el tipo de «Guardar como» sigue a la extensión; sin extensión conocida no se declara', () => {
   assert.deepEqual(tipoParaGuardar('OF-0012-2026_Asunto.pdf'), { description: 'Documento PDF', accept: { 'application/pdf': ['.pdf'] } })
-  assert.deepEqual(tipoParaGuardar('sgdp-mesa-de-partes.zip'), { description: 'Archivo comprimido', accept: { 'application/zip': ['.zip'] } })
-  assert.deepEqual(tipoParaGuardar('sgdp-mesa-de-partes.xpi')?.accept, { 'application/x-xpinstall': ['.xpi'] })
+  assert.deepEqual(tipoParaGuardar('qillqa-mesa-de-partes.zip'), { description: 'Archivo comprimido', accept: { 'application/zip': ['.zip'] } })
+  assert.deepEqual(tipoParaGuardar('qillqa-mesa-de-partes.xpi')?.accept, { 'application/x-xpinstall': ['.xpi'] })
   assert.equal(tipoParaGuardar('pedidos.MD')?.description, 'Texto Markdown')
   assert.equal(tipoParaGuardar('sin-extension'), null)
   assert.equal(tipoParaGuardar(''), null)

@@ -74,19 +74,19 @@ unen a esta.
 
 ## Consumidores
 
-El modelo que estos seeds construyen es un contrato: la integración del SGDP
-(`sgdp/backend/app/servicios/openproject_sync.py`, decisión en `sgdp/docs/decisiones.md`) escribe en
-OpenProject resolviendo por **nombre** lo que sigue; del lado del SGDP, los nombres están en
-`sgdp/backend/app/servicios/openproject_mapa.py`. Renombrar o retirar cualquiera de estas piezas en
-un seed o en el perfil rompe el reflejo del SGDP; se cambia en los dos repos a la vez.
+El modelo que estos seeds construyen es un contrato: la integración de Qillqa
+(`qillqa/backend/app/servicios/openproject_sync.py`, decisión en `qillqa/docs/decisiones.md`) escribe en
+OpenProject resolviendo por **nombre** lo que sigue; del lado de Qillqa, los nombres están en
+`qillqa/backend/app/servicios/openproject_mapa.py`. Renombrar o retirar cualquiera de estas piezas en
+un seed o en el perfil rompe el reflejo de Qillqa; se cambia en los dos repos a la vez.
 
-| pieza | nombre que el SGDP espera | la crea |
+| pieza | nombre que Qillqa espera | la crea |
 |---|---|---|
 | tipos | «Documento», «Solicitud recibida», «Proyecto de Ley» | `11_tipos.rb` |
-| campos | «Ruta en disco» (clave de enlace `sgdp:doc:<id>`, `sgdp:pl:<id>`, `sgdp:pl-fase:<id>`, `sgdp:pl-tarea:<id>`), «N° Documento», «Pelota», «Tipo documental» | `13_campos_personalizados.rb` (las opciones de «Tipo documental», del perfil) |
-| estados | los de cada tipo («Nuevo», «En revisión», «Presentado»…), que el SGDP asigna por nombre | `10_estados.rb` |
-| proyectos | identificadores `documentos`, `correspondencia`, `legislativo` (por defecto; configurables en `sgdp/backend/app/config.py`) | `20_proyectos.rb` desde el perfil |
-| personas | el correo (o el nombre de usuario) de cada fila de `usuarios` del perfil coincide con el de su cuenta del SGDP | `70_usuarios.rb` |
-| flujos | el token del SGDP es de una cuenta administradora porque `15_workflows.rb` solo deja avanzar o retroceder un paso, o cerrar | `15_workflows.rb` |
+| campos | «Ruta en disco» (clave de enlace `qillqa:doc:<id>`, `qillqa:pl:<id>`, `qillqa:pl-fase:<id>`, `qillqa:pl-tarea:<id>`), «N° Documento», «Pelota», «Tipo documental» | `13_campos_personalizados.rb` (las opciones de «Tipo documental», del perfil) |
+| estados | los de cada tipo («Nuevo», «En revisión», «Presentado»…), que Qillqa asigna por nombre | `10_estados.rb` |
+| proyectos | identificadores `documentos`, `correspondencia`, `legislativo` (por defecto; configurables en `qillqa/backend/app/config.py`) | `20_proyectos.rb` desde el perfil |
+| personas | el correo (o el nombre de usuario) de cada fila de `usuarios` del perfil coincide con el de su cuenta de Qillqa | `70_usuarios.rb` |
+| flujos | el token de Qillqa es de una cuenta administradora porque `15_workflows.rb` solo deja avanzar o retroceder un paso, o cerrar | `15_workflows.rb` |
 
 El puente manual de este repo (`../bridges/README.md`) usa el mismo modelo, por ids de `op_ids.json`.

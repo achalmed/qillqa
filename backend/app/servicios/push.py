@@ -41,7 +41,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import config
 
-log = logging.getLogger("sgdp.push")
+log = logging.getLogger("qillqa.push")
 
 AJUSTE = "webpush_vapid"
 # Patrón de vibración propio de Qillqa (ms: vibra, pausa, vibra…): dos toques cortos y uno largo,
@@ -77,7 +77,7 @@ def generar_claves() -> tuple[str, str]:
 
 def firma_acuse(usuario_id: int, canal_id: int, mensaje_id: int) -> str:
     """HMAC corto con el secreto de la sesión: prueba que el acuse lo pide el aviso que mandó Qillqa."""
-    clave = hashlib.sha256(b"sgdp-push-acuse:" + config.jwt_secret.encode()).digest()
+    clave = hashlib.sha256(b"qillqa-push-acuse:" + config.jwt_secret.encode()).digest()
     return hmac.new(clave, f"{usuario_id}:{canal_id}:{mensaje_id}".encode(), hashlib.sha256).hexdigest()[:32]
 
 
@@ -124,45 +124,6 @@ def carga(titulo: str, cuerpo: str, url: str, tag: str, *, clase: str = "aviso",
     }
 
 
-def destinatarios_chat(*, clase: str, autor_id: int | None, miembros: dict[int, bool], mencionados: set[int],
-                       lectores: set[int]) -> set[int]:
-    """A quién se le avisa un mensaje del chat (sonido en la app abierta o push si no la mira).
-
-    - Nunca a quien lo escribió.
-    - Directo y grupo: a sus integrantes que no lo silenciaron.
-    - Tema del equipo: a quienes ya están en él (lo abrieron o escribieron) y no lo silenciaron,
-      solo si lo escribió una persona; lo que publica el sistema en un tema (numerados, agenda…)
-      se ve en el canal y en su contador, sin sonar en el bolsillo de todos (para avisos
-      personales están las reglas `notificar`, que van a la campana y sí llegan por push).
-    - Una mención llega siempre, aunque el canal esté silenciado (como en WhatsApp).
-    `miembros` = {usuario_id: silenciado}; `lectores` = quienes pueden leer el canal.
-    """
-    salida: set[int] = set()
-    if clase in ("directo", "grupo") or (clase == "tema" and autor_id is not None):
-        salida = {u for u, silenciado in miembros.items() if not silenciado}
-    salida |= set(mencionados)
-    if lectores:
-        salida &= lectores
-    if autor_id is not None:
-        salida.discard(autor_id)
-    return salida
-
-
-def cuerpo_chat(clase: str, autor: str, texto: str, archivo: str = "", es_voz: bool = False, encuesta: bool = False) -> str:
-    """«Ana: Ya está el oficio» en un grupo; en un directo, solo el texto (el título ya es Ana)."""
-    if encuesta:
-        t = f"Encuesta: {texto}"
-    elif (texto or "").strip():
-        t = texto
-    elif es_voz:
-        t = "Nota de voz"
-    elif archivo:
-        t = f"Archivo: {archivo}"
-    else:
-        t = "Mensaje nuevo"
-    return recortar(t if clase == "directo" else f"{autor}: {t}")
-
-
 # --- claves VAPID ------------------------------------------------------------------------------
 
 
@@ -184,7 +145,7 @@ async def claves(sesion: AsyncSession) -> tuple[str, str]:
             _claves = (fila.valor["publica"], boveda.descifrar(fila.valor["privada"]))
             return _claves
         except ValueError:
-            log.warning("La clave VAPID guardada no se puede descifrar (¿cambió JWT_SECRET o SGDP_BOVEDA_CLAVE?): se genera otra.")
+            log.warning("La clave VAPID guardada no se puede descifrar (¿cambió JWT_SECRET o QILLQA_BOVEDA_CLAVE?): se genera otra.")
     pub, pem = generar_claves()
     valor = {"publica": pub, "privada": boveda.cifrar(pem), "creada_en": datetime.now(timezone.utc).isoformat(timespec="seconds")}
     if fila:
@@ -203,9 +164,9 @@ def contacto() -> str:
     c = (config.vapid_contacto or "").strip()
     if c:
         return c if c.startswith(("mailto:", "https://")) else f"mailto:{c}"
-    if (config.sgdp_url_publica or "").startswith("https://"):
-        return config.sgdp_url_publica.rstrip("/")
-    return "mailto:sgdp@example.com"
+    if (config.qillqa_url_publica or "").startswith("https://"):
+        return config.qillqa_url_publica.rstrip("/")
+    return "mailto:qillqa@example.com"
 
 
 def disponible() -> bool:
@@ -254,7 +215,7 @@ async def enviar(usuario_ids: set[int] | list[int], datos: dict) -> int:
     """Envía `datos` a cada dispositivo suscrito de esas personas; borra lo caducado. → enviados."""
     global _aviso_sin_libreria
     from app.db import SesionAsincrona
-    from app.modelos_chat import SuscripcionPush
+    from app.modelos_push import SuscripcionPush
 
     ids = {int(u) for u in usuario_ids if u}
     if not ids:

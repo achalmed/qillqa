@@ -30,11 +30,11 @@ plantilla("coordinacion", "Reunión", "[PLANTILLA] Reunión — copiar y renombr
    ["Compromiso", "[PLANTILLA] Compromiso derivado — renombrar"]],
   autor, MEDIA)
 
-# 2) Producción de documento → ciclo elaboración→envío→cargo (espeja SGDP)
+# 2) Producción de documento → ciclo elaboración→envío→cargo (espeja Qillqa)
 plantilla("documentos", "Documento", "[PLANTILLA] Documento — copiar y renombrar",
   [["Tarea", "[PLANTILLA] 1· Redactar borrador"],
    ["Tarea", "[PLANTILLA] 2· Revisión formal"],
-   ["Tarea", "[PLANTILLA] 3· Numerar en SGDP"],
+   ["Tarea", "[PLANTILLA] 3· Numerar en Qillqa"],
    ["Tarea", "[PLANTILLA] 4· Gestionar firma"],
    ["Tarea", "[PLANTILLA] 5· Enviar al destinatario"],
    ["Tarea", "[PLANTILLA] 6· Registrar cargo / constancia"]],

@@ -1,40 +1,15 @@
-"""Datos iniciales: usuario admin y contadores de numeracion.
+"""Datos iniciales: la cuenta administradora.
 
-Los contadores se SIEMBRAN una sola vez leyendo las carpetas reales del
-Marco Documental (SERIE-NNNN-fecha-descripcion), para que Qillqa
-continue la numeracion oficial existente en vez de empezar de cero.
-Despues de sembrados, la base de datos es la unica fuente de verdad.
+Los contadores de numeración los siembra Gestión documental al preparar su base (servicios/qillqasqa_db.py, desde
+Qillqasqa Q5a), leyendo las carpetas reales del archivo documental.
 """
-
-import re
-from pathlib import Path
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.config import config, raiz_documentos
-from app.tipos import TIPOS
-from app.modelos import Contador, Usuario
+from app.config import config
+from app.modelos import Usuario
 from app.seguridad import hashear_clave
-
-# Series reales del registro de tipos (OF, OM, OMB, OB, CARTA, MEM, INF, SOL, ACT…):
-# antes solo cuatro literales, y un clon limpio sembraba las demás en cero.
-SERIES = sorted({t["serie"] for t in TIPOS.values()}, key=len, reverse=True)
-_PATRON_CARPETA = re.compile(r"^(" + "|".join(re.escape(s) for s in SERIES) + r")-(\d{4})-")
-
-
-def _maximos_en_framework() -> dict[str, int]:
-    """Escanea documentos/ del framework y devuelve el mayor numero por serie."""
-    maximos = {s: 0 for s in SERIES}
-    raiz = raiz_documentos()
-    if not raiz.is_dir():
-        return maximos
-    for carpeta in raiz.glob("*/*/"):
-        m = _PATRON_CARPETA.match(carpeta.name)
-        if m:
-            serie, numero = m.group(1), int(m.group(2))
-            maximos[serie] = max(maximos[serie], numero)
-    return maximos
 
 
 async def _asegurar_usuario(
@@ -85,16 +60,4 @@ async def sembrar(sesion: AsyncSession) -> None:
     # la base y se administran en Administración → Reglas de copia (D13: ningún nombre de la entidad en
     # el código). Una instalación nueva arranca sin reglas de copia.
 
-    # Contadores: continuar la numeracion real del framework
-    hay_contadores = (await sesion.execute(select(Contador.serie))).first()
-    if not hay_contadores:
-        for serie, maximo in _maximos_en_framework().items():
-            sesion.add(
-                Contador(
-                    despacho_id=1,
-                    serie=serie,
-                    periodo=config.periodo,
-                    ultimo=maximo,
-                )
-            )
     await sesion.commit()

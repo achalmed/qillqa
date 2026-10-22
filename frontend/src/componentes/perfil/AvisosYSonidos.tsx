@@ -1,6 +1,6 @@
 /**
  * AVISOS Y SONIDOS en Mi perfil (2026-10-13). Dos filas, como en los ajustes de Telegram:
- *   · «Avisos en este dispositivo»: activar o desactivar los avisos push (`chat/avisosPush.ts`), con
+ *   · «Avisos en este dispositivo»: activar o desactivar los avisos push (`avisosPush.ts`, de la plataforma), con
  *     el estado en palabras («Activos», «Bloqueados en el navegador…») y «Enviar uno de prueba».
  *   · «Sonidos de Qillqa»: el interruptor de los sonidos propios (`chat/sonidos.ts`); al encenderlo
  *     suena la firma de llegada para reconocerla.
@@ -15,8 +15,8 @@ import Typography from '@mui/material/Typography'
 import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined'
 import VolumeUpOutlinedIcon from '@mui/icons-material/VolumeUpOutlined'
 import { PALETA } from '../../paleta'
-import { activarAvisos, desactivarAvisos, estadoAvisos, probarAvisos, TEXTO_ESTADO, type EstadoAvisos } from '../chat/avisosPush'
-import { ponerSonidos, sonarLlegada, sonidosActivos } from '../chat/sonidos'
+import { activarAvisos, desactivarAvisos, estadoAvisos, probarAvisos, TEXTO_ESTADO, type EstadoAvisos } from '../../avisosPush'
+import { ponerSonidos, sonarLlegada, sonidosActivos } from '@qillqa/rimay/publico'
 
 function Renglon({ icono, etiqueta, valor, children }: { icono: React.ReactNode; etiqueta: string; valor: string; children?: React.ReactNode }) {
   return (

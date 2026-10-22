@@ -8,16 +8,16 @@
 // campos vacíos que reconoce por su etiqueta, nombre o texto de ayuda. No envía nada: la
 // persona revisa y envía. Los campos que llenó quedan marcados con un borde dorado.
 
-/** Lo que el marcador lee del portapapeles: `{ sgdp: 1, datos: { clave: valor } }`. */
+/** Lo que el marcador lee del portapapeles: `{ qillqa: 1, datos: { clave: valor } }`. */
 export function textoParaAutocompletar(datos: Record<string, string>): string {
   const limpio: Record<string, string> = {}
   for (const [k, v] of Object.entries(datos)) if (v) limpio[k] = v
-  return JSON.stringify({ sgdp: 1, datos: limpio })
+  return JSON.stringify({ qillqa: 1, datos: limpio })
 }
 
 // OJO: esta función se convierte en texto (toString) y corre DENTRO de la página de la mesa
 // de partes: no puede usar nada de fuera (ni imports ni constantes del módulo).
-function rellenarConSgdp() {
+function rellenarConQillqa() {
   const avisar = (texto: string) => {
     const caja = document.createElement('div')
     caja.textContent = texto
@@ -29,9 +29,9 @@ function rellenarConSgdp() {
   }
   const norm = (s: string) => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ')
   navigator.clipboard.readText().then((texto) => {
-    let paquete: { sgdp?: number; datos?: Record<string, string> } | null = null
+    let paquete: { qillqa?: number; datos?: Record<string, string> } | null = null
     try { paquete = JSON.parse(texto) } catch { paquete = null }
-    const d = paquete && paquete.sgdp === 1 ? paquete.datos : null
+    const d = paquete && paquete.qillqa === 1 ? paquete.datos : null
     if (!d) { avisar('Qillqa: primero pulse «Preparar autocompletado» en la ventana de apoyo.'); return }
     // ¿El formulario pide un documento de IDENTIDAD? (un «Tipo de documento» con DNI entre sus
     // opciones): entonces «Número de documento» es el DNI, no el número del oficio.
@@ -130,5 +130,5 @@ function rellenarConSgdp() {
 
 /** El enlace del marcador (javascript:…) para arrastrarlo a la barra de marcadores. */
 export function enlaceMarcador(): string {
-  return `javascript:${encodeURIComponent(`(${rellenarConSgdp.toString()})()`)}`
+  return `javascript:${encodeURIComponent(`(${rellenarConQillqa.toString()})()`)}`
 }

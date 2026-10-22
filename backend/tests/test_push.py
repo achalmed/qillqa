@@ -6,40 +6,41 @@ import json
 
 import pytest
 
+from rimay import chat
 from app.servicios import push
 
 
 def test_destinatarios_directo_y_grupo_sin_silenciados_ni_autor():
     miembros = {1: False, 2: False, 3: True}
-    assert push.destinatarios_chat(clase="directo", autor_id=1, miembros={1: False, 2: False}, mencionados=set(), lectores={1, 2}) == {2}
-    assert push.destinatarios_chat(clase="grupo", autor_id=1, miembros=miembros, mencionados=set(), lectores={1, 2, 3}) == {2}
+    assert chat.destinatarios_chat(clase="directo", autor_id=1, miembros={1: False, 2: False}, mencionados=set(), lectores={1, 2}) == {2}
+    assert chat.destinatarios_chat(clase="grupo", autor_id=1, miembros=miembros, mencionados=set(), lectores={1, 2, 3}) == {2}
 
 
 def test_destinatarios_tema_solo_personas_y_miembros():
     miembros = {1: False, 2: False}
     lectores = {1, 2, 3, 4}
     # Lo escribe una persona: avisa a quienes ya están en el tema (no a todo el equipo).
-    assert push.destinatarios_chat(clase="tema", autor_id=1, miembros=miembros, mencionados=set(), lectores=lectores) == {2}
+    assert chat.destinatarios_chat(clase="tema", autor_id=1, miembros=miembros, mencionados=set(), lectores=lectores) == {2}
     # Lo publica el sistema (numerado, agenda): no suena en el bolsillo de nadie.
-    assert push.destinatarios_chat(clase="tema", autor_id=None, miembros=miembros, mencionados=set(), lectores=lectores) == set()
+    assert chat.destinatarios_chat(clase="tema", autor_id=None, miembros=miembros, mencionados=set(), lectores=lectores) == set()
 
 
 def test_mencion_atraviesa_el_silencio_pero_no_el_acceso():
     miembros = {1: False, 2: True}
-    assert push.destinatarios_chat(clase="grupo", autor_id=1, miembros=miembros, mencionados={2}, lectores={1, 2}) == {2}
+    assert chat.destinatarios_chat(clase="grupo", autor_id=1, miembros=miembros, mencionados={2}, lectores={1, 2}) == {2}
     # Mencionar a alguien que no puede leer el canal no le avisa.
-    assert push.destinatarios_chat(clase="grupo", autor_id=1, miembros=miembros, mencionados={9}, lectores={1, 2}) == set()
+    assert chat.destinatarios_chat(clase="grupo", autor_id=1, miembros=miembros, mencionados={9}, lectores={1, 2}) == set()
     # Mencionarse a sí mismo tampoco.
-    assert push.destinatarios_chat(clase="tema", autor_id=1, miembros={}, mencionados={1}, lectores={1, 2}) == set()
+    assert chat.destinatarios_chat(clase="tema", autor_id=1, miembros={}, mencionados={1}, lectores={1, 2}) == set()
 
 
 def test_cuerpo_del_aviso():
-    assert push.cuerpo_chat("directo", "Ana", "Ya está el oficio") == "Ya está el oficio"
-    assert push.cuerpo_chat("grupo", "Ana", "Ya está") == "Ana: Ya está"
-    assert push.cuerpo_chat("grupo", "Ana", "", "nota-de-voz-20261013-101500.webm", es_voz=True) == "Ana: Nota de voz"
-    assert push.cuerpo_chat("directo", "Ana", "", "acta.pdf") == "Archivo: acta.pdf"
-    assert push.cuerpo_chat("tema", "Ana", "¿Qué día?", encuesta=True) == "Ana: Encuesta: ¿Qué día?"
-    assert len(push.cuerpo_chat("directo", "Ana", "x" * 500)) == 180
+    assert chat.cuerpo_chat("directo", "Ana", "Ya está el oficio") == "Ya está el oficio"
+    assert chat.cuerpo_chat("grupo", "Ana", "Ya está") == "Ana: Ya está"
+    assert chat.cuerpo_chat("grupo", "Ana", "", "nota-de-voz-20261013-101500.webm", es_voz=True) == "Ana: Nota de voz"
+    assert chat.cuerpo_chat("directo", "Ana", "", "acta.pdf") == "Archivo: acta.pdf"
+    assert chat.cuerpo_chat("tema", "Ana", "¿Qué día?", encuesta=True) == "Ana: Encuesta: ¿Qué día?"
+    assert len(chat.cuerpo_chat("directo", "Ana", "x" * 500)) == 180
 
 
 def test_ruta_que_abre_el_aviso():
@@ -61,7 +62,7 @@ def test_firma_del_acuse():
     assert not push.acuse_valido(3, 5, 99, "")
 
 
-def test_carga_lleva_el_aspecto_del_sgdp():
+def test_carga_lleva_el_aspecto_del_qillqa():
     c = push.carga("Ana", "Hola", "/chat?canal=1", "chat-1", clase="chat", acuse={"u": 1})
     assert c["vibrar"] == push.VIBRACION and c["icono"].endswith(".png") and c["insignia"].endswith(".png")
     assert c["tag"] == "chat-1" and c["url"] == "/chat?canal=1" and c["acuse"] == {"u": 1}
@@ -82,7 +83,7 @@ def test_claves_vapid_validas_y_aviso_que_el_dispositivo_descifra():
     assert len(base64.urlsafe_b64decode(publica + "==")) == 65   # punto P-256 sin comprimir
     # La firma VAPID (RFC 8292) con nuestra privada se verifica con nuestra pública.
     v = Vapid02.from_pem(pem.encode())
-    cab = v.sign({"sub": "mailto:sgdp@example.com", "aud": "https://fcm.googleapis.com"})
+    cab = v.sign({"sub": "mailto:qillqa@example.com", "aud": "https://fcm.googleapis.com"})
     assert cab["Authorization"].startswith("vapid t=") and publica in cab["Authorization"]
     # El dispositivo: su par ECDH y su secreto `auth`, como los da PushManager.subscribe().
     disp = ec.generate_private_key(ec.SECP256R1())

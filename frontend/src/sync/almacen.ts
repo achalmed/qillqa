@@ -3,10 +3,10 @@
 // espejo de la sincronización ('carpeta') y la carpeta donde caen las
 // descargas ('descargas', ver descargas.ts).
 // Sobrevive a recargas en el MISMO origen; si el enlace público (origen)
-// cambia, el usuario reelige la carpeta y el índice `.sgdp-sync.json` que vive
+// cambia, el usuario reelige la carpeta y el índice `.qillqa-sync.json` que vive
 // DENTRO de la carpeta evita volver a descargar (ver sincronizador.ts).
 
-const BD = 'sgdp_sync'
+const BD = 'qillqa_sync'
 const TIENDA = 'handles'
 const CLAVE = 'carpeta'
 

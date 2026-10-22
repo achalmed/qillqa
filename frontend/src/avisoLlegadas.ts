@@ -15,10 +15,10 @@
  */
 import type { Persona } from './componentes/EquipoEnLinea'
 
-const PREFERENCIA = 'sgdp_aviso_llegadas'
-const ULTIMO = 'sgdp_aviso_llegadas_ultimo'
+const PREFERENCIA = 'qillqa_aviso_llegadas'
+const ULTIMO = 'qillqa_aviso_llegadas_ultimo'
 
-export const esAdministrador = () => localStorage.getItem('sgdp_rol') === 'administrador'
+export const esAdministrador = () => localStorage.getItem('qillqa_rol') === 'administrador'
 export const avisoActivo = () => esAdministrador() && localStorage.getItem(PREFERENCIA) !== 'no'
 export function fijarAviso(si: boolean) {
   localStorage.setItem(PREFERENCIA, si ? 'si' : 'no')
@@ -102,7 +102,7 @@ export function textoLlegada(personas: Persona[]): string {
 export function notificarEscritorio(texto: string) {
   if (!document.hidden || !('Notification' in window) || Notification.permission !== 'granted') return
   try {
-    new Notification('Qillqa', { body: texto, silent: true, tag: 'sgdp-llegada' })
+    new Notification('Qillqa', { body: texto, silent: true, tag: 'qillqa-llegada' })
   } catch {
     /* algunos navegadores solo notifican desde un service worker */
   }

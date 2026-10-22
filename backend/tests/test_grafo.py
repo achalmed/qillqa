@@ -96,7 +96,7 @@ def test_archivos_del_foco_y_de_sus_vecinos_con_su_ruta_de_descarga():
 
 
 def test_resolucion_de_miniatura():
-    from app.servicios import imagen
+    from qillqasqa.servicios import imagen
 
     assert imagen.resolucion_para(None) == imagen.RESOLUCION
     assert imagen.resolucion_para(160) == round(imagen.RESOLUCION * 160 / 1240)
@@ -161,8 +161,9 @@ def test_anotar_correspondencia_en_las_fichas_del_mapa():
 
 
 def test_foco_por_nombre_une_estadisticas_con_el_mapa():
-    from app.servicios import instituciones_destino as svc_inst
+    from qillqasqa.api.estadisticas import foco_por_nombre
+    from qillqasqa.servicios import instituciones_destino as svc_inst
 
-    inst, pers = grafo.foco_por_nombre(_mapa_corresp())
+    inst, pers = foco_por_nombre(_mapa_corresp(), grafo.nombre_de_persona)
     assert inst[svc_inst.plano(svc_inst.normalizar("Ministerio de Educación (MINEDU)")[0])] == "inst:7"
     assert pers[grafo.nombre_de_persona("Juan Pérez Soto")] == "persona:8"

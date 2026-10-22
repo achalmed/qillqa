@@ -15,7 +15,7 @@ import { api } from '../api'
 
 interface Anuncio { id: number; texto: string; accion: 'recargar' | 'entendido'; creado_en: string | null }
 
-const CLAVE_VISTO = 'sgdp_anuncio_visto'
+const CLAVE_VISTO = 'qillqa_anuncio_visto'
 const POSPONER_MS = 10 * 60 * 1000
 // Una página cargada DESPUÉS de un «recargar» ya tiene la versión nueva: no se le pide.
 const CARGADA_EN = Date.now()

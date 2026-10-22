@@ -14,7 +14,7 @@ Cada diferencia: {clave, etiqueta, actual, propuesto, estado, aceptar}, con `est
 """
 from __future__ import annotations
 
-from ..entradas import normalizar
+from ..lectura import normalizar
 from .esquemas import Esquema
 
 

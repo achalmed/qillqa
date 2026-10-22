@@ -29,7 +29,8 @@ from app.seguridad import (
     usuario_actual,
     validar_clave,
 )
-from app.servicios import bitacora, cuentas, modulos, perfil
+from app.servicios import cuentas, modulos, perfil
+from app.servicios.eventos_bandeja import anotar_bitacora
 
 router = APIRouter(prefix="/api/admin", tags=["administración"])
 
@@ -436,12 +437,12 @@ async def actualizar_usuario(
 
 # --- Compartir el acceso (2026-10-18) ---------------------------------------------------------------
 # El enlace con el que se entra a Qillqa, para el mensaje de bienvenida que se pega en el chat
-# (componentes/admin/CompartirAcceso.tsx). Del `.env` (SGDP_URL_PUBLICA); vacío, la web usa el suyo.
+# (componentes/admin/CompartirAcceso.tsx). Del `.env` (QILLQA_URL_PUBLICA); vacío, la web usa el suyo.
 @router.get("/enlace")
 async def enlace_del_sistema(_: Usuario = Depends(solo_administrador)) -> dict:
     from app.config import config
 
-    return {"enlace": (config.sgdp_url_publica or "").rstrip("/")}
+    return {"enlace": (config.qillqa_url_publica or "").rstrip("/")}
 
 
 # --- Datos al primer ingreso (2026-10-18) ------------------------------------------------------------
@@ -462,8 +463,8 @@ async def guardar_primer_ingreso(datos: PrimerIngreso, admin: Usuario = Depends(
         sesion.add(Ajuste(despacho_id=1, clave=perfil.CLAVE_PRIMER_INGRESO, valor=limpio))
     else:
         fila.valor = limpio
-    bitacora.registrar(sesion, None, admin, "ajustes",
-                       f"Datos al primer ingreso: {'en uso' if limpio['activo'] else 'apagado'}; sin pedirlos a {', '.join(limpio['excluir_cargos']) or 'nadie'}")
+    await anotar_bitacora(sesion, admin, "ajustes",
+                          f"Datos al primer ingreso: {'en uso' if limpio['activo'] else 'apagado'}; sin pedirlos a {', '.join(limpio['excluir_cargos']) or 'nadie'}")
     await sesion.commit()
     modulos.invalidar()
     return {**limpio, "cargos": list(cuentas.CARGOS), "datos": list(perfil.DATOS_PEDIDOS.values())}

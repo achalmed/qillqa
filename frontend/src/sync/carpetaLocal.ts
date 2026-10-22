@@ -63,7 +63,7 @@ export function olvidarMapaEnMemoria(): void {
 
 const cuentaActual = (): string => {
   try {
-    return normalizarCuenta(localStorage.getItem('sgdp_usuario'))
+    return normalizarCuenta(localStorage.getItem('qillqa_usuario'))
   } catch {
     return ''
   }
@@ -78,7 +78,7 @@ export async function enLaCarpeta(url: string, version?: string | null): Promise
 
 // Permiso: una sola petición a la vez para todos los PDF que lo esperan, y si la persona dijo
 // «Ahora no», no se vuelve a preguntar en un rato.
-export const EVENTO_PERMISO = 'sgdp:permiso-carpeta'
+export const EVENTO_PERMISO = 'qillqa:permiso-carpeta'
 export interface PedidoPermiso {
   carpeta: string
   /** Lo llama la ventanita: con el clic de la persona pide el permiso al navegador. */

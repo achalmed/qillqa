@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
+# Entorno verde (fase 10.1 de docs/plataforma/propuesta-repositorios.md): esta copia NO opera producción;
+# su API se maneja con scripts/verde.sh. La marca .verde (local, sin versionar) lo indica.
+for _v in "$(dirname "${BASH_SOURCE[0]}")/.verde" "$(dirname "${BASH_SOURCE[0]}")/../.verde"; do
+  [[ -f "$_v" ]] && { echo "Entorno verde: este script opera producción; use scripts/verde.sh." >&2; exit 1; }
+done
 # =====================================================================
-#  instalar_enlace_fijo.sh  --  UNA SOLA VEZ. Deja el SGDP con un enlace
+#  instalar_enlace_fijo.sh  --  UNA SOLA VEZ. Deja Qillqa con un enlace
 #  de internet PERMANENTE y con arranque automático al prender la laptop.
 # ---------------------------------------------------------------------
 #  Después de correr esto:
@@ -22,7 +27,7 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DIR"
 
 echo "======================================================================"
-echo "  SGDP — instalación del ENLACE PERMANENTE (gratis)"
+echo "  Qillqa — instalación del ENLACE PERMANENTE (gratis)"
 echo "======================================================================"
 echo ""
 
@@ -44,7 +49,10 @@ if ! tailscale status >/dev/null 2>&1; then
   echo "   Se abrirá un enlace en el navegador: entra con tu correo (Google"
   echo "   sirve) y autoriza la laptop. Es gratis y de una sola vez."
   echo ""
-  sudo tailscale up --hostname=qillqa || {
+  # El nombre del nodo ES el enlace público (https://<nodo>.<red>.ts.net): el equipo lo guarda en sus marcadores y en la
+  # aplicación instalada. Es qillqa-despacho desde el corte de la plataforma (10.6); cambiarlo es una mudanza con aviso
+  # (docs/acceso-permanente.md §Mudanza del enlace).
+  sudo tailscale up --hostname="${QILLQA_NODO:-qillqa-despacho}" || {
     echo "[error] No se completó la conexión. Vuelva a ejecutar este script."
     exit 1
   }
@@ -104,9 +112,9 @@ mkdir -p "$HOME/.config/systemd/user"
 # fallaba con «203/EXEC» — era la razón de que el enlace no se activara solo
 # al encender (Edison 2026-09-05). La espera de internet, Docker y Tailscale
 # vive en arranque_automatico.sh, que además reintenta.
-cat > "$HOME/.config/systemd/user/sgdp.service" <<UNIT
+cat > "$HOME/.config/systemd/user/qillqa.service" <<UNIT
 [Unit]
-Description=SGDP — sistema de gestión documental del despacho (arranque y publicación)
+Description=Qillqa — sistema de gestión documental del despacho (arranque y publicación)
 After=network-online.target
 Wants=network-online.target
 
@@ -124,7 +132,7 @@ WantedBy=default.target
 UNIT
 
 systemctl --user daemon-reload
-systemctl --user enable sgdp.service >/dev/null 2>&1
+systemctl --user enable qillqa.service >/dev/null 2>&1
 # «Linger» = los servicios del usuario arrancan al encender la máquina,
 # sin esperar a que alguien inicie sesión gráfica.
 sudo loginctl enable-linger "$USER" 2>/dev/null || true

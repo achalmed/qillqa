@@ -61,11 +61,19 @@ Con los datos ficticios de la demo.
 
 ## Probar la demo en cinco minutos
 
-Requisitos: [Docker](https://docs.docker.com/get-docker/) con Docker Compose. La primera vez descarga la
-imagen de TeX Live (varios GB): tómalo con calma.
+Requisitos: [Docker](https://docs.docker.com/get-docker/) con Docker Compose 2.17 o más nuevo. La primera vez
+descarga la imagen de TeX Live (varios GB): tómalo con calma.
+
+Qillqa es el anfitrión de una plataforma de módulos, cada uno en su repositorio: [Tiqsi](https://github.com/achalmed/tiqsi)
+(el contrato que los une), [Qillqasqa](https://github.com/achalmed/qillqasqa) (documentos, proyectos e informes, con el
+marco documental y la edición simultánea) y los demás (la Mediateca, Tareas y Agenda, el chat, la Mesa de Partes, la
+Rendición de cuentas, los editores de Prensa, el Observatorio). Se clonan **uno junto al otro**, en la misma carpeta:
 
 ```bash
-git clone https://github.com/achalmed/qillqa.git
+mkdir plataforma && cd plataforma
+for r in qillqa tiqsi qillqasqa rikchay wayra ruray tullpu kuyuy awana qhawana yupay minka rimay punku; do
+  git clone https://github.com/achalmed/$r.git
+done
 cd qillqa
 cp .env.example .env            # cambia POSTGRES_PASSWORD y JWT_SECRET
 docker compose up -d --build    # base de datos, API (con LuaLaTeX) y web
@@ -88,12 +96,12 @@ Cambia estas claves antes de dejar la demo abierta a otras personas.
 ## Instalar para tu entidad
 
 1. Copia `.env.example` a `.env` y completa: claves (`POSTGRES_PASSWORD`, `JWT_SECRET`,
-   `SGDP_BOVEDA_CLAVE`), el nombre que muestra la web (`VITE_NOMBRE_DESPACHO`), las siglas, el período
+   `QILLQA_BOVEDA_CLAVE`), el nombre que muestra la web (`VITE_NOMBRE_DESPACHO`), las siglas, el período
    y el lugar de la numeración (`SIGLAS`, `PERIODO`, `LUGAR`). No uses `admin` como `ADMIN_USUARIO`.
 2. Crea el **perfil** de tu entidad a partir de `perfil.ejemplo/`: datos del membrete, firma y sello.
    Apunta `MDD_PERFIL` a esa carpeta. Sin perfil, los PDF salen con un membrete neutro.
-3. Reemplaza los emblemas de `marco_documental/assets/logos/` por los de tu entidad (mismo nombre de
-   archivo).
+3. Reemplaza los emblemas de `../qillqasqa/marco_documental/assets/logos/` (en el repositorio de Qillqasqa) por los de
+   tu entidad (mismo nombre de archivo).
 4. `docker compose up -d --build`, entra como `administrador` y crea las cuentas del equipo en *Administración*.
 
 Instalación sin Docker (servidor Linux con TeX Live): [`docs/desarrollo.md`](docs/desarrollo.md).
@@ -106,9 +114,9 @@ navegador ──► web (React + MUI + TipTap, Vite)  ──► API (FastAPI, Py
                      └──► servidor colab (Node)          └──► marco_documental/ (clases LuaLaTeX) ──► PDF
 ```
 
-- `backend/` — API, modelos, servicios (numeración, compilación, nombres de archivo, mesa de partes…).
-- `frontend/` — la web; `frontend/colab/` es el servidor de edición simultánea.
-- `marco_documental/` — clases, estructuras y plantillas LuaLaTeX de los documentos.
+- `backend/` — el anfitrión: API, sesión, directorio, Mapa, administración; monta los módulos por sus manifiestos.
+- `frontend/` — la web; `../qillqasqa/web/colab/` es el servidor de edición simultánea.
+- `../qillqasqa/marco_documental/` — clases, estructuras y plantillas LuaLaTeX de los documentos.
 - `perfil.ejemplo/` — modelo del perfil de una entidad.
 - `docs/` — arquitectura, manual de uso, desarrollo y reglas de redacción.
 
@@ -133,5 +141,5 @@ Si usas Qillqa en un trabajo académico o institucional, cítalo así (también 
 
 [GNU Affero General Public License v3.0](LICENSE). Puedes usar, estudiar, modificar y redistribuir Qillqa;
 si lo ofreces como servicio por la red con cambios, debes publicar el código de esos cambios con la misma
-licencia. Las fuentes tipográficas de `marco_documental/assets/fonts/` conservan su propia licencia (SIL Open
+licencia. Las fuentes tipográficas de `../qillqasqa/marco_documental/assets/fonts/` conservan su propia licencia (SIL Open
 Font License).

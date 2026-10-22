@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# Entorno verde (fase 10.1 de docs/plataforma/propuesta-repositorios.md): esta copia NO opera producción;
+# su API se maneja con scripts/verde.sh. La marca .verde (local, sin versionar) lo indica.
+for _v in "$(dirname "${BASH_SOURCE[0]}")/.verde" "$(dirname "${BASH_SOURCE[0]}")/../.verde"; do
+  [[ -f "$_v" ]] && { echo "Entorno verde: este script opera producción; use scripts/verde.sh." >&2; exit 1; }
+done
 # =====================================================================
 #  arranque_automatico.sh  --  Lo que corre el servicio al ENCENDER la
 #  laptop: espera a que haya internet y publica el enlace permanente.
@@ -6,7 +11,7 @@
 #  Por qué existe (Edison 2026-09-05): al prender la laptop el enlace
 #  https://<laptop>.<red>.ts.net no se activaba solo y había que correr
 #  ./instalar_enlace_fijo.sh a mano. Dos causas, las dos ya corregidas:
-#    1. El archivo del servicio (sgdp.service) llamaba a enlace.sh SIN
+#    1. El archivo del servicio (qillqa.service) llamaba a enlace.sh SIN
 #       comillas y la carpeta del proyecto tenía espacios (hasta M10 D2): systemd
 #       cortaba la ruta en la primera palabra y fallaba con 203/EXEC.
 #    2. `tailscale funnel` sin sudo es denegado; enlace.sh lo tomaba como
@@ -17,7 +22,7 @@
 #  tarda y Tailscale tarda en conectarse. Espera hasta 20 minutos a cada
 #  cosa y reintenta la publicación varias veces antes de darse por vencido.
 #
-#  Uso normal: lo lanza systemd (sgdp.service). A mano: ./arranque_automatico.sh
+#  Uso normal: lo lanza systemd (qillqa.service). A mano: ./arranque_automatico.sh
 # =====================================================================
 set -uo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

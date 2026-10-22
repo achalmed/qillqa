@@ -40,7 +40,7 @@ export function marcoDe(vista: Vista, ventana: { ancho: number; alto: number }):
   return { ancho: v.ancho, alto: Math.round(alto), escala: Math.round(escala * 1000) / 1000 }
 }
 
-const CLAVE = 'sgdp_vista'
+const CLAVE = 'qillqa_vista'
 
 export function leerVista(): Vista {
   try {

@@ -10,10 +10,10 @@ from datetime import datetime, timedelta, timezone
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://x:y@127.0.0.1/z")
 os.environ.setdefault("JWT_SECRET", "prueba")
 
-from app.flujo import ve_autoria  # noqa: E402
-from app.latex import generador as g  # noqa: E402
+from qillqasqa.flujo import ve_autoria  # noqa: E402
+from qillqasqa.latex import generador as g  # noqa: E402
 from app.servicios import presencia as p  # noqa: E402
-from app.servicios.adjuntos import linea_adj  # noqa: E402
+from qillqasqa.servicios.adjuntos import linea_adj  # noqa: E402
 
 T0 = datetime(2026, 10, 1, 9, 0, tzinfo=timezone.utc)
 
@@ -88,7 +88,7 @@ def test_autoria_visible_para_el_equipo_no_para_invitado():
 
 
 def test_expediente_firmado_se_reconoce_por_el_nombre_nuevo_y_el_antiguo():
-    from app.servicios.expediente import con_firma_por_nombre
+    from qillqasqa.servicios.expediente import con_firma_por_nombre
 
     assert con_firma_por_nombre("EXP-OF-0015-2026-2027_Solicita-informacion_firmado.pdf")
     assert not con_firma_por_nombre("EXP-OF-0015-2026-2027_Solicita-informacion_sin-firma.pdf")
@@ -97,7 +97,7 @@ def test_expediente_firmado_se_reconoce_por_el_nombre_nuevo_y_el_antiguo():
 
 
 def test_adjunto_escrito_que_luego_tiene_archivo_no_se_repite():
-    from app.servicios.adjuntos import combinar_adjuntos
+    from qillqasqa.servicios.adjuntos import combinar_adjuntos
 
     assert combinar_adjuntos(["Oficio N° 108", "Acta"], ["oficio  n° 108"]) == ["Acta", "oficio  n° 108"]
     assert combinar_adjuntos(["Lo indicado"], []) == ["Lo indicado"]

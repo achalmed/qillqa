@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # config.sh — openproject_despacho: rutas y ajustes del despliegue que cargan todos los scripts (iniciar, detener, estado, respaldar, actualizar, sembrar).
 #
-# La suite es infraestructura reutilizable (anidada en el repo sgdp desde la ola 8, 2026-10-10); lo que es
+# La suite es infraestructura reutilizable (anidada en el repo qillqa desde la ola 8, 2026-10-10); lo que es
 # de UN despliegue vive fuera, en la carpeta de operaciones del despacho (`<despacho>/operaciones/openproject/`):
 # `.env` (host, secreto, perfil, token), `respaldos/` y `op_ids.json`. Se localiza así, en orden:
 #   1. OPENPROJECT_OPERACIONES (variable de entorno)

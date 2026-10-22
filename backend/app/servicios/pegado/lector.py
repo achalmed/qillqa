@@ -6,7 +6,7 @@
   cerca, empezando por `tipo:`), se lee con `yaml.safe_load`, se busca su esquema y se
   valida (`validar.validar`);
 - si no lo trae, se prueban los lectores de transición por rótulos (hoy, el mensaje de
-  recepción 📌/🗓️ que lee `entradas.leer_resumen`, que equivale a `documento-recibido`);
+  recepción 📌/🗓️ que lee `lectura.leer_resumen`, que equivale a `documento-recibido`);
 - si nada casa, `errores` dice qué formatos se aceptan y `tipo` queda vacío: el endpoint
   responde 422 y la web no rellena ningún campo.
 """
@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 
 import yaml
 
-from .. import entradas
+from .. import lectura
 from .esquemas import Esquema, cargar, formatos
 from .validar import validar
 
@@ -97,7 +97,7 @@ def _por_rotulos(texto: str, tipos_admitidos: tuple[str, ...] | None) -> Lectura
     lector de transición. Devuelve una Lectura de `documento-recibido` o None."""
     if tipos_admitidos and "documento-recibido" not in tipos_admitidos:
         return None
-    r = entradas.leer_resumen(texto)
+    r = lectura.leer_resumen(texto)
     if not r.get("tipo"):
         return None
     esquema = cargar().get("documento-recibido")

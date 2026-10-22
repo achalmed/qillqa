@@ -105,7 +105,7 @@ export function AgendaYTareasOP() {
   )
 }
 
-/** Enlace a OpenProject de `sgdp:pl:3`…; vacío si está apagada o aún no se refleja.
+/** Enlace a OpenProject de `qillqa:pl:3`…; vacío si está apagada o aún no se refleja.
  *  Lo usan el botón y el menú ⋮ de la cabecera del proyecto en el celular. */
 export function useEnlaceOpenProject(clave: string) {
   const [url, setUrl] = useState('')
@@ -120,7 +120,7 @@ export function useEnlaceOpenProject(clave: string) {
   return url
 }
 
-/** «Ver en OpenProject» de `sgdp:doc:12`, `sgdp:pl:3`… si ya está reflejado. */
+/** «Ver en OpenProject» de `qillqa:doc:12`, `qillqa:pl:3`… si ya está reflejado. */
 export function BotonOpenProject({ clave, compacto = false }: { clave: string; compacto?: boolean }) {
   const url = useEnlaceOpenProject(clave)
   if (!url) return null
@@ -143,7 +143,7 @@ interface EstadoOP {
 }
 
 const QUE: Record<string, string> = {
-  'sgdp:doc': 'Documentos', 'sgdp:pl': 'Proyectos de ley', 'sgdp:pl-fase': 'Fases de PL', 'sgdp:pl-tarea': 'Tareas de PL',
+  'qillqa:doc': 'Documentos', 'qillqa:pl': 'Proyectos de ley', 'qillqa:pl-fase': 'Fases de PL', 'qillqa:pl-tarea': 'Tareas de PL',
 }
 
 /** Panel del administrador: si está encendida y responde, qué se refleja, qué falló y quién
@@ -195,7 +195,7 @@ export function AdminOpenProject({ alAvisar }: { alAvisar: (tipo: 'success' | 'e
             </Typography>
             {(e.faltan_en_op ?? []).length > 0 && (
               <Typography variant="body2" color="error" sx={{ mb: 1 }}>
-                Faltan en OpenProject los proyectos {(e.faltan_en_op ?? []).map((x) => `«${x}»`).join(', ')}: siémbrelos desde <code>sgdp/openproject</code> (<code>./sembrar.sh --aplicar seeds/20_proyectos.rb</code>).
+                Faltan en OpenProject los proyectos {(e.faltan_en_op ?? []).map((x) => `«${x}»`).join(', ')}: siémbrelos desde <code>qillqa/openproject</code> (<code>./sembrar.sh --aplicar seeds/20_proyectos.rb</code>).
               </Typography>
             )}
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1.5 }}>
@@ -216,7 +216,7 @@ export function AdminOpenProject({ alAvisar }: { alAvisar: (tipo: 'success' | 'e
             </Box>
             {sinCuenta.length > 0 && (
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
-                {sinCuenta.length} sin cuenta: no reciben en OpenProject lo que se les encarga en Qillqa. Se crean en <code>sgdp/openproject</code> con el mismo correo (perfil <code>usuarios</code> y <code>seeds/70_usuarios.rb</code>).
+                {sinCuenta.length} sin cuenta: no reciben en OpenProject lo que se les encarga en Qillqa. Se crean en <code>qillqa/openproject</code> con el mismo correo (perfil <code>usuarios</code> y <code>seeds/70_usuarios.rb</code>).
               </Typography>
             )}
             {e.errores.length > 0 && (

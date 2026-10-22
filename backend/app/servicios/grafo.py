@@ -19,6 +19,10 @@ miles de puntos sin relación con nada más.
 
 Nada aquí escribe en la base; solo lee y une. Las funciones de coincidencia
 son puras (pruebas en tests/test_grafo.py).
+
+Los documentos, los proyectos y las semanas son de Qillqasqa: llegan por «documentos.v1», «proyectos.v1» y
+«semanas.v1» (`mapa()`, Qillqasqa Q3c, 2026-10-21); sin uno de ellos, el mapa no tiene esos nodos. El Mapa es del
+anfitrión: une lo de cada módulo con el directorio, las relaciones genéricas y el equipo.
 """
 
 from __future__ import annotations
@@ -26,31 +30,22 @@ from __future__ import annotations
 import re
 import unicodedata
 from dataclasses import dataclass, field
+from types import SimpleNamespace
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from tiqsi.modulo import opcional
 
-from app.latex.generador import parsear_copias
-from app.modelos import (
-    Adjunto,
-    Documento,
-    DocumentoRelacion,
-    Entrada,
-    Institucion,
-    PedidoSR,
-    Persona,
-    Proyecto,
-    ProyectoDocumento,
-    ProyectoFuente,
-    ProyectoMiembro,
-    Relacion,
-    SemanaSR,
-    Usuario,
-)
-from app.servicios import expediente as svc_expediente
-from app.servicios.numeracion import numero_mostrado
-from app.servicios.referencias import ETIQUETA_RELACION
-from app.tipos import asunto_de, tipo_config
+from app.modelos import Institucion, Persona, Usuario
+
+# Cómo se lee cada relación genérica en el mapa (antes en servicios/referencias.py).
+ETIQUETA_RELACION = {
+    "referencia_normativa": "cita la norma",
+    "cita": "cita",
+    "menciona": "menciona",
+    "presenta_informe": "presenta el informe",
+    "responde": "responde a",
+}
 
 # --- coincidencias de texto (puras) ----------------------------------------
 
@@ -127,24 +122,28 @@ class Grafo:
         return {"nodos": nodos, "aristas": list(self.aristas.values())}
 
 
+async def _parte(capacidad: str, *args) -> dict:
+    """Lo que un módulo da para el mapa (`mapa()` de su contrato); {} si no está."""
+    modulo = opcional(capacidad)
+    return await modulo.mapa(*args) if modulo is not None else {}
+
+
 async def construir(sesion: AsyncSession, *, ver_ocultos: bool, ver_autoria: bool) -> dict:
     g = Grafo()
 
-    # Documentos del sistema.
-    docs = (await sesion.execute(select(Documento))).scalars().all()
-    if not ver_ocultos:
-        docs = [d for d in docs if not d.oculto]
+    # Documentos del sistema (de Gestión documental, por su contrato).
+    de_documentos = await _parte("documentos.v1", ver_ocultos)
+    docs = de_documentos.get("documentos", [])
     por_numero: dict[str, str] = {}
     for d in docs:
-        numero = numero_mostrado(d) if d.numero is not None or d.origen != "sgdp" else f"{tipo_config(d.tipo)['nombre']} (borrador)"
-        nid = f"doc:{d.id}"
+        nid = f"doc:{d['id']}"
         g.nodo(
-            nid, tipo="documento", subtipo=tipo_config(d.tipo)["nombre"], etiqueta=numero,
-            titulo=asunto_de(d.tipo, d.campos) or "", estado=d.estado, fecha=(d.campos or {}).get("fecha") or "",
-            ruta=f"/documentos/{d.id}",
+            nid, tipo="documento", subtipo=d["subtipo"], etiqueta=d["etiqueta"],
+            titulo=d["titulo"], estado=d["estado"], fecha=d["fecha"],
+            ruta=f"/documentos/{d['id']}",
         )
-        if d.numero is not None:
-            por_numero[clave_numero(numero)] = nid
+        if d["numerado"]:
+            por_numero[clave_numero(d["etiqueta"])] = nid
 
     # Directorio: personas por nombre comparable; instituciones por nombre y siglas.
     personas = (await sesion.execute(select(Persona))).scalars().all()
@@ -172,10 +171,9 @@ async def construir(sesion: AsyncSession, *, ver_ocultos: bool, ver_autoria: boo
         return nid
 
     for d in docs:
-        nid = f"doc:{d.id}"
-        campos = d.campos or {}
+        nid = f"doc:{d['id']}"
         # Destinatario(s): una línea por destinatario («Nombre — Cargo»).
-        for linea in lineas_destinatario(campos.get("destinatario_nombre", "")):
+        for linea in lineas_destinatario(d["destinatario_nombre"]):
             p = persona_por_nombre.get(nombre_de_persona(linea))
             if p:
                 g.arista(nid, nodo_persona(p), "destinatario", False, "dirigido a")
@@ -185,85 +183,89 @@ async def construir(sesion: AsyncSession, *, ver_ocultos: bool, ver_autoria: boo
                 # dirección), y el mapa contaba solo los que lo escribían igual que el directorio.
                 if p.institucion_id and p.institucion_id in instituciones:
                     g.arista(nid, nodo_institucion(instituciones[p.institucion_id]), "destinatario", False, "dirigido a")
-        inst = inst_por_nombre.get(normalizar(campos.get("destinatario_institucion", "")))
+        inst = inst_por_nombre.get(normalizar(d["destinatario_institucion"]))
         if inst:
             g.arista(nid, nodo_institucion(inst), "destinatario", False, "dirigido a")
         # Copias (c.c.).
-        for copia in parsear_copias(campos.get("con_copia", "")):
-            p = persona_por_nombre.get(nombre_de_persona(copia["nombre"]))
+        for copia in d["copias"]:
+            p = persona_por_nombre.get(nombre_de_persona(copia))
             if p:
                 g.arista(nid, nodo_persona(p), "copia", False, "con copia a")
         # Referencia: «Oficio N° …» que es un documento del sistema.
-        ref = clave_numero(campos.get("referencia", ""))
+        ref = clave_numero(d["referencia"])
         if ref:
             for clave, otro in por_numero.items():
                 if clave and clave in ref:
                     g.arista(nid, otro, "referencia", False, "hace referencia a")
 
     # Relaciones guardadas entre documentos (y con documentos externos).
-    for r in (await sesion.execute(select(DocumentoRelacion))).scalars().all():
-        origen = f"doc:{r.origen_id}"
-        if r.destino_id:
-            g.arista(origen, f"doc:{r.destino_id}", r.tipo, True, "responde a" if r.tipo == "responde" else "relacionado con")
+    for r in de_documentos.get("relaciones", []):
+        origen = f"doc:{r['origen_id']}"
+        if r["destino_id"]:
+            g.arista(origen, f"doc:{r['destino_id']}", r["tipo"], True, "responde a" if r["tipo"] == "responde" else "relacionado con")
             continue
-        eid = f"ext:{r.id}"
-        g.nodo(eid, tipo="externo", subtipo=r.externo_tipo or "Documento externo",
-               etiqueta=r.externo_numero or "Documento externo", titulo=r.externo_asunto or "",
-               fecha=r.externo_fecha or "", institucion=r.externo_institucion or "")
-        etiqueta = {"respondido": "respondido por", "responde": "responde a"}.get(r.tipo, "relacionado con")
-        g.arista(origen, eid, r.tipo, True, etiqueta)
-        inst = inst_por_nombre.get(normalizar(r.externo_institucion))
+        eid = f"ext:{r['id']}"
+        g.nodo(eid, tipo="externo", subtipo=r["externo_tipo"] or "Documento externo",
+               etiqueta=r["externo_numero"] or "Documento externo", titulo=r["externo_asunto"] or "",
+               fecha=r["externo_fecha"] or "", institucion=r["externo_institucion"] or "")
+        etiqueta = {"respondido": "respondido por", "responde": "responde a"}.get(r["tipo"], "relacionado con")
+        g.arista(origen, eid, r["tipo"], True, etiqueta)
+        inst = inst_por_nombre.get(normalizar(r["externo_institucion"]))
         if inst:
             g.arista(eid, nodo_institucion(inst), "emitido_por", False, "emitido por")
 
-    # Proyectos de ley y sus documentos.
-    proyectos = (await sesion.execute(select(Proyecto).where(Proyecto.eliminado_en.is_(None)))).scalars().all()
+    # Proyectos de ley y sus documentos (de Proyectos de ley, por su contrato).
+    de_proyectos = await _parte("proyectos.v1")
+    proyectos = de_proyectos.get("proyectos", [])
     for p in proyectos:
-        g.nodo(f"pl:{p.id}", tipo="proyecto", subtipo="Proyecto de ley", etiqueta=p.codigo, titulo=p.titulo,
-               estado=p.estado, ruta=f"/proyectos/{p.id}")
-    for pd in (await sesion.execute(select(ProyectoDocumento))).scalars().all():
-        g.arista(f"pl:{pd.proyecto_id}", f"doc:{pd.documento_id}", "proyecto", True, pd.rol or "documento del proyecto")
-    # Fuentes del proyecto que son documentos del sistema (`sgdp:doc:N`).
-    for f in (await sesion.execute(select(ProyectoFuente))).scalars().all():
-        m = re.fullmatch(r"sgdp:doc:(\d+)", (f.clave_externa or "").strip())
+        g.nodo(f"pl:{p['id']}", tipo="proyecto", subtipo="Proyecto de ley", etiqueta=p["codigo"], titulo=p["titulo"],
+               estado=p["estado"], ruta=f"/proyectos/{p['id']}")
+    for pd in de_proyectos.get("documentos", []):
+        g.arista(f"pl:{pd['proyecto_id']}", f"doc:{pd['documento_id']}", "proyecto", True, pd["rol"] or "documento del proyecto")
+    # Fuentes del proyecto que son documentos del sistema (`qillqa:doc:N`).
+    for f in de_proyectos.get("fuentes", []):
+        m = re.fullmatch(r"qillqa:doc:(\d+)", (f["clave_externa"] or "").strip())
         if m:
-            g.arista(f"pl:{f.proyecto_id}", f"doc:{m.group(1)}", "fuente", True, "fuente")
+            g.arista(f"pl:{f['proyecto_id']}", f"doc:{m.group(1)}", "fuente", True, "fuente")
 
-    # Semanas de representación: su informe y los oficios de sus pedidos.
-    for s in (await sesion.execute(select(SemanaSR))).scalars().all():
-        sid = f"sr:{s.id}"
-        tema = (s.expediente or {}).get("tema") or s.carpeta.split("_", 2)[-1]
-        g.nodo(sid, tipo="semana", subtipo="Semana de representación", etiqueta=s.codigo, titulo=tema,
-               estado=s.estado, ruta=f"/informes/{s.id}")
-        if s.documento_id:
-            g.arista(sid, f"doc:{s.documento_id}", "informe", True, "su informe")
-    for pe in (await sesion.execute(select(PedidoSR).where(PedidoSR.documento_id.is_not(None)))).scalars().all():
-        g.arista(f"sr:{pe.semana_id}", f"doc:{pe.documento_id}", "pedido", True, "oficio del pedido")
+    # Semanas de representación: su informe y los oficios de sus pedidos (de la Semana, por su contrato).
+    de_semanas = await _parte("semanas.v1")
+    for s in de_semanas.get("semanas", []):
+        sid = f"sr:{s['id']}"
+        g.nodo(sid, tipo="semana", subtipo="Semana de representación", etiqueta=s["codigo"], titulo=s["tema"],
+               estado=s["estado"], ruta=f"/informes/{s['id']}")
+        if s["documento_id"]:
+            g.arista(sid, f"doc:{s['documento_id']}", "informe", True, "su informe")
+    pedidos = {pe["id"]: pe for pe in de_semanas.get("pedidos", [])}
+    for pe in pedidos.values():
+        if pe["documento_id"] is not None:
+            g.arista(f"sr:{pe['semana_id']}", f"doc:{pe['documento_id']}", "pedido", True, "oficio del pedido")
 
     # Documentos RECIBIDOS (bandeja de entrada, 2026-10-06; servicios/entradas.py): cada
     # entrada es un nodo, unido a su remitente del directorio; el oficio que la responde
-    # llega por las relaciones genéricas de abajo (`doc:N` → `entrada:M`).
-    for e in (await sesion.execute(select(Entrada).where(Entrada.estado != "archivada"))).scalars().all():
-        eid = f"entrada:{e.id}"
+    # llega por las relaciones genéricas de abajo (`doc:N` → `entrada:M`). Son de la Mesa de Partes: por
+    # «recibidos.v1» (Punku P2); sin ella, el mapa no los muestra.
+    recibidos = opcional("recibidos.v1")
+    for e in await recibidos.todas() if recibidos is not None else ():
+        eid = f"entrada:{e['id']}"
         g.nodo(eid, tipo="entrada", subtipo="Documento recibido",
-               etiqueta=e.documento or (f"STD {e.std_numero}" if e.std_numero else "Recibido"),
-               titulo=e.asunto or "", estado=e.estado, fecha=e.fecha_documento or e.fecha_recepcion or "",
-               institucion=e.remitente or "", ruta=f"/recibidos?ver={e.id}")
-        if e.remitente_persona_id:
-            p = next((x for x in personas if x.id == e.remitente_persona_id), None)
+               etiqueta=e["documento"] or (f"STD {e['std_numero']}" if e["std_numero"] else "Recibido"),
+               titulo=e["asunto"] or "", estado=e["estado"], fecha=e["fecha_documento"] or e["fecha_recepcion"] or "",
+               institucion=e["remitente"] or "", ruta=f"/recibidos?ver={e['id']}")
+        if e["remitente_persona_id"]:
+            p = next((x for x in personas if x.id == e["remitente_persona_id"]), None)
             if p is not None:
                 g.arista(eid, nodo_persona(p), "remitente", True, "enviado por")
-        if e.remitente_institucion_id and e.remitente_institucion_id in instituciones:
-            g.arista(eid, nodo_institucion(instituciones[e.remitente_institucion_id]), "emitido_por", True, "emitido por")
+        if e["remitente_institucion_id"] and e["remitente_institucion_id"] in instituciones:
+            g.arista(eid, nodo_institucion(instituciones[e["remitente_institucion_id"]]), "emitido_por", True, "emitido por")
 
     # Relaciones genéricas (2026-10-06): lo que cita o menciona cada texto (nodos
     # `referencia` del editor, citas en los textos del informe SR) y lo que el sistema
     # asoció solo (el oficio que presenta un informe). Son fiables: alguien eligió la
     # cita, o el sistema la dedujo sin ambigüedad. Normas, libros y pedidos aparecen
     # como nodos propios solo si algo los cita.
-    pedidos_vistos: dict[int, PedidoSR] = {}
     persona_por_id = {p.id: p for p in personas}
-    for r in (await sesion.execute(select(Relacion))).scalars().all():
+    for r in (SimpleNamespace(**x) for x in de_documentos.get("genericas", [])):
         destino = r.destino
         pref, _, ident = destino.partition(":")
         datos = r.datos or {}
@@ -285,12 +287,11 @@ async def construir(sesion: AsyncSession, *, ver_ocultos: bool, ver_autoria: boo
         elif pref == "inst" and ident.isdigit() and int(ident) in instituciones:
             nodo_institucion(instituciones[int(ident)])
         elif pref == "pedido" and ident.isdigit():
-            pe = pedidos_vistos.get(int(ident)) or await sesion.get(PedidoSR, int(ident))
+            pe = pedidos.get(int(ident))
             if pe is not None:
-                pedidos_vistos[pe.id] = pe
-                g.nodo(destino, tipo="pedido", subtipo="Pedido", etiqueta=pe.codigo,
-                       titulo=str((pe.datos or {}).get("pedido") or ""), ruta=f"/informes/{pe.semana_id}")
-                g.arista(f"sr:{pe.semana_id}", destino, "pedido", True, "pedido de la semana")
+                g.nodo(destino, tipo="pedido", subtipo="Pedido", etiqueta=pe["codigo"],
+                       titulo=pe["pedido"], ruta=f"/informes/{pe['semana_id']}")
+                g.arista(f"sr:{pe['semana_id']}", destino, "pedido", True, "pedido de la semana")
         g.arista(r.origen, destino, r.tipo, True, ETIQUETA_RELACION.get(r.tipo, "relacionado con"))
 
     # El equipo: quién creó cada documento y quién está en cada proyecto. Es
@@ -307,14 +308,14 @@ async def construir(sesion: AsyncSession, *, ver_ocultos: bool, ver_autoria: boo
             return nid
 
         for d in docs:
-            if (u := nodo_usuario(d.responsable_id or d.creado_por)):
-                g.arista(u, f"doc:{d.id}", "equipo", True, "a cargo de" if d.responsable_id else "elaboró")
+            if (u := nodo_usuario(d["responsable_id"] or d["creado_por"])):
+                g.arista(u, f"doc:{d['id']}", "equipo", True, "a cargo de" if d["responsable_id"] else "elaboró")
         for p in proyectos:
-            if (u := nodo_usuario(p.responsable_id)):
-                g.arista(u, f"pl:{p.id}", "equipo", True, "responsable de")
-        for m in (await sesion.execute(select(ProyectoMiembro))).scalars().all():
-            if (u := nodo_usuario(m.usuario_id)):
-                g.arista(u, f"pl:{m.proyecto_id}", "equipo", True, "integra")
+            if (u := nodo_usuario(p["responsable_id"])):
+                g.arista(u, f"pl:{p['id']}", "equipo", True, "responsable de")
+        for m in de_proyectos.get("miembros", []):
+            if (u := nodo_usuario(m["usuario_id"])):
+                g.arista(u, f"pl:{m['proyecto_id']}", "equipo", True, "integra")
 
     return g.salida()
 
@@ -454,24 +455,6 @@ def anotar_correspondencia(mapa: dict, hoy) -> dict:
     return {**mapa, "nodos": nodos}
 
 
-def foco_por_nombre(mapa: dict) -> tuple[dict[str, str], dict[str, str]]:
-    """Para que una fila de Estadísticas abra su nodo del mapa: institución por nombre plano
-    (el formato de la bandeja, servicios/instituciones_destino.py) y persona por nombre
-    comparable (`nombre_de_persona`, el mismo que une destinatarios con el directorio)."""
-    from app.servicios import instituciones_destino as svc_inst
-
-    inst: dict[str, str] = {}
-    pers: dict[str, str] = {}
-    for n in mapa["nodos"]:
-        if n.get("tipo") == "institucion":
-            for texto in (n.get("titulo"), n.get("etiqueta")):
-                if texto:
-                    inst.setdefault(svc_inst.plano(svc_inst.nombre_propio(texto)), n["id"])
-        elif n.get("tipo") == "persona" and n.get("etiqueta"):
-            pers.setdefault(nombre_de_persona(n["etiqueta"]), n["id"])
-    return inst, pers
-
-
 # --- los archivos de cada documento (solo en el mapa local) -----------------
 
 # Qué es cada archivo según su categoría (las de `Adjunto.categoria`; los
@@ -532,21 +515,17 @@ def agregar_archivos(sub: dict, adjuntos: list, foco: str, expediente: str | Non
 
 
 async def con_archivos(sesion: AsyncSession, sub: dict, foco: str) -> dict:
-    """La vecindad de `foco` con los archivos de sus documentos (lee los
-    adjuntos y, si el foco es un documento, busca su expediente en disco)."""
+    """La vecindad de `foco` con los archivos de sus documentos (sus adjuntos y, si el foco es un documento, su
+    expediente en disco), por «documentos.v1»."""
+    from types import SimpleNamespace
+
     docs = [int(n["id"].split(":", 1)[1]) for n in sub["nodos"] if n["id"].startswith("doc:")]
-    if not docs:
+    documentos = opcional("documentos.v1")
+    if not docs or documentos is None:
         return sub
-    adjuntos = (
-        await sesion.execute(select(Adjunto).where(Adjunto.documento_id.in_(docs)).order_by(Adjunto.subido_en))
-    ).scalars().all()
-    expediente = None
-    if foco.startswith("doc:") and foco.split(":", 1)[1].isdigit():
-        doc = await sesion.get(Documento, int(foco.split(":", 1)[1]))
-        salida = svc_expediente.existente(doc) if doc is not None else None
-        if salida is not None and salida.is_file():
-            expediente = salida.name
-    return agregar_archivos(sub, list(adjuntos), foco, expediente)
+    foco_doc = int(foco.split(":", 1)[1]) if foco.startswith("doc:") and foco.split(":", 1)[1].isdigit() else None
+    a = await documentos.archivos(docs, foco_doc)
+    return agregar_archivos(sub, [SimpleNamespace(**x) for x in a["adjuntos"]], foco, a["expediente"])
 
 
 # --- rendiciones de cuentas (2026-10-18) -------------------------------------
@@ -622,3 +601,24 @@ def agregar_sustentos(sub: dict, rid: int, comprobantes: int, anexos: list[dict]
         unir({"id": f"anexos_pdf:{rid}", "subtipo": "Anexos 3 y 4", "categoria": "documento", "etiqueta": "Anexos 3 y 4",
               "titulo": pdf, "archivo": f"/api/rendiciones/{rid}/documento.pdf", "nombre": pdf}, "su documento")
     return sub
+
+
+# --- «mapa.v1»: el mapa para quien lo aprovecha (las Estadísticas de Gestión documental; Qillqasqa Q3c) -------------
+
+
+async def _construir(ver_ocultos: bool, ver_autoria: bool) -> dict:
+    from app.db import SesionAsincrona
+
+    async with SesionAsincrona() as sesion:
+        return await construir(sesion, ver_ocultos=ver_ocultos, ver_autoria=ver_autoria)
+
+
+def _mapa_v1():
+    from tiqsi import Superficie
+
+    return Superficie("mapa.v1", {"construir": lambda: _construir, "nombre_de_persona": lambda: nombre_de_persona,
+                                  "correspondencia": lambda: correspondencia},
+                      donde="servicios/grafo.py")
+
+
+MAPA_V1 = _mapa_v1()

@@ -129,9 +129,9 @@ export function agrupar(resultados: ResultadoReferencia[]): { grupo: string; ite
 
 // Avisos entre el editor y el mapa local (misma pestaña).
 /** El texto en pantalla cambió sus referencias (aún sin guardar): {foco, clave, referencias}. */
-export const EVENTO_REFERENCIAS = 'sgdp:referencias'
+export const EVENTO_REFERENCIAS = 'qillqa:referencias'
 /** Se guardó: las relaciones de `foco` cambiaron en el servidor. */
-export const EVENTO_RELACIONES = 'sgdp:relaciones'
+export const EVENTO_RELACIONES = 'qillqa:relaciones'
 
 export interface DetalleReferencias {
   foco: string

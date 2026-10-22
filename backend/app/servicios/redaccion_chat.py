@@ -216,9 +216,25 @@ def recibido(d: dict, hoy: date, que: str = "registrada") -> str:
     return armar(cabecera, datos, asunto, contenido, cierre)
 
 
+
+def _zona():
+    """La hora de aquí (ZONA_HORARIA de la plataforma)."""
+    from zoneinfo import ZoneInfo
+
+    from app.config import config
+
+    try:
+        return ZoneInfo(config.zona_horaria)
+    except Exception:  # noqa: BLE001
+        return ZoneInfo("UTC")
+
 def agenda(d: dict, ahora: datetime, recordatorio: bool = False) -> str:
     """AGENDA: una actividad, con el cuándo y el dónde primero (es lo que el grupo busca)."""
-    from app.servicios.agenda_reglas import MODALIDADES, TIPOS
+    from tiqsi.modulo import opcional
+
+    agenda_v1 = opcional("agenda.v1")   # los catálogos de Tareas y Agenda (fase 10.2b)
+    TIPOS = agenda_v1.tipos() if agenda_v1 is not None else {}
+    MODALIDADES = agenda_v1.modalidades() if agenda_v1 is not None else {}
 
     inicio, fin = _hora(d.get("inicio")), _hora(d.get("fin"))
     hoy = _local(ahora).date() if ahora.tzinfo else ahora.date()
@@ -437,40 +453,37 @@ async def _nombre(sesion, usuario_id) -> str:
 
 
 async def _datos_documento(sesion, doc_id: int | None) -> dict:
-    from app.modelos import Documento
-    from app.servicios.numeracion import numero_mostrado
-    from app.tipos import asunto_de, destinatario_de
+    """Lo vigente del documento, por «documentos.v1» (Gestión documental; Qillqasqa Q4a): se compone después del commit
+    de quien lo cambió (sus hechos llegan por su bandeja), así que lo guardado ya es lo vigente."""
+    from tiqsi.modulo import opcional
 
-    doc = await sesion.get(Documento, doc_id) if doc_id else None
-    if doc is None:
+    documentos = opcional("documentos.v1") if doc_id else None
+    d = (await documentos.descripciones([doc_id])).get(int(doc_id)) if documentos is not None else None
+    if d is None:
         return {}
-    campos = doc.campos or {}
-    return {"numero": numero_mostrado(doc) or "", "asunto": asunto_de(doc.tipo, campos), "destinatario": destinatario_de(campos),
-            "institucion": str(campos.get("destinatario_institucion") or campos.get("institucion") or ""),
-            "expediente_entidad": doc.expediente_entidad or "", "responsable": await _nombre(sesion, doc.responsable_id)}
+    return {"numero": d["mostrado"], "asunto": d["asunto"], "destinatario": d["destinatario"], "institucion": d["institucion"],
+            "expediente_entidad": d["expediente_entidad"], "responsable": await _nombre(sesion, d["responsable_id"])}
 
 
 async def componer(sesion, nombre: str, entidad: str, datos: dict | None, ahora: datetime | None = None) -> str:
     """El texto «humano» del evento, con la entidad vigente; "" si el evento no tiene formato propio
     (quien llama usa entonces la plantilla de la regla)."""
-    from app.servicios import tareas as svc_tareas
-
     d = dict(datos or {})
-    ahora = (ahora or datetime.now(svc_tareas.zona())).astimezone(svc_tareas.zona())
+    ahora = (ahora or datetime.now(_zona())).astimezone(_zona())
     hoy = ahora.date()
     familia = nombre.split(".", 1)[0]
     if familia == "entrada":
-        from app.modelos import Entrada
+        from tiqsi.modulo import opcional
 
-        eid = _id(entidad, "entrada")
-        e = await sesion.get(Entrada, eid) if eid else None
+        # Lo recibido es de la Mesa de Partes: por «recibidos.v1» (Punku P2).
+        eid, recibidos = _id(entidad, "entrada"), opcional("recibidos.v1")
+        e = (await recibidos.fichas([eid])).get(eid) if eid and recibidos is not None else None
         if e is not None:
-            d.update({"documento": e.documento, "clase": e.clase, "remitente": e.remitente, "remitente_cargo": e.remitente_cargo,
-                      "fecha_documento": e.fecha_documento, "fecha_recepcion": e.fecha_recepcion, "via": e.via, "std_numero": e.std_numero,
-                      "asunto": e.asunto or e.documento, "resumen": e.resumen, "atencion": e.atencion, "plazo": e.plazo,
-                      "responsable": await _nombre(sesion, e.responsable_id)})
-            if e.respuesta_documento_id:
-                d["respuesta"] = (await _datos_documento(sesion, e.respuesta_documento_id)).get("numero", "")
+            d.update({k: e[k] for k in ("documento", "clase", "remitente", "remitente_cargo", "fecha_documento", "fecha_recepcion",
+                                        "via", "std_numero", "resumen", "atencion", "plazo")})
+            d.update({"asunto": e["asunto"] or e["documento"], "responsable": await _nombre(sesion, e["responsable_id"])})
+            if e["respuesta_documento_id"]:
+                d["respuesta"] = (await _datos_documento(sesion, e["respuesta_documento_id"])).get("numero", "")
         return recibido(d, hoy, nombre.split(".", 1)[1])
     if nombre in ("documento.numerado", "documento.estado"):
         d.update({k: v for k, v in (await _datos_documento(sesion, _id(entidad, "doc"))).items() if v})
@@ -486,19 +499,19 @@ async def componer(sesion, nombre: str, entidad: str, datos: dict | None, ahora:
         d["asunto"] = d.get("asunto") or doc.get("asunto", "")
         return seguimiento(d, hoy)
     if nombre in ("evento.creado", "evento.recordatorio"):
-        from sqlalchemy import select
-
-        from app.modelos_tareas import EventoAgenda, EventoParticipante
+        from tiqsi.modulo import opcional
 
         evid = _id(entidad, "evento")
-        e = await sesion.get(EventoAgenda, evid) if evid else None
+        agenda_v1 = opcional("agenda.v1")   # el evento, de Tareas y Agenda por su contrato (fase 10.2b)
+        e = await agenda_v1.evento(evid) if evid and agenda_v1 is not None else None
         if e is not None:
             participantes = []
-            for p in (await sesion.execute(select(EventoParticipante).where(EventoParticipante.evento_id == e.id))).scalars():
-                participantes.append(p.nombre or await _nombre(sesion, p.usuario_id))
-            d.update({"titulo": e.titulo, "tipo": e.tipo, "inicio": e.inicio, "fin": e.fin, "todo_el_dia": e.todo_el_dia, "lugar": e.lugar,
-                      "modalidad": e.modalidad, "enlace": e.enlace, "descripcion": e.descripcion, "estado": e.estado,
-                      "participantes": [x for x in participantes if x], "responsable": await _nombre(sesion, e.responsable_id)})
+            for p in e["participantes"]:
+                participantes.append(p["nombre"] or await _nombre(sesion, p["usuario_id"]))
+            d.update({"titulo": e["titulo"], "tipo": e["tipo"], "inicio": e["inicio"], "fin": e["fin"], "todo_el_dia": e["todo_el_dia"],
+                      "lugar": e["lugar"], "modalidad": e["modalidad"], "enlace": e["enlace"], "descripcion": e["descripcion"],
+                      "estado": e["estado"], "participantes": [x for x in participantes if x],
+                      "responsable": await _nombre(sesion, e["responsable_id"])})
         return agenda(d, ahora, recordatorio=nombre == "evento.recordatorio")
     if nombre == "agenda.programacion_diaria":
         return programacion(d)
@@ -517,17 +530,18 @@ async def componer(sesion, nombre: str, entidad: str, datos: dict | None, ahora:
 async def anuncio(sesion, entidad: str, ahora: datetime | None = None) -> str:
     """Lo que alguien creó desde el chat y deja anunciado (`POST /canales/{id}/anunciar`): la tarea
     («TAREA CREADA») o la actividad (el formato de la agenda), con lo que está en la base."""
-    from app.modelos_tareas import Tarea
-    from app.servicios import tareas as svc_tareas
+    from tiqsi.modulo import opcional
 
-    ahora = (ahora or datetime.now(svc_tareas.zona())).astimezone(svc_tareas.zona())
+    ahora = (ahora or datetime.now(_zona())).astimezone(_zona())
     tid = _id(entidad, "tarea")
     if tid:
-        t = await sesion.get(Tarea, tid)
+        tareas_v1 = opcional("tareas.v1")   # la tarea, de Tareas y Agenda por su contrato (fase 10.2b)
+        t = await tareas_v1.tarea(tid) if tareas_v1 is not None else None
         if t is None:
             return ""
-        return tarea({"titulo": t.titulo, "responsable": await _nombre(sesion, t.responsable_id), "vence": t.vence_en, "con_hora": t.con_hora,
-                      "prioridad": t.prioridad, "descripcion": t.descripcion if t.origen not in ("regla", "pegado") else ""}, ahora.date(), "creada")
+        return tarea({"titulo": t["titulo"], "responsable": await _nombre(sesion, t["responsable_id"]), "vence": t["vence_en"],
+                      "con_hora": t["con_hora"], "prioridad": t["prioridad"],
+                      "descripcion": t["descripcion"] if t["origen"] not in ("regla", "pegado") else ""}, ahora.date(), "creada")
     if _id(entidad, "evento"):
         return await componer(sesion, "evento.creado", entidad, {}, ahora)
     return ""
@@ -535,11 +549,3 @@ async def anuncio(sesion, entidad: str, ahora: datetime | None = None) -> str:
 
 def firma_de_entidad(entidad: str) -> str:
     return "Tareas" if entidad.startswith("tarea:") else "Agenda"
-
-
-def fecha_movimiento(actuaciones: list[dict]) -> str:
-    """La fecha desde la que el documento está donde está: la última derivación o envío; si no hay,
-    la última actuación."""
-    fechas = sorted((a.get("fecha") or "" for a in actuaciones if a.get("clase") in ("derivacion", "envio")), reverse=True)
-    fechas = fechas or sorted((a.get("fecha") or "" for a in actuaciones), reverse=True)
-    return next((f for f in fechas if f), "")

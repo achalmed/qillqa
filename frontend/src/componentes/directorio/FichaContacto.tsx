@@ -33,9 +33,9 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp'
 import { api, descargarArchivo } from '../../api'
 import { PALETA } from '../../paleta'
 import { tratamientoLegible, type Institucion, type Persona } from '../../directorio'
-import { idDelToken } from '../chat/mensajes'
+import { idDelToken } from '@qillqa/rimay/publico'
 import { FilaDato } from '../perfil/TarjetaContacto'
-import BotonCrearTarea from '../tareas/BotonCrearTarea'
+import { BotonCrearTarea } from '@qillqa/minka/publico'
 import AvatarContacto from './AvatarContacto'
 import { enlaceLlamada, enlaceWhatsapp, telefonoLegible } from './contactos'
 import { moduloActivo } from '../../modulos'
@@ -85,8 +85,8 @@ export default function FichaContacto({
 }) {
   const navegar = useNavigate()
   const [menu, setMenu] = useState<HTMLElement | null>(null)
-  const yo = idDelToken(localStorage.getItem('sgdp_token'))
-  const invitado = localStorage.getItem('sgdp_rol') === 'invitado'
+  const yo = idDelToken(localStorage.getItem('qillqa_token'))
+  const invitado = localStorage.getItem('qillqa_rol') === 'invitado'
   const celular = p.celular || ''
   const correo = p.email || p.email_alterno
   const whatsapp = enlaceWhatsapp(celular)

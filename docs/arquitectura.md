@@ -1,10 +1,10 @@
 ---
 tipo: doc
-titulo: "Arquitectura del SGDP"
+titulo: "Arquitectura de Qillqa"
 estado: activo
 ---
 
-# Arquitectura del SGDP
+# Arquitectura de Qillqa
 
 Describe el sistema **como es**. Nació como el documento de decisiones de la Fase 0 (2026-08-06);
 las decisiones posteriores, con fecha, están en [`decisiones.md`](decisiones.md) y el avance de la
@@ -12,7 +12,7 @@ plataforma en [`plataforma/hoja-de-ruta.md`](plataforma/hoja-de-ruta.md).
 
 ## 1. Propósito y principios
 
-El SGDP es la capa web colaborativa del despacho: ~7 secretarias, el
+Qillqa es la capa web colaborativa del despacho: ~7 secretarias, el
 diputado y asesores trabajando a la vez desde el navegador, sin ver
 jamás LaTeX, Markdown ni Git.
 
@@ -20,8 +20,8 @@ Principios innegociables:
 
 1. **LaTeX sigue siendo el motor oficial de formato.** El Marco
    Documental (`marco_documental`) no se reemplaza ni se bifurca:
-   la API no lo modifica e invoca su `marco_documental/scripts/build.sh` tal cual.
-   Si un membrete cambia, se cambia en el framework y el SGDP lo hereda.
+   la API no lo modifica e invoca su `../qillqasqa/marco_documental/scripts/build.sh` tal cual.
+   Si un membrete cambia, se cambia en el framework y Qillqa lo hereda.
 2. **Separación total contenido/formato.** El usuario produce
    contenido estructurado; la presentación la deciden las clases del
    framework. Nadie edita `.tex` desde la web.
@@ -30,11 +30,11 @@ Principios innegociables:
 4. **KISS.** La escala real es 7–50 usuarios y ~10 000 documentos:
    PostgreSQL y una compilación a la vez dentro de la API bastan; no
    hay Redis, colas externas ni microservicios.
-5. **El SGDP es el núcleo de la plataforma del despacho; los demás sistemas se enlazan,
+5. **Qillqa es el núcleo de la plataforma del despacho; los demás sistemas se enlazan,
    no se fusionan.** Inicio es la única puerta; cada sistema externo (tareas en OpenProject,
    Identidad Visual) se abre con la dirección que da el `.env` (`VITE_URL_*`), y la información
    se conecta por **referencias estables** (`clave_externa`: `calibre:<id>`,
-   `datafw:<estudio>@vN#<indicador>`, `sgdp:doc:<id>`), nunca copiando (decisión del
+   `datafw:<estudio>@vN#<indicador>`, `qillqa:doc:<id>`), nunca copiando (decisión del
    2026-10-01, `plataforma/propuesta.md` §1).
 
 **Aspecto de la web (2026-10-19).** La interfaz sigue la filosofía de macOS (`plataforma/rediseno-macos.md`):
@@ -88,7 +88,7 @@ Tailscale Funnel con HTTPS (`docs/acceso-permanente.md`).
 - Pegar desde Word/Excel/LibreOffice: lo resuelve TipTap (interpretan
   el HTML del portapapeles). La API no importa `.docx`: un Word del despacho lo transcribe el
   asistente (`procesar-un-documento.md` §2) y un proyecto de ley en Word o PDF lo reparte en partes
-  `scripts/importar_proyecto_ley.py`.
+  `../qillqasqa/scripts/importar_proyecto_ley.py`.
 - **Integridad del texto**: el serializador y el generador NUNCA
   auto-corrigen el contenido (ver [redaccion-administrativa.md](redaccion-administrativa.md)
   §12). La revisión ortográfica y de redacción administrativa es un paso
@@ -98,10 +98,10 @@ Tailscale Funnel con HTTPS (`docs/acceso-permanente.md`).
 ## 3bis. Documentos heredados (origen `framework`)
 
 Los documentos ya generados con el Marco Documental (los que existían
-antes del SGDP) se **importan sin alterarlos**. Cada `Documento` lleva
+antes de Qillqa) se **importan sin alterarlos**. Cada `Documento` lleva
 una columna `origen`:
 
-- `sgdp` — nacido en la plataforma: contenido = JSON de TipTap, PDF lo
+- `qillqa` — nacido en la plataforma: contenido = JSON de TipTap, PDF lo
   genera el serializador. Editable en el editor visual.
 - `framework` — importado del archivo: su carpeta (`metadata.tex`,
   `oficio.tex`, PDF, anexos) se copia **verbatim** al área de trabajo;
@@ -151,11 +151,11 @@ documento.
   correlativo sigue sin huecos.
 - Carpeta y nombre del PDF por la convención de siempre
   (`carpetas.py`, `nombres.py`); al eliminar (solo el último número) se borra
-  la carpeta como en los `sgdp`.
-- Servicio: `backend/app/servicios/incorporacion.py`; router `backend/app/api/incorporacion.py`
+  la carpeta como en los `qillqa`.
+- Servicio: `../qillqasqa/qillqasqa/servicios/incorporacion.py`; router `../qillqasqa/qillqasqa/api/incorporacion.py`
   (`POST /api/documentos/incorporar`, multipart); `GET
   /api/tipos/{codigo}/siguiente-numero` informa qué número espera la serie.
-  Front: `frontend/src/componentes/DialogoIncorporar.tsx` (última opción del menú «Nuevo
+  Front: `../qillqasqa/web/src/componentes/DialogoIncorporar.tsx` (última opción del menú «Nuevo
   documento») y `VistaHeredada.tsx` en modo manual.
 
 ## 3ter. Un solo árbol: sin copias (`ruta_original`)
@@ -171,7 +171,7 @@ documentos a ninguna carpeta propia.
   sirven y recompilan **en el lugar**.
 - Nuevos (web): al primer compilado se crea su carpeta bajo
   `$MDD_DOCUMENTOS/oficios/` con la convención del framework
-  (`OF-<n>-<AAAAMMDD>-<slug>`, idéntica a `marco_documental/scripts/nuevo.sh`). Un
+  (`OF-<n>-<AAAAMMDD>-<slug>`, idéntica a `../qillqasqa/marco_documental/scripts/nuevo.sh`). Un
   borrador aún sin número usa `OF-BORRADORnnnn-…` y se **renombra** a su
   nombre oficial al generar. Así un oficio hecho por la web es
   indistinguible de uno hecho a mano.
@@ -185,7 +185,7 @@ El framework ya define el contrato perfecto de compilación:
 
 ```
 carpeta-del-documento/
-├── metadata.tex   ← lo genera el SGDP desde los campos del formulario
+├── metadata.tex   ← lo genera Qillqa desde los campos del formulario
 └── oficio.tex     ← lo genera el serializador desde el JSON TipTap
         ↓
 scripts/build.sh → PDF con nombre institucional
@@ -193,17 +193,17 @@ scripts/build.sh → PDF con nombre institucional
 
 - La API escribe `metadata.tex` y el maestro en la carpeta del documento dentro del archivo
   documental (`MDD_DOCUMENTOS`), ejecuta `build.sh` del marco (§9) y renombra el PDF con la
-  convención de `backend/app/servicios/nombres.py`.
+  convención de `../qillqasqa/qillqasqa/servicios/nombres.py`.
 - Los errores de LaTeX nunca llegan crudos al usuario: `compilador.py` los traduce a un mensaje
   legible con el detalle técnico al final.
-- El marco viaja en el mismo repo (subtree `marco_documental/`): la versión del SGDP fija la del
+- El marco viaja en el mismo repo (subtree `../qillqasqa/marco_documental/`): la versión de Qillqa fija la del
   marco.
 
 ## 5. Numeración oficial sin huecos
 
 - Tabla `contadores(serie, periodo, ultimo)` — series independientes
   (OF, OM, MEM, INF, …) por periodo legislativo, igual que
-  `marco_documental/scripts/nuevo.sh` hoy.
+  `../qillqasqa/marco_documental/scripts/nuevo.sh` hoy.
 - El número se asigna **solo al aprobar/generar oficialmente**, nunca
   en borrador, dentro de la misma transacción que cambia el estado:
   `UPDATE contadores SET ultimo = ultimo + 1 … RETURNING ultimo`.
@@ -221,8 +221,8 @@ scripts/build.sh → PDF con nombre institucional
 
 - Estados: BORRADOR → EN REVISIÓN → OBSERVADO → APROBADO → FIRMADO →
   ENVIADO (→ OBSERVADO POSTERIOR, `OBSERVADO_ENVIADO`) → ARCHIVADO. Las transiciones válidas y
-  quién puede ejecutarlas se validan en el backend (`backend/app/flujo.py`).
-- **Pasos automáticos** (`backend/app/servicios/envio.py`, `backend/app/servicios/revision.py`): complementan al
+  quién puede ejecutarlas se validan en el backend (`../qillqasqa/qillqasqa/flujo.py`).
+- **Pasos automáticos** (`../qillqasqa/qillqasqa/servicios/envio.py`, `../qillqasqa/qillqasqa/servicios/revision.py`): complementan al
   manual, nunca lo reemplazan. Con su firmado vigente un APROBADO pasa solo a FIRMADO (al subirlo, al
   incorporarlo desde la carpeta sincronizada, al reconocerlo en la carpeta y al reactivarlo desde
   ARCHIVADO: `envio.al_dia`), y con el envío probado, a ENVIADO. Todo cambio de estado, manual o
@@ -258,23 +258,23 @@ Las tablas que existen (`backend/app/modelos.py`), por módulo:
 | OpenProject | `op_enlaces`, `op_asignaciones_vistas` |
 | Semana de representación | `semanas_sr`, `actividades_sr`, `pedidos_sr`, `fotos_sr` |
 
-Los **tipos documentales no son una tabla**: son el registro `backend/app/tipos.py` (tipo, serie,
+Los **tipos documentales no son una tabla**: son el registro `../qillqasqa/qillqasqa/tipos.py` (tipo, serie,
 carpeta, esquema del formulario). Los cambios de esquema son aditivos y se aplican como dice
 [`desarrollo.md`](desarrollo.md) §Migraciones de esquema.
 
 ## 9. Compilación
 
-No hay cola en la base de datos: la API ejecuta `marco_documental/scripts/build.sh` como subproceso
-(`backend/app/latex/compilador.py`), **uno a la vez** (un semáforo en el proceso; a esta escala una
+No hay cola en la base de datos: la API ejecuta `../qillqasqa/marco_documental/scripts/build.sh` como subproceso
+(`../qillqasqa/qillqasqa/latex/compilador.py`), **uno a la vez** (un semáforo en el proceso; a esta escala una
 cola simple es suficiente y predecible) y con un tiempo máximo (`tiempo_max_compilacion` de
 `backend/app/config.py`). Un render LuaLaTeX tarda 10–20 s: la vista previa es **bajo demanda**,
 nunca por tecla. La Semana de representación compila aparte, en segundo plano y con un candado por
-semana (`backend/app/servicios/generador_sr.py`).
+semana (`../qillqasqa/qillqasqa/servicios/generador_sr.py`).
 
 ## 10. Seguridad
 
 - **Compilar LaTeX con contenido de usuarios es ejecutar código.** Lo que entra al `.tex` desde la
-  web pasa por el serializador de lista blanca y `escapar()` (`backend/app/latex/`); `build.sh` llama a
+  web pasa por el serializador de lista blanca y `escapar()` (`../qillqasqa/qillqasqa/latex/`); `build.sh` llama a
   LuaLaTeX sin `-shell-escape` (rige el modo restringido de TeX Live) y la API corta la compilación
   al pasar el tiempo máximo. La compilación corre con el usuario del servicio, sin aislamiento de red.
 - **El marco no está protegido por el montaje**: en `docker-compose.yml` se monta en lectura-escritura
@@ -282,7 +282,7 @@ semana (`backend/app/servicios/generador_sr.py`).
   tiene ningún endpoint que escriba en él; los documentos se escriben en `MDD_DOCUMENTOS`.
 - **Red**: base de datos, API y servidor de colaboración solo en loopback; hacia fuera, la web por
   HTTPS (Tailscale Funnel), detrás de usuario y contraseña (JWT).
-- **Permisos en el servidor** (`backend/app/flujo.py`): ocultar un botón en la web es cosmético.
+- **Permisos en el servidor** (`../qillqasqa/qillqasqa/flujo.py`): ocultar un botón en la web es cosmético.
 - **Adjuntos**: extensión y tamaño validados, servidos solo autenticados y siempre por
   `backend/app/api/archivos.py`.
 - **Secretos** solo en el `.env` (fuera del repo, enlazado desde el despacho); el servidor de
@@ -293,7 +293,7 @@ semana (`backend/app/servicios/generador_sr.py`).
 Modo laptop en producción: `./iniciar.sh` levanta PostgreSQL en Docker y la API, la web (build de
 Vite) y el servidor de colaboración en el host, con el TeX Live del host; el enlace permanente lo da
 Tailscale Funnel ([`acceso-permanente.md`](acceso-permanente.md)) y el arranque automático,
-`sgdp.service` (`sistema/README.md`). Cómo llega un cambio al despacho, cómo se respalda y el modo
+`qillqa.service` (`sistema/README.md`). Cómo llega un cambio al despacho, cómo se respalda y el modo
 completo en contenedores: [`desarrollo.md`](desarrollo.md) y `README.md` §Uso.
 
 ## 12. Decisiones descartadas (y por qué)
@@ -318,22 +318,22 @@ de fases de agosto de 2026 la conserva git.
 Varias personas escriben a la vez en la misma parte de un proyecto de ley o en el mismo documento
 (oficio, memorando…; desde el 2026-10-05), cada una con el cursor y el nombre de las demás; «Guardar» sigue creando una versión con nota y lo escrito entre versiones se
 conserva solo. Está construida sobre **Yjs** (CRDT) con el editor TipTap 3 (`collaboration` y
-`collaboration-caret`, con la clave de sincronía de `@tiptap/y-tiptap`) y un servidor **Hocuspocus 2.15** (`frontend/colab/servidor.ts`, Node, puerto
+`collaboration-caret`, con la clave de sincronía de `@tiptap/y-tiptap`) y un servidor **Hocuspocus 2.15** (`../qillqasqa/web/colab/servidor.ts`, Node, puerto
 8001, `colab.log` (en `logs/`)), que vive en `frontend/` para que haya una sola copia de TipTap, ProseMirror y Yjs
-y el esquema del servidor sea el del navegador (`frontend/src/extensiones/esquema.ts`, compartido con
+y el esquema del servidor sea el del navegador (`../qillqasqa/web/src/extensiones/esquema.ts`, compartido con
 los dos editores).
 
 ```
 navegador A ─┐                                   ┌─ GET /api/colab/acceso   (¿puede escribir aquí?)
 navegador B ─┼─ WebSocket /colab ─ Hocuspocus ───┤
-navegador C ─┘   (JWT del SGDP)                  └─ PUT /api/colab/estado   (JSON derivado → borrador vivo)
+navegador C ─┘   (JWT de Qillqa)                  └─ PUT /api/colab/estado   (JSON derivado → borrador vivo)
                                                        tabla colab_estado   (bytes Yjs, por parte o documento)
 ```
 
 - **La API sigue siendo la única que escribe contenido.** El servidor no valida la JWT: se la
   presenta a la API (`GET /api/colab/acceso`), que aplica las reglas de siempre (cuenta activa, clave
   no temporal, invitado solo lee), y para guardar usa un secreto derivado de `JWT_SECRET` por HMAC
-  (`backend/app/servicios/colab.py`); no hay variable nueva en el `.env`.
+  (`../qillqasqa/qillqasqa/servicios/colab.py`); no hay variable nueva en el `.env`.
 - **El nombre del texto compartido lleva la generación**: `pl:<proyecto>:<parte>:<generación>`.
   Todo lo que reemplaza el contenido por fuera de Yjs —encender o apagar el modo, restaurar una
   versión, guardar por turnos— pasa por `reiniciar()`, que sube la generación y cierra a los
@@ -344,44 +344,44 @@ navegador C ─┘   (JWT del SGDP)                  └─ PUT /api/colab/estad
   queda texto sin versionar.
 - **Documentos** (`doc:<id>:<generación>`, paso 5.6): interruptor por documento
   (`documentos.colaboracion`, «Editar en simultáneo» en el editor; `PATCH /api/documentos/{id}/colaboracion`),
-  que solo rige mientras el documento es **compartible**: origen `sgdp` y estado de borrador a
-  numerado sin firmar (`backend/app/servicios/colab.py` (`documento_compartible`)). Al firmar, enviar o archivar deja
+  que solo rige mientras el documento es **compartible**: origen `qillqa` y estado de borrador a
+  numerado sin firmar (`../qillqasqa/qillqasqa/servicios/colab.py` (`documento_compartible`)). Al firmar, enviar o archivar deja
   de regir solo: el servidor rechaza el siguiente guardado y las pestañas vuelven a turnos. El cuerpo
   es el texto compartido y los datos del formulario viajan en el mapa Yjs `campos` del mismo estado;
   el borrador vivo es `documentos.borrador` = {campos, cuerpo}. «Guardar», «Vista previa» y «Generar»
   desde el editor compartido mandan la `generacion` y, si es la vigente, no se exige `version_base`
   (lo que llega es el texto unido de todos); por fuera, rige el 409 de siempre y el texto compartido
-  se reinicia (`backend/app/api/documentos.py` (`_preparar_escritura`)). Los anexos (figuras y tablas) son editores
+  se reinicia (`../qillqasqa/qillqasqa/api/documentos.py` (`_preparar_escritura`)). Los anexos (figuras y tablas) son editores
   aparte y siguen por turnos: viajan al guardar.
 - **Salas de presencia** (`sala:<sr|pl|doc>:<id>`, 2026-10-05): cada página de semana, proyecto o documento
   abre una sala que solo reparte awareness —quién está y en qué campo tiene el cursor— para las etiquetas con
-  nombre de los formularios (`frontend/src/componentes/Presencia.tsx`). El servidor no la carga ni la guarda y
-  la API solo exige una sesión válida (`es_sala` de `backend/app/servicios/colab.py`).
+  nombre de los formularios (`../qillqasqa/web/src/componentes/Presencia.tsx`). El servidor no la carga ni la guarda y
+  la API solo exige una sesión válida (`es_sala` de `../qillqasqa/qillqasqa/servicios/colab.py`).
 - **Vista previa y PDF**: la vista previa usa los borradores vivos; «Generar PDF» usa solo las
   versiones y avisa qué partes tienen texto sin guardar.
 - **Sin servidor**: si no sincroniza en 8 s, la pestaña pasa al modo por turnos partiendo del
   borrador vivo y reintenta cada minuto; la API de producción no depende de Hocuspocus.
-- **Ida y vuelta exacta** verificada sobre toda la base (`scripts/colab_ida_y_vuelta.py`): el JSON
+- **Ida y vuelta exacta** verificada sobre toda la base (`../qillqasqa/scripts/colab_ida_y_vuelta.py`): el JSON
   que ve el editor y el LaTeX que sale de él son los mismos con y sin modo compartido.
 - Límites: lo escrito sin conexión vive en la pestaña hasta que vuelve la conexión; el modo Docker
   completo no levanta el servidor de colaboración (ahí se trabaja por turnos). Pruebas:
-  `backend/tests/test_colab.py`, `frontend/colab/prueba_dos_clientes.ts`. La conexión del navegador
+  `../qillqasqa/tests/test_colab.py`, `../qillqasqa/web/colab/prueba_dos_clientes.ts`. La conexión del navegador
   (recarga, caída, quién está, cursores) es una sola para los dos editores:
-  `frontend/src/componentes/textoCompartido.ts`.
+  `../qillqasqa/web/src/componentes/textoCompartido.ts`.
 
 ## 15. Consumidores
 
-Lo que otros proyectos leen del SGDP. Cambiar cualquiera de estas piezas exige avisar al consumidor y
+Lo que otros proyectos leen de Qillqa. Cambiar cualquiera de estas piezas exige avisar al consumidor y
 cambiar los dos lados a la vez.
 
 | consumidor | qué lee | dónde lo usa |
 |---|---|---|
-| `openproject/` (puente antiguo, sin uso desde que el reflejo vive en la API) | la tabla `documentos` —`id`, `tipo`, `serie`, `numero`, `periodo`, `estado`, `campos->>'asunto'`, `campos->>'destinatario_nombre'`, `pdf_archivo`, `actualizado_en`— del contenedor `sgdp-db-1`, y la clave `sgdp:doc:<id>` | `openproject/bridges/sync_documentos.py` |
-| el despacho (cliente) | `.env.example` (las variables que `<despacho>/operaciones/sgdp/.env` debe declarar) y `respaldar.sh` (escribe en `respaldos`, enlazado a `<despacho>/operaciones/sgdp/`; el despacho lo programa a diario con un `cron` y rota los volcados) | `<despacho>/operaciones/sgdp/` y su `README.md` |
-| el despacho (cliente) | el marco por `MDD_RUTA`: `marco_documental/generadores/informe-sr/main.py` | `<despacho>/representacion/generar.sh` |
+| `openproject/` (puente antiguo, sin uso desde que el reflejo vive en la API) | la tabla `documentos` —`id`, `tipo`, `serie`, `numero`, `periodo`, `estado`, `campos->>'asunto'`, `campos->>'destinatario_nombre'`, `pdf_archivo`, `actualizado_en`— del contenedor `qillqa-db-1`, y la clave `qillqa:doc:<id>` | `openproject/bridges/sync_documentos.py` |
+| el despacho (cliente) | `.env.example` (las variables que `<despacho>/operaciones/qillqa/.env` debe declarar) y `respaldar.sh` (escribe en `respaldos`, enlazado a `<despacho>/operaciones/qillqa/`; el despacho lo programa a diario con un `cron` y rota los volcados) | `<despacho>/operaciones/qillqa/` y su `README.md` |
+| el despacho (cliente) | el marco por `MDD_RUTA`: `../qillqasqa/marco_documental/generadores/informe-sr/main.py` | `<despacho>/representacion/generar.sh` |
 | el despacho (cliente) | el contrato del perfil que espera `MDD_PERFIL` | `perfil.ejemplo/README.md` |
 
-Lo que el SGDP consume de otros, con su contrato en el proveedor, está en `README.md` §Contratos con
+Lo que Qillqa consume de otros, con su contrato en el proveedor, está en `README.md` §Contratos con
 otros repos.
 
 ## 16. Mapa de relaciones
@@ -392,7 +392,7 @@ proyectos de ley, semanas de representación, personas e instituciones del direc
 arma `GET /api/grafo` (`backend/app/api/grafo.py`) con `backend/app/servicios/grafo.py`, que solo lee.
 
 - **Aristas fiables**: relaciones guardadas (respuesta o relación entre documentos y con externos,
-  documentos y fuentes `sgdp:doc:N` de un proyecto, informe y oficios de una semana, persona →
+  documentos y fuentes `qillqa:doc:N` de un proyecto, informe y oficios de una semana, persona →
   institución, responsables y miembros).
 - **Aristas inferidas** del texto, punteadas en el mapa: destinatario y copias que coinciden por nombre
   con una persona del directorio (sin grados ni cargo), institución del destinatario y referencia
@@ -417,54 +417,55 @@ arma `GET /api/grafo` (`backend/app/api/grafo.py`) con `backend/app/servicios/gr
   (`frontend/src/correspondencia.ts`): `/mapa?foco=…` desde Estadísticas y `/estadisticas#correspondencia`
   desde la ficha del mapa.
 
-## 17. Prensa: el estudio de Identidad Visual
+## 17. Prensa: los editores del estudio
 
-El estudio (editor de piezas `editor.html` y de fotos y videos `media.html`) es del repo
-`identidad-visual` (`identidad-visual/editor/servidor/servidor.py`, solo librería estándar, sin cuentas). Corre aparte, en
-127.0.0.1 (`ESTUDIO_URL`, 8099 por omisión; lo lanza `iniciar.sh` cuando el `.env` tiene
-`IDENTIDAD_PERFIL`, con la carpeta del repo de `IDENTIDAD_VISUAL_DIR` o de `core/env.sh`), y la web lo
-muestra en un marco (`frontend/src/paginas/Prensa.tsx`).
+Los editores de Prensa vinieron de identidad-visual (por Unancha) y su estudio vive en Ruray, el repositorio de la base
+común (`../ruray/estudio/`; fase 10.2b, E0–E5, y 10.3, 2026-10-20/21):
+`editor.html` (piezas; desde el 2026-10-21 en Awana, `../awana/paginas/`), `foto.html` y `media.html` (fotos y revelado; desde el 2026-10-21 en Tullpu, `../tullpu/paginas/`),
+`video.html` (video; desde el 2026-10-21 en Kuyuy, `../kuyuy/paginas/`) y el kit de OBS (en Wayra). No corren
+aparte: son módulos de Tiqsi en el proceso de la API, cada uno con su API bajo su carpeta, su cookie, su pantalla y su
+arranque solo (`../ruray/estudio/README.md`): **Awana** (`/api/piezas/editor/` y el registro de piezas `/api/piezas`, en su base),
+**Tullpu** (`/api/fotos/`), **Kuyuy** (`/api/videos/`) y **Wayra** (`/api/obs/`, público). La web los muestra en el marco
+de Prensa (`frontend/src/paginas/Prensa.tsx`), que carga la pantalla de cada uno por su manifiesto.
 
-- **Un solo puerto.** El enlace público solo publica el de la web: el proxy de Vite manda `/estudio` a la
-  API, y la API (`backend/app/api/prensa.py`) reenvía al estudio en flujo (cuerpo y respuesta, `Range`)
-  con `X-Forwarded-Prefix: /estudio`, que el estudio antepone a toda URL que emite. No viajan `Cookie`,
-  `Authorization` ni `Origin`; vuelven `X-Frame-Options: SAMEORIGIN` y `frame-ancestors 'self'`.
-- **Sesión.** El marco no puede mandar el token: `POST /api/prensa/sesion` (Bearer; roles prensa, diputado,
-  administrador) deja la cookie `sgdp_estudio`, un JWT con `aud=estudio` firmado con `JWT_SECRET`
-  (HttpOnly, SameSite=Strict, `Path=/estudio`, 2 h; la página la renueva cada 30 min y cerrar sesión la
-  borra). El token de la web no sirve de cookie ni al revés (`leer_sesion` de `backend/app/servicios/prensa.py`).
-- **Ruta.** `ruta_segura` decodifica otra vez y rechaza `..`, `.`, `//`, `\\`, NUL y rutas absolutas; el
-  estudio, además, no sale de sus carpetas ni sirve su código.
-- **La Fototeca es la única biblioteca.** El proxy completa `/api/media` y `/api/imagenes` del estudio con
-  las fotos públicas y del álbum «Prensa» (`ESTUDIO_LIMITE_FOTOS`), como
-  `/estudio/banco/fototeca/ft-<id>-<versión de ajustes>.jpg`; al pedir uno que falta lo escribe en
-  `<banco>/fototeca/` (derivado `original` con sus ajustes; banco de `ESTUDIO_BANCO` o `rutas.banco` del
-  perfil) y la miniatura la sirve la Fototeca. Las respuestas correctas de `/api/exportar-foto`,
-  `/api/imagenes` (POST) y `/api/subir` (imágenes) se registran en la Fototeca (`ft.registrar`, sin
-  duplicar por huella; piezas al álbum «Piezas de prensa»). Un fallo al registrar no rompe la respuesta
-  del estudio: se anota en `api.log` (en `logs/`). El editor de piezas descarga en el navegador: el proxy añade
-  `fototeca: true` a `/api/health` y atiende él mismo `POST /estudio/api/fototeca-pieza` (dataURL, título
-  de la edición, fotos de origen), que el editor solo ofrece con esa marca.
-- **Videos** (2026-10-06): la Fototeca los guarda con las reglas de las fotos (original único por
-  SHA-256, papelera, álbumes, etiquetas), sin editarlos ni exportarlos por tamaños. El navegador los
-  reproduce con un enlace firmado de vida corta (un `<video>` no manda el token; audiencia propia, como la
-  cookie del estudio) y con `Range` solo para ellos (los PDF siguen igual). Las exportaciones de video de
-  Prensa son trabajos en segundo plano: el proxy los anota y los registra al verlos listos en
-  `/api/trabajo`; la lista vive en memoria (un reinicio la olvida; el video sigue en su canal).
-- **Sin estudio** la sesión responde `estudio: false` y la página lo explica; el proxy responde 503.
-- Pruebas: `backend/tests/test_prensa.py` (cookie, ruta, nombres, listados, piezas) y, en el estudio,
-  `identidad-visual/tests/test_servidor.py` (prefijo, Host/Origin, JSON).
+- **Una base común** (`ruray.comun`, en `../ruray/ruray/comun.py`) porta a FastAPI el enrutador de
+  `../ruray/estudio/editor/servidor/servidor.py` y carga sus funciones; cada editor monta solo sus rutas y sus páginas, sin
+  tocarlas (piden todo en su carpeta; las propias, desde la carpeta del editor, `Editor.carpeta`), y las URL que emite
+  llevan su prefijo. Las páginas de los otros editores llevan a
+  `ESTUDIO_OTRAS_PAGINAS` (una carpeta por página; lo pone `iniciar.sh`). El kit común (tokens, fuentes, logos, marcos)
+  llega por `UNANCHA_DIR`; las carpetas (banco, almacén, salidas), por el perfil `IDENTIDAD_PERFIL`.
+- **Sesión.** El marco no puede mandar el token: `POST <carpeta>/sesion` (Bearer; todo el equipo salvo el invitado)
+  deja la cookie del editor (`estudio_<id>`, firmada con un secreto derivado de `JWT_SECRET`, `Path=<carpeta>`,
+  HttpOnly, SameSite=Strict, 2 h; la página la renueva y cerrar sesión la borra). Puede llevar la pieza de prensa para
+  la que se abre (`{pieza: N}`, resuelta por la referencia `piezas:pieza:N`).
+- **Ruta.** `ruta_segura` decodifica otra vez y rechaza `..`, `.`, `//`, `\\`, NUL y rutas absolutas; cada editor no sale
+  de sus carpetas ni sirve el código del servidor.
+- **La Mediateca es la única biblioteca** (`ruray.mediateca`, solo por «medios.v1»): el
+  selector la incluye (públicas y álbum «Prensa»), sus fotos se materializan en `<banco>/fototeca/`
+  (`ft-<id>-<versión de ajustes>.jpg`) y su miniatura sale de ella; lo subido entra a ella; **lo que se exporta vive
+  solo en ella** (ámbito «prensa», nombre `AAAA/AAAAMMDD_HHMMSS.ext`, formato en `categoria`, etiquetas del formato y la
+  red, `media_usos` `red:<canal>` y `pieza:<id>`, versión de su foto de origen), y se descarga por
+  `<carpeta>/mediateca/<archivo>`. «Usar en Prensa» de la Mediateca es `POST /api/fotos/traer/{id}`.
+- **Videos.** La cola de ffmpeg (un trabajo a la vez) es de Kuyuy; con la Mediateca, lo exportado se nombra por la hora
+  y entra a ella una vez cuando su trabajo queda listo (la lista de pendientes vive en memoria). Los videos de la
+  Mediateca se reproducen con un enlace firmado de vida corta (audiencia propia) y `Range`.
+- **Caché.** Las rutas `redes`, `transmisiones` y `exports` del perfil apuntan a `<MEDIATECA_DIR>/cache/prensa/`; al
+  abrir un editor (a lo sumo cada 10 min) se borra lo de más de 48 h (salida) o 14 días (trabajo), y lo de la salida
+  que aún no esté en la Mediateca se registra antes.
+- Pruebas: `backend/tests/test_estudio_mediateca.py` y `test_awana_en_qillqa.py`; en Ruray (`../ruray/tests/` y `../ruray/estudio/tests/`), la base, el servidor, el
+  montaje y el kit; las del editor de fotos y sus páginas, en Tullpu (`../tullpu/tests/`), las del de videos, en
+  Kuyuy (`../kuyuy/tests/`), y las del de piezas, en Awana (`../awana/tests/`).
 
 ## 18. Vigencia de la firma y del expediente
 
-Una sola regla, en `backend/app/servicios/vigencia.py` (2026-10-06), para todo lo que puede dejar sin
+Una sola regla, en `../qillqasqa/qillqasqa/servicios/vigencia.py` (2026-10-06), para todo lo que puede dejar sin
 valor una firma o un expediente. Las huellas se **calculan**, no se recuerdan:
 
-- **Huella impresa** (`huella_impresa`): lo que la firma garantiza. En un documento `sgdp`, el SHA-256
+- **Huella impresa** (`huella_impresa`): lo que la firma garantiza. En un documento `qillqa`, el SHA-256
   del JSON canónico de tipo, número, periodo, campos (sin claves `_…` ni vacíos; los `fmt_*` cuentan),
   cuerpo, los **adjuntos de la línea «Adj.» ya resueltos** (`combinar_adjuntos`: escritos + archivos,
   como conjunto ordenado) y el SHA-256 de las imágenes incrustadas (`es_anexo`). En uno `manual`, el
-  SHA-256 del PDF; en uno `framework`, el de sus `.tex`. Lleva esquema (`v1:sgdp:…`, `v1:manual:…`,
+  SHA-256 del PDF; en uno `framework`, el de sus `.tex`. Lleva esquema (`v1:qillqa:…`, `v1:manual:…`,
   `v1:tex:…`).
 - **Huella del expediente** (`huella_expediente`): la base (`firmado` id + SHA-256, o la huella impresa si
   aún no hay firmado) y la lista ordenada de piezas PDF (id, nombre, SHA-256). Se guarda en el
@@ -484,7 +485,7 @@ a «expediente/anulados/» y estado a APROBADO. Si solo cambió la composición 
 sigue y `estado_expediente` lo da por desactualizado con sus motivos.
 
 `confirmado`: `None` (scripts, pestañas viejas) anula e informa; `False` responde 409 `anula_firma` con
-las consecuencias sin tocar nada; `True` anula. La web manda `False` y pregunta (`frontend/src/vigencia.ts`).
+las consecuencias sin tocar nada; `True` anula. La web manda `False` y pregunta (`../qillqasqa/web/src/vigencia.ts`).
 
 Los movimientos de archivo pasan por `vigencia.mover` / `vigencia.creado`: si la transacción termina sin
 commit (409, error antes de compilar), los archivos vuelven a su lugar (eventos `after_commit` /
@@ -504,7 +505,7 @@ se firmó (`base_id`); «al día» compara huellas, no fechas.
   regla que `estado_expediente` (manifiesto + composición) pero sin contar páginas ni escribir el
   manifiesto de los antiguos, y una sola consulta de adjuntos. No se guarda.
 - **Heredado eliminado**: lo que la reimportación no reconoce (adjuntos genéricos, imágenes, anulados) va
-  a `.sgdp-retirados/adjuntos-<fecha>/` con `adjuntos.json` (qué era cada archivo) y `adjuntos/`
+  a `.qillqa-retirados/adjuntos-<fecha>/` con `adjuntos.json` (qué era cada archivo) y `adjuntos/`
   desaparece.
 - **Adjuntos**: quitar uno lo pasa a «adjuntos/anulados/»; reemplazarlo deja el anterior en
   «adjuntos/anteriores/». Un adjunto sin nombre toma el del archivo (antes la línea «Adj.» imprimía
@@ -517,37 +518,37 @@ creada por `create_all`): `origen` y `destino` con el identificador del mapa (`d
 `persona:7`, `inst:4`, `pedido:9`, `norma:ley-27795`, `libro:10086`), `tipo` (`referencia_normativa`,
 `cita`, `menciona`, `presenta_informe`), `contexto` (`cuerpo`, `seccion:<clave>`, `informe:<campo>`),
 `fuente` (`editor`, `texto`, `auto`, `manual`), `texto` y `datos` (cita APA, enlace, adjunto). Reglas puras
-en `backend/app/servicios/referencias.py` (pruebas en `backend/tests/test_referencias.py`); la base, en `backend/app/servicios/relaciones.py`.
+en `../qillqasqa/qillqasqa/servicios/referencias.py` (pruebas en `backend/tests/test_referencias.py`); la base, en `../qillqasqa/qillqasqa/servicios/relaciones.py`.
 
-- **Nodo `referencia`** (`frontend/src/extensiones/Referencia.ts`, en `esquema.ts`: el servidor de
+- **Nodo `referencia`** (`../qillqasqa/web/src/extensiones/Referencia.ts`, en `esquema.ts`: el servidor de
   edición simultánea lo conoce): inline y atómico, atributos `tipo`, `id`, `texto`, `nota`. El serializador
   escribe solo `texto` (escapado) y, si hay `nota` (libro), `\footnote{nota}`.
-- **Autocompletado** (`frontend/src/extensiones/AutocompletarReferencias.ts` + `frontend/src/componentes/PopupReferencias.tsx`): un plugin de
+- **Autocompletado** (`../qillqasqa/web/src/extensiones/AutocompletarReferencias.ts` + `../qillqasqa/web/src/componentes/PopupReferencias.tsx`): un plugin de
   ProseMirror mira el párrafo hasta el cursor (`detectarConsulta` de `frontend/src/extensiones/consultaReferencias.ts`, pura, pruebas en
   `frontend/pruebas/referencias.test.ts`) y la lista pide `GET /api/referencias/buscar?q=&contexto=`
-  (normas del catálogo `backend/app/catalogos/normas.csv`, leyes de los distritos y fuentes norma de los
+  (normas del catálogo `../qillqasqa/qillqasqa/catalogos/normas.csv`, leyes de los distritos y fuentes norma de los
   proyectos; documentos; proyectos; semanas; pedidos; personas e instituciones activas; libros por
   `backend/app/servicios/biblioteca.py` si está). Lo escrito decide los grupos («Ley» → normas); `contexto` da una
   ventaja leve a lo que suele citarse en ese editor (`referencias.ordenar_resultados`).
 - **Sincronización al guardar**: `relaciones.sincronizar(origen, contexto, contenido)` en `PUT`,
   `/previsualizar`, `/generar` y restaurar de documentos, y en guardar y restaurar una parte de proyecto
-  (`_citas` de `backend/app/api/proyectos.py`, que además vuelve fuente del proyecto la norma o el libro citado y retira las
+  (`_citas` de `../qillqasqa/qillqasqa/api/proyectos.py`, que además vuelve fuente del proyecto la norma o el libro citado y retira las
   fuentes que agregó solo cuando ya nadie las cita). Solo toca las filas `fuente='editor'` de ese origen y
   contexto: las manuales y las automáticas no.
-- **Textos planos** (informe SR, `frontend/src/componentes/semana/AreaMarkdown.tsx`): elegir llama a `POST /api/referencias/texto`
+- **Textos planos** (informe SR, `../qillqasqa/web/src/componentes/semana/AreaMarkdown.tsx`): elegir llama a `POST /api/referencias/texto`
   (`fuente='texto'`); al guardar la semana, `relaciones.depurar_textos` quita las que ya no aparecen en los
   textos del informe, las actividades o los pedidos.
 - **Informe SR y su oficio**: `GET /api/documentos/{id}/informe-sr` (con `asunto`, `referencia`, `sumilla`
   en pantalla) usa `parece_presentacion_informe` y `candidatos_informe`; `POST …/informe-sr` relaciona el
-  oficio con la semana y su ISR y adjunta el PDF por `subir` de `backend/app/api/adjuntos.py` (bitácora, línea «Adj.» y la
+  oficio con la semana y su ISR y adjunta el PDF por `subir` de `../qillqasqa/qillqasqa/api/adjuntos.py` (bitácora, línea «Adj.» y la
   vigencia de §18: con el documento firmado, pregunta antes de anular); `DELETE …/informe-sr/{semana}`
   deshace la relación (el adjunto se quita por su propia ruta). `POST /api/referencias/semanas/{id}/
   oficio-presentacion` crea el borrador redactado (bajo `/api/referencias` porque `POST /api/semanas/{id}/
   {lista}` tomaría el nombre por una lista). La web asocia sola solo si `confiable` y el documento no tiene
-  número (`frontend/src/componentes/SugerenciaInformeSR.tsx`).
+  número (`../qillqasqa/web/src/componentes/SugerenciaInformeSR.tsx`).
 - **Mapa**: `backend/app/servicios/grafo.py` suma las filas de `relaciones` como aristas fiables y crea los nodos
-  `norma`, `libro` y `pedido`. El mapa local escucha `sgdp:relaciones` (se guardó: vuelve a pedir, los puntos
-  conservan su lugar) y `sgdp:referencias` (citas en pantalla sin guardar: aristas `pendiente`, punteadas).
+  `norma`, `libro` y `pedido`. El mapa local escucha `qillqa:relaciones` (se guardó: vuelve a pedir, los puntos
+  conservan su lugar) y `qillqa:referencias` (citas en pantalla sin guardar: aristas `pendiente`, punteadas).
 - **Zotero** (2026-10-06; `backend/app/servicios/zotero.py`, `GET /api/zotero/{estado,buscar,KEY}`): el
   autocompletado ofrece «Zotero» (nodo `referencia` de tipo `zotero`, relación `zotero:KEY`); inserta la
   cita en el texto que da Zotero y su referencia como nota al pie. El formulario de Fuentes de un
@@ -557,7 +558,7 @@ en `backend/app/servicios/referencias.py` (pruebas en `backend/tests/test_refere
   `127.0.0.1:23119`: el procesador CSL (`include=bib,citation`, `style=apa`, `locale=es-ES`) y la clave
   de Better BibTeX (campo `citationKey`; si falta, `item.citationkey` por JSON-RPC). Cerrado, se lee una
   copia de `zotero.sqlite` (y su `-wal`) en una carpeta temporal y la cita la arma el respaldo APA del
-  SGDP, marcada `formateado_por = 'sgdp-respaldo'`; sin nada, «Zotero no está abierto». Las fuentes
+  Qillqa, marcada `formateado_por = 'qillqa-respaldo'`; sin nada, «Zotero no está abierto». Las fuentes
   `calibre:N` y los nodos `libro` antiguos se resuelven con `backend/app/servicios/biblioteca.py`
   (`mode=ro`; su APA 7 espeja `core/py-common/biblioteca.py`).
 - **Lo eliminado**: al eliminar un documento o retirar un proyecto se borran sus relaciones propias (las
@@ -575,15 +576,15 @@ de entidades— como registro con estado, responsable y plazo. Entidad propia `E
 `backend/app/modelos.py`), no un `Documento`: por qué, en `decisiones.md` §Bandeja de entrada.
 
 - **Archivo**: el PDF va al archivo documental, en la carpeta del tipo `recibido` del registro de tipos
-  (`backend/app/tipos.py`: `recibidos/`) y dentro `entradas/AAAA-MM/`, con el nombre de `nombres.entrada`
+  (`../qillqasqa/qillqasqa/tipos.py`: `recibidos/`) y dentro `entradas/AAAA-MM/`, con el nombre de `nombres.entrada`
   (`ENT-<STD>-<fecha>_<Remitente>_<Asunto>.pdf`). `Entrada.archivo` guarda la ruta RELATIVA a
-  `raiz_documentos()`: una mudanza no toca la base (`ruta_de` de `backend/app/servicios/entradas.py`, que además rechaza una
+  `raiz_documentos()`: una mudanza no toca la base (`ruta_de` de `../punku/punku/entradas.py`, que además rechaza una
   ruta fuera de la raíz). Se sirve por `enviar_archivo`. La huella SHA-256 es única.
 - **Subida en dos pasos**: `POST /api/entradas/analizar` guarda cada PDF en `entradas/.por-confirmar/<sha>.pdf`
   (se limpian a las 24 h) y devuelve la ficha automática y el duplicado; `POST /api/entradas` registra las
   fichas revisadas (vuelve a comprobar duplicados) y mueve el PDF a su carpeta. `GET /api/entradas/
   por-confirmar/{sha}/pdf` es la vista previa. `POST /api/entradas/subir` hace los dos pasos (para un puente).
-- **Ficha automática** (`backend/app/servicios/entradas.py`, puras, `backend/tests/test_entradas.py`): texto de las cuatro
+- **Ficha automática** (`../punku/punku/entradas.py`, puras, `../punku/tests/test_entradas.py`): texto de las cuatro
   primeras páginas con `pdftotext` (poppler, el mismo de `pdf.contar_paginas`); n.º STD por el prefijo de
   6 a 8 cifras del nombre (sin el sufijo «(1)») o por un número rotulado como STD, registro, expediente u
   hoja de trámite; fecha escrita antes que numérica; «Asunto»/«Referencia» con hasta tres líneas de
@@ -613,7 +614,7 @@ de entidades— como registro con estado, responsable y plazo. Entidad propia `E
 - **Categoría, «por revisar» y «responde a»** (2026-10-18, Edison: clasificación inteligente en Mesa de
   Partes): `entradas.categoria` dice qué es el documento para el despacho (`comunicacion` nueva ·
   `respuesta` a un documento propio · `invitacion` o citación · `seguimiento` de un expediente o trámite ·
-  `pronunciamiento` de una institución o gremio · `anexo` o informe; `backend/app/servicios/entradas.py` (`CATEGORIAS`,
+  `pronunciamiento` de una institución o gremio · `anexo` o informe; `../punku/punku/entradas.py` (`CATEGORIAS`,
   `categoria_de` por reglas para la ficha automática); `requiere_revision` marca la ficha cuya categoría
   propuso la IA con poca confianza o nadie confirmó (chip «Por revisar» en la lista, casilla en la ficha);
   `responde_a_documento_id` es el oficio PROPIO al que el recibido responde (lo contrario de
@@ -625,11 +626,11 @@ de entidades— como registro con estado, responsable y plazo. Entidad propia `E
 
 ## 21. Tareas y Agenda
 
-Módulo propio (2026-10-06; decisión en `docs/decisiones.md` §Tareas y Agenda): el SGDP es la fuente
+Módulo propio (2026-10-06; decisión en `docs/decisiones.md` §Tareas y Agenda): Qillqa es la fuente
 de las tareas y de la agenda; OpenProject queda como espejo opcional por `.env` (§15 y
-`backend/app/servicios/openproject_sync.py`, sin cambios). Tablas en `backend/app/modelos_tareas.py`
+`backend/app/servicios/openproject_sync.py`, sin cambios). Tablas en `../minka/minka/modelos.py`
 (archivo propio con la misma `Base`, para no tocar `backend/app/modelos.py`; las crea `create_all` porque
-`backend/app/main.py` importa `backend/app/api/tareas.py` y `backend/app/api/agenda.py` antes del arranque):
+`backend/app/main.py` importa `../minka/minka/api_tareas.py` y `../minka/minka/api_agenda.py` antes del arranque):
 
 - `tareas`: título, detalle, `estado` (`por_hacer`, `en_curso`, `en_espera`, `hecha`, `cancelada`),
   `prioridad` (`baja`, `normal`, `alta`, `urgente`), `responsable_id` único, `vence_en` + `con_hora`
@@ -649,17 +650,17 @@ de las tareas y de la agenda; OpenProject queda como espejo opcional por `.env` 
 
 **Vínculos**: filas de `relaciones` (§19) con `origen='tarea:N'|'evento:N'`, `tipo='vinculo'`,
 `fuente='manual'` y destino con el identificador del mapa (`doc`, `pl`, `sr`, `persona`, `inst`,
-`foto`, `pedido`, `entrada`, `tarea`, `evento`). `backend/app/servicios/tareas.py` los pone (`poner_vinculos`),
+`foto`, `pedido`, `entrada`, `tarea`, `evento`). `../minka/minka/tareas.py` los pone (`poner_vinculos`),
 los resuelve a texto (`etiquetas_de`) y filtra por entidad (`origenes_con`). La web busca qué
 vincular con `GET /api/referencias/buscar` (el mismo buscador de las citas).
 
-**Reglas puras** (pruebas sin BD): `backend/app/servicios/tareas_reglas.py` (alta rápida en lenguaje natural,
-plazos, vistas, plantillas genéricas; `backend/tests/test_tareas.py`), `backend/app/servicios/agenda_reglas.py`
-(recurrencia semanal en hora local, choques, ICS de ida y vuelta; `backend/tests/test_agenda.py`),
-`backend/app/servicios/superproductivity.py` (respaldo JSON → plan; `backend/tests/test_superproductivity.py`). En la
-web, `frontend/src/componentes/tareas/calendario.ts` (`frontend/pruebas/calendario.test.ts`).
+**Reglas puras** (pruebas sin BD): `../minka/minka/tareas_reglas.py` (alta rápida en lenguaje natural,
+plazos, vistas, plantillas genéricas; `../minka/tests/test_tareas.py`), `../minka/minka/agenda_reglas.py`
+(recurrencia semanal en hora local, choques, ICS de ida y vuelta; `../minka/tests/test_agenda.py`),
+`../minka/minka/superproductivity.py` (respaldo JSON → plan; `../minka/tests/test_superproductivity.py`). En la
+web, `../minka/web/src/componentes/tareas/calendario.ts` (`../minka/web/pruebas/calendario.test.ts`).
 
-**API** (`backend/app/api/tareas.py`, `backend/app/api/agenda.py`; el rol `invitado` solo lee; borrar, quien creó o el
+**API** (`../minka/minka/api_tareas.py`, `../minka/minka/api_agenda.py`; el rol `invitado` solo lee; borrar, quien creó o el
 administrador):
 
 - `GET /api/tareas?vista=todas|mias|hoy|vencidas|semana|sin_fecha|hechas&responsable_id=&estado=&lista_id=&entidad=&etiqueta=&q=&cerradas_dias=`,
@@ -674,7 +675,7 @@ administrador):
   /eventos/{id}/omitir` (una ocurrencia), `GET /api/agenda/exportar.ics` (con sesión), `GET
   /api/agenda.ics?token=` (suscripción, sin sesión; `solo_mias`, `tareas`), `GET/POST/DELETE
   /api/agenda/token`, `POST /api/agenda/importar-ics?aplicar=` (simula; omite UID ya importados y
-  los `evento-N@sgdp` propios).
+  los `evento-N@qillqa` propios).
 - **Por confirmar** (2026-10-18): `propuesto` y `descartado` son una SOLICITUD
   (`agenda_reglas.SOLICITUD`, `en_calendario`): `_eventos_en` no las trae salvo `con_solicitudes`, así
   que `GET /eventos` (salvo `?con_solicitudes=true`, el botón de agenda del documento), `/hoy`,
@@ -703,14 +704,14 @@ administrador):
 - **Avisos**: `notificaciones` con `destino='tarea:N'` o `'evento:N'` (sin documento ni proyecto; la
   campana abre `/tareas?abrir=N` o `/agenda?abrir=N`): al asignar responsable, al incluir a alguien
   en un evento, al comentar, al cerrar lo que otro encargó, y `tipo='plazo'` una vez al día por tarea
-  que vence en 24 h o venció (`backend/app/servicios/tareas.py` (`bucle`), lanzado en `backend/app/main.py`, cada 15 min).
+  que vence en 24 h o venció (`../minka/minka/tareas.py` (`bucle`), lanzado en `backend/app/main.py`, cada 15 min).
 
-**Web**: `frontend/src/paginas/Tareas.tsx` (`/tareas`: Mis tareas con `?mis=pendientes|prioritarias|hechas`,
+**Web**: `../minka/web/src/paginas/Tareas.tsx` (`/tareas`: Mis tareas con `?mis=pendientes|prioritarias|hechas`,
 tablero con Todas · Internas · Externas y la columna «Por confirmar»; las automáticas del trámite al final por paso
-con título corto; `frontend/src/componentes/tareas/organizar.ts`, probado en `frontend/pruebas/organizar.test.ts`; `?ver=hoy|tablero|todas|hechas`,
-`?abrir=`, `?nueva=1` con `vinculo=` o `entrada=`, `?lista=`, `?entidad=`) y `frontend/src/paginas/Agenda.tsx`
+con título corto; `../minka/web/src/componentes/tareas/organizar.ts`, probado en `../minka/web/pruebas/organizar.test.ts`; `?ver=hoy|tablero|todas|hechas`,
+`?abrir=`, `?nueva=1` con `vinculo=` o `entrada=`, `?lista=`, `?entidad=`) y `../minka/web/src/paginas/Agenda.tsx`
 (`/agenda`: `?vista=mes|semana|dia|por_confirmar&fecha=`, `?nuevo=1`; `PorConfirmar.tsx` al lado del
-calendario desde 1200 px), componentes en `frontend/src/componentes/tareas/`
+calendario desde 1200 px), componentes en `../minka/web/src/componentes/tareas/`
 (alta rápida con aviso de parecida, `AvisoParecido.tsx`, fila, tablero con arrastre HTML5 y «Mover a…» en el celular, calendario hecho con MUI,
 fichas de tarea y evento, plantillas, importar, suscripción, `PanelHoy` del Inicio y
 `BotonCrearTarea`, puesto en el visor de documentos y en la tarjeta de persona del directorio).
@@ -745,7 +746,7 @@ Por qué se ordenan así, en `docs/decisiones.md` §Semana de representación (2
 
 El mecanismo común (2026-10-11/12; decisión en `docs/decisiones.md` §Pegar resultado; diseño en
 `docs/plataforma/propuesta-automatizacion.md` §3). La persona usa el prompt institucional con la IA
-que prefiera y pega el resultado; el SGDP no llama a ningún modelo («ficha por reglas, sin IA»).
+que prefiera y pega el resultado; Qillqa no llama a ningún modelo («ficha por reglas, sin IA»).
 
 - **Contrato**: un bloque `yaml` con `tipo:` y `version:` como primeras claves, una clave por
   línea, `null` para lo desconocido. Esquemas en `backend/app/esquemas/pegado/<tipo>.yml`
@@ -777,7 +778,7 @@ que prefiera y pega el resultado; el SGDP no llama a ningún modelo («ficha por
   (`_reunion_parecida`, por fecha si la trae y, si no, por título entre los últimos y próximos 90 días),
   que se muestran como propuestas. El vínculo «responde a» viaja en `campos.responde_a_documento_id` y se
   guarda al registrar. `cruza:` del esquema sigue siendo documentación: los cruces viven en
-  `pegar` de `backend/app/api/entradas.py`.
+  `pegar` de `../punku/punku/api_entradas.py`.
 - **Trazabilidad**: tabla `pegados` (texto íntegro, propuesto, aplicado, rechazado, entidad, quién);
   `entradas.origen_campos` (`documento` · `pegado` · `persona`); las actuaciones de origen `pegado` no
   cuentan hasta que alguien las confirma; el estado de un documento nunca lo cambia un pegado.
@@ -797,11 +798,11 @@ migraron (decisión del 2026-10-12): las reglas añaden lo configurable. Una reg
 módulo (se anota en `acciones`). Emiten hoy: recibidos (registrada, asignada, vencida, respondida),
 documentos (numerado, estado, actuación), agenda (creado, recordatorio), tareas (asignada) y Semana
 (pedido derivado). Tablas `actuaciones` (seguimiento) y recordatorios de eventos (`agenda_eventos.recordatorio_*`,
-bucle de `backend/app/servicios/tareas.py` cada 15 min) entraron en la misma fase.
+bucle de `../minka/minka/tareas.py` cada 15 min) entraron en la misma fase.
 
 ## 25. Chat institucional
 
-(2026-10-12, fase 8; `backend/app/modelos_chat.py`, `backend/app/servicios/chat.py`, `backend/app/servicios/difusor.py`, `backend/app/api/chat.py`.)
+(2026-10-12, fase 8; `../rimay/rimay/modelos.py`, `../rimay/rimay/chat.py`, `backend/app/servicios/difusor.py`, `../rimay/rimay/api.py`.)
 
 - **Modelo**: `canales` (`directo` de dos personas, `grupo` privado por membresía, `tema` abierto al
   equipo; un tema puede ligarse a una entidad `pl:3`, `sr:2`, `comision:<clave>` y colgar de un `padre_id`),
@@ -832,7 +833,7 @@ bucle de `backend/app/servicios/tareas.py` cada 15 min) entraron en la misma fas
     `cierra_en` cierra sola al pasar la hora (se evalúa al leer y al votar, sin temporizador). Los votos
     guardan quién votó aunque sea anónima (para poder quitarlo), pero la API no lo expone. Los
     resultados se difunden PERSONA POR PERSONA (`{tipo: 'encuesta'}`), porque cada una trae su «mía».
-    Una encuesta no se edita (422). Reglas puras en `backend/tests/test_chat_encuestas.py`.
+    Una encuesta no se edita (422). Reglas puras en `../rimay/tests/test_chat_encuestas.py`.
   - *Notas de voz*: son un archivo más del endpoint de adjuntos. La web graba con `MediaRecorder`
     (webm/opus; mp4/aac en Safari de iOS) y nombra `nota-de-voz-AAAAMMDD-HHMMSS.<ext>`
     (`es_nota_de_voz`). El webm de MediaRecorder no trae duración ni índice (el navegador muestra
@@ -869,11 +870,11 @@ bucle de `backend/app/servicios/tareas.py` cada 15 min) entraron en la misma fas
     silenciados; tema, quienes ya están en él y solo si escribe una persona; una mención atraviesa el
     silencio) y, de la campana, todo aviso salvo `chat`/`mencion` (los manda el chat). La pestaña dice
     por el socket qué mira (`{tipo:'viendo', canal_id, visible}` → `difusor.a_la_vista`/`viendo`): con
-    el SGDP a la vista no hay push, llega `{tipo:'alerta'}` y suena dentro; con la conversación abierta,
+    Qillqa a la vista no hay push, llega `{tipo:'alerta'}` y suena dentro; con la conversación abierta,
     nada. `frontend/public/sw.js` §2 muestra el aviso (etiqueta `chat-<canal>` que cuenta «· N
     mensajes», vibración propia, ícono e insignia de `frontend/public/notificaciones/`), manda el acuse firmado
     (`POST /api/push/recibido`, HMAC con `JWT_SECRET`; sin sesión) y al tocarlo enfoca la ventana
-    (`postMessage sgdp:abrir`, la ruta la sigue `ContadorChat`) o abre una. Exige https (el Funnel).
+    (`postMessage qillqa:abrir`, la ruta la sigue `ContadorChat`) o abre una. Exige https (el Funnel).
     **Límite**: el SONIDO de una notificación lo decide el sistema operativo (en Android, el canal de
     notificaciones de Chrome); la Web no fija uno propio por aviso. Al cerrar sesión la suscripción
     sigue (una sesión que caduca no debe apagar los avisos del celular); si otra persona entra en el
@@ -881,20 +882,20 @@ bucle de `backend/app/servicios/tareas.py` cada 15 min) entraron en la misma fas
   - *Visto y leído*: `canal_miembros.ultimo_recibido_id` junto a `ultimo_leido_id` (dos números por
     integrante y canal, sin fila por mensaje). Sube al difundir a quien tiene socket, al pedir la lista o
     el contador (`_llego_la_lista`) y con el acuse del push; `/leido` sube los dos. Los cambios viajan
-    como `{tipo:'lecturas', cambios}` a los integrantes; la web (`frontend/src/componentes/chat/entrega.ts`) pinta ✓,
+    como `{tipo:'lecturas', cambios}` a los integrantes; la web (`../rimay/web/src/componentes/chat/entrega.ts`) pinta ✓,
     ✓✓ o ✓✓ en `PALETA.info` (en grupo, el del más atrasado) e «Info del mensaje» (`DialogoLecturas`).
-  - *Sonidos propios* (`frontend/src/componentes/chat/sonidos.ts`): sintetizados con Web Audio, sin archivos: «plop» al
+  - *Sonidos propios* (`../rimay/web/src/componentes/chat/sonidos.ts`): sintetizados con Web Audio, sin archivos: «plop» al
     enviar, firma la5→fa♯6 al llegar (`alerta`), tres notas si es mención; con la pestaña oculta suenan
     solo si el dispositivo no tiene push; una vez aunque haya dos pestañas; interruptor en Mi perfil.
   - *Tarjetas del sistema*: `mensajes.tarjeta` ({que, icono, titulo, detalle, meta}) la arma
-    `tarjeta_de` (`backend/app/servicios/chat.py`) desde el evento (o desde el texto de un anuncio); lo viejo se arma al
+    `tarjeta_de` (`../rimay/rimay/chat.py`) desde el evento (o desde el texto de un anuncio); lo viejo se arma al
     leer (`_tarjetas_viejas`). La web (`TarjetaSistema.tsx`) muestra una línea de qué pasó, el número una
     sola vez, el asunto en dos líneas con «ver más» y una sola acción; el día queda fijo arriba al recorrer.
   - *Temas por sección* (`canales.categoria`, `CATEGORIA_FABRICA`, `entrega.ts::agruparTemas`): secciones
     plegables con contador. Temas de fábrica nuevos, con su regla: Documentos listos (FIRMADO), Documentos
     enviados (ENVIADO), Seguimiento de documentos (`documento.actuacion`), Borradores y revisión
     (EN_REVISION/OBSERVADO), Pleno (evento tipo `pleno`), Noticias (piezas `noticia_*`), Programación del
-    día (evento `agenda.programacion_diaria`, `backend/app/servicios/programacion.py`, desde las 7:00); sin regla:
+    día (evento `agenda.programacion_diaria`, `../minka/minka/programacion.py`, desde las 7:00); sin regla:
     Reuniones y acuerdos, Fotos y videos, Atención ciudadana. Al sembrarlos, la regla vieja de
     firmado/enviado en Documentos se apaga y la de Prensa deja las noticias (`_ordenar_reglas_viejas`, solo
     si siguen como vinieron). Lo propio del despacho (bancada, grupo parlamentario, programa de radio,
@@ -922,7 +923,7 @@ bucle de `backend/app/servicios/tareas.py` cada 15 min) entraron en la misma fas
   - *Pegar, arrastrar y anotar antes de enviar*: `CajaMensaje` toma las imágenes del portapapeles
     (`onPaste`), del arrastre (`onDrop`) y del selector, y las deja en una tira de pendientes
     (`imagenesDeTransferencia` les da nombre `captura-AAAAMMDD-HHMMSS.png` si venían sin él); un toque
-    abre `frontend/src/componentes/chat/EditorImagen.tsx` (canvas 2D nativo: lápiz, resaltador, flecha, recuadro, texto, recorte,
+    abre `../rimay/web/src/componentes/chat/EditorImagen.tsx` (canvas 2D nativo: lápiz, resaltador, flecha, recuadro, texto, recorte,
     cinco colores, deshacer → PNG nuevo); «Enviar» las sube con el texto como pie (`subir(archivos,
     {texto})`). Lo que no es imagen sigue subiendo al instante.
   - *Mensajes vivos*: `chat.refrescar_mensajes_de(sesion, entidad)` recompone los mensajes del sistema
@@ -986,7 +987,7 @@ actualiza lo vinculado», como en una hoja de cálculo. Rige en todo el sistema.
 - **Al leer**: un solo resolvedor, `backend/app/servicios/etiquetas.py`. `etiquetas_de(claves)`
   devuelve la etiqueta larga («Oficio N° 0012-… — Asunto», «Recibido: … — asunto», «Nombre
   (cargo)»); `cortas_de(claves)`, el código («OF-0012», el código del proyecto, «SR-02»). Lo usan
-  los vínculos de tareas y eventos (`etiquetas_de` de `backend/app/servicios/tareas.py` delega en él), las tarjetas y
+  los vínculos de tareas y eventos (`etiquetas_de` de `../minka/minka/tareas.py` delega en él), las tarjetas y
   los canales del chat (`entidad_etiqueta`), la línea de abajo de cada aviso de la campana (el texto
   del aviso es historia; lo vinculado, vigente), `relaciones.de_origen` (`etiqueta`) y los vínculos
   de la fototeca. Un recibido vinculado al directorio muestra el nombre y el cargo de hoy de su
@@ -1005,8 +1006,8 @@ actualiza lo vinculado», como en una hoja de cálculo. Rige en todo el sistema.
   §25); los endpoints que cambian un evento, una tarea o un recibido lo llaman antes de su commit.
 
 **El límite.** El contenido de un documento oficial (numerado, firmado, enviado) y lo ya impreso no
-cambian porque cambie el directorio: son historia oficial y el SGDP no los modifica en silencio. En
-un BORRADOR, la revisión antes de numerar (`segun_directorio` de `backend/app/servicios/verificacion.py`, diálogo
+cambian porque cambie el directorio: son historia oficial y Qillqa no los modifica en silencio. En
+un BORRADOR, la revisión antes de numerar (`segun_directorio` de `../qillqasqa/qillqasqa/servicios/verificacion.py`, diálogo
 `DialogoVerificacion.tsx`) OFRECE al lado de cada dato lo que el directorio dice hoy del destinatario
 (nombre, cargo) y de cada copia (cargo) —«El directorio dice hoy: … Usar»—, sin aplicarlo solo. La
 búsqueda es por nombre exacto sin tildes; si hay homónimos con datos distintos, no se adivina.
@@ -1041,12 +1042,12 @@ institución o una empresa presenta un documento desde `/mesa-de-partes`, **sin 
 cargo y sigue su trámite. Todo lo que llega es una `Entrada` de Recibidos con `via='mesa_virtual'`
 y el equipo la procesa con lo que ya existe (responder, agendar, crear tarea, pegar el resultado del
 prompt, vincular); la mesa solo añade el remitente identificado, los archivos con su huella, el
-estado **público** y su historia. Código: `backend/app/modelos_mesa.py`,
-`backend/app/servicios/mesa_virtual.py` (puras y base), `backend/app/servicios/cargo_pdf.py`,
-`backend/app/api/mesa_publica.py` (pública), `backend/app/api/mesa_virtual.py` (equipo),
-`frontend/src/paginas/MesaVirtual.tsx`, `frontend/src/componentes/mesa/`,
-`frontend/src/componentes/entradas/PanelMesaVirtual.tsx` y `frontend/src/componentes/AdminMesaVirtual.tsx`.
-Pruebas puras: `backend/tests/test_mesa_virtual.py`, `frontend/pruebas/mesaVirtual.test.ts`.
+estado **público** y su historia. Código: `../punku/punku/modelos.py`,
+`../punku/punku/mesa_virtual.py` (puras y base), `../punku/punku/cargo_pdf.py`,
+`../punku/punku/api_mesa_publica.py` (pública), `../punku/punku/api_mesa_virtual.py` (equipo),
+`../punku/web/src/paginas/MesaVirtual.tsx`, `../punku/web/src/componentes/mesa/`,
+`../punku/web/src/componentes/entradas/PanelMesaVirtual.tsx` y `../punku/web/src/componentes/AdminMesaVirtual.tsx`.
+Pruebas puras: `backend/tests/test_mesa_virtual.py`, `../punku/web/pruebas/mesaVirtual.test.ts`.
 
 **Modelo.** `mesa_tramites` (uno por presentación: expediente correlativo `MPV-AAAA-NNNNN` para el
 cargo —candado consultivo por año, único (anio, correlativo)— y **código de seguimiento** aleatorio
@@ -1068,7 +1069,7 @@ registro de módulos (§33).
 responsable o a mano) → Observado (motivo y plazo) → subsanado: vuelve a En revisión → Derivado / En
 atención → Atendido (con la respuesta; la entrada pasa a respondida) | Archivado (la entrada se
 archiva). Archivar o reabrir desde Recibidos también lo dice en el seguimiento público
-(`_mesa_sigue` de `backend/app/api/entradas.py`). Atender con un documento propio exige que esté **firmado o enviado**
+(`_mesa_sigue` de `../punku/punku/api_entradas.py`). Atender con un documento propio exige que esté **firmado o enviado**
 (nunca un borrador): se entrega el firmado si lo hay, si no el PDF generado, se copia a la carpeta
 del trámite (lo entregado no cambia si se recompila) y queda vinculado como respuesta. Un recibido
 nuevo emite `entrada.registrada` (con `via` y `expediente`; avisa en el canal Recibidos como
@@ -1141,7 +1142,7 @@ cuadrada de 512 px con la receta de la foto de perfil, `perfil.recortar_foto`) y
 de textos: los «grupos» del equipo). `contactos_favoritos (usuario_id, persona_id)`: la estrella es de cada
 cuenta. Migración: `ALTER … IF NOT EXISTS` en `main.py`; la tabla nueva, `create_all`.
 `resumen_persona` añade `foto` (la versión: el nombre del archivo sin extensión, o vacío) y `etiquetas`;
-`GET /personas` añade `usuario_id` (la cuenta del SGDP de esa persona, para «Mensaje» y la regla de §27) y
+`GET /personas` añade `usuario_id` (la cuenta de Qillqa de esa persona, para «Mensaje» y la regla de §27) y
 `favorito` (de quien mira). `PersonaEntrada.etiquetas` es opcional: `None` no las toca, así el autocompletado,
 la ficha de la institución y cualquier otro consumidor que reenvía la ficha sin ellas no las borra.
 
@@ -1251,7 +1252,7 @@ corrigieron.
 - `index.html`, `sw.js` y `version.json` se escriben **al final y de golpe** (archivo temporal +
   `rename`), cuando todo lo que nombran ya está en disco. La carpeta `public/` la copia el mismo
   plugin (`copyPublicDir: false`), para que el `sw.js` crudo no aparezca antes de tiempo.
-- El `sw.js` publicado lleva delante `self.__SGDP_PUBLICACION__` (versión y lista exacta de
+- El `sw.js` publicado lleva delante `self.__QILLQA_PUBLICACION__` (versión y lista exacta de
   archivos): cada publicación es un service worker distinto que el navegador instala solo.
 - `vite preview` sirve `/assets/` desde el mismo plugin: brotli o gzip precomprimidos,
   `Cache-Control: immutable` (los nombres llevan hash) y **404** si el archivo no existe, nunca el
@@ -1260,7 +1261,7 @@ corrigieron.
 
 **El service worker** (`frontend/public/sw.js`, sección 1; la 2 es la del chat):
 
-- Al instalarse guarda la aplicación COMPLETA de su versión (`sgdp-app-<versión>`) con el
+- Al instalarse guarda la aplicación COMPLETA de su versión (`qillqa-app-<versión>`) con el
   `index.html` de esa versión, comprobado (debe nombrar la entrada de la versión). Si algo falla, no
   se activa y sigue la anterior. Lo que no cambió de una versión a otra se copia, no se baja.
 - `/assets/`: lo guardado (en cualquiera de las dos versiones conservadas) y, si no, la red; solo
@@ -1268,7 +1269,7 @@ corrigieron.
 - Navegación: la red con plazo de 4 s; si no contesta, contesta mal o tarda, el `index.html`
   guardado. El de la red no se guarda nunca encima (nombraría archivos que esa versión no tiene).
 - **La API no pasa por el worker.** Antes guardaba `/api` sin separar por cuenta; desde 2026-10-13
-  «lo último visto» lo lleva la aplicación (abajo) y el worker borra el caché viejo (`sgdp-v1-*`).
+  «lo último visto» lo lleva la aplicación (abajo) y el worker borra el caché viejo (`qillqa-v1-*`).
 
 **El arranque** (`frontend/index.html`, `src/arranque.ts`, `src/componentes/PantallaCarga.tsx`): la
 pantalla de carga (vino, la hoja y una barra dorada) se pinta antes del JS y continúa la de Android.
@@ -1288,7 +1289,7 @@ marco y la página abierta. Medido con Chrome sin ventana, perfil limpio y red �
 
 **«Lo último visto»** (`src/cachelecturas.ts`, usado por `src/api.ts`):
 
-- Cada GET de la API que sale bien se guarda en IndexedDB (`sgdp-sin-conexion`), con la cuenta en la
+- Cada GET de la API que sale bien se guarda en IndexedDB (`qillqa-sin-conexion`), con la cuenta en la
   clave. Sin red, con 5xx del proxy (`servidorCaido()`) o si el servidor tarda más de 6 s y hay
   copia, la pantalla muestra la copia; sin copia, una lectura no espera más de 45 s.
 - Una franja en el marco (`FranjaSinConexion`) dice «Sin conexión · mostrando lo guardado a las
@@ -1303,7 +1304,7 @@ marco y la página abierta. Medido con Chrome sin ventana, perfil limpio y red �
   el pulso, tokens, sesiones, claves ni accesos, ni los sondeos incrementales del chat. Límite de
   600 lecturas de hasta 3 MB; al pasarse, se va lo usado hace más tiempo.
 - **Cuentas:** al usar el equipo con otra cuenta se borra lo de las demás; al cerrar sesión (y al
-  abrir sin sesión) se borra todo. Las copias de antes (`sgdp_lectura:*` en localStorage) se retiran.
+  abrir sin sesión) se borra todo. Las copias de antes (`qillqa_lectura:*` en localStorage) se retiran.
 
 **Escribir sin red.** La cola de `src/sinconexion.ts` admite, además de los guardados del editor, los
 mensajes del chat (POST, en orden, cada uno el suyo; se ven «En espera» en la conversación). Cada
@@ -1333,13 +1334,13 @@ funcionar»; «los documentos sincronizados sin duplicar espacio»):
   (`recordarTareas`/`tareaVista` de `tareas/datos.ts`).
 - *Nada se pierde al subir* (`destinoDe`): 401/428 detienen la subida y conservan la cola (antes un 401
   la descartaba); el guardado de un documento rechazado (409, 403, 422…) se aparta para «Cargar mis
-  cambios»; cualquier otro rechazo va a «No enviados» (`sgdp_no_enviados`, por cuenta, con su texto y
+  cambios»; cualquier otro rechazo va a «No enviados» (`qillqa_no_enviados`, por cuenta, con su texto y
   el motivo del servidor; «Ver» en la línea de aviso, con Copiar y Descartar). El proxy sin API (500
   sin `server: uvicorn`) detiene la subida, no rechaza.
 - *Lo que exige el servidor* (`alvolver.ts`, `AvisoAlVolver.tsx`): numerar, cambiar de estado, compilar
   y subir el firmado (o un archivo: `subirArchivo` traduce el fallo de red y el 5xx del proxy a 503
   `sin_servidor`, «Subir archivos necesita el servidor…»). Se explica en una línea y se ofrece
-  «Hacerlo al volver»: un recordatorio por cuenta (`sgdp_al_volver`, uno por tipo y ruta) que, con
+  «Hacerlo al volver»: un recordatorio por cuenta (`qillqa_al_volver`, uno por tipo y ruta) que, con
   servidor, sale bajo la barra con «Hacer ahora». Numerar abre `/documentos/{id}?al_volver=numerar` y
   el editor empieza la numeración (la revisión de copias sigue pidiendo la confirmación de la
   persona: nada irreversible ocurre solo). No se encola a ciegas: el número oficial es único.
@@ -1347,7 +1348,7 @@ funcionar»; «los documentos sincronizados sin duplicar espacio»):
 **Carpeta sincronizada** (`sync/carpetaLocal.ts`, `componentes/PermisoCarpeta.tsx`): la página
 Sincronizar (`sync/sincronizador.ts`) baja PDF, firmados, adjuntos y, desde 2026-10-18, los PDF de
 los recibidos (`Recibidos/<AAAA-MM>/…`, `servicios/sync.py::_recibidos`, url `/api/entradas/{id}/pdf`).
-Al terminar deja en IndexedDB (`sgdp_sync`, clave `mapa`) el mapa «ruta de la API → ruta en la carpeta
+Al terminar deja en IndexedDB (`qillqa_sync`, clave `mapa`) el mapa «ruta de la API → ruta en la carpeta
 y versión» armado con el mismo manifiesto, de la cuenta que sincronizó, y borra de «lo último visto»
 las copias de esos archivos. Desde entonces:
 
@@ -1377,7 +1378,7 @@ en Chrome o Edge de computadora (File System Access API; no en Android).
 (tipo `crear`; «Hacer ahora» abre `/documentos?nuevo=1&tipo=<tipo>` y la bandeja crea el documento). Un
 documento abierto antes se edita sin red y su guardado espera en la cola (también el que se hacía al
 SALIR de un borrador, que antes se perdía en silencio: `encolarSalida`). Cuando el guardado de un
-documento sube, `conciliarRespaldo` compara el respaldo local `sgdp_respaldo_<id>` con lo subido: igual,
+documento sube, `conciliarRespaldo` compara el respaldo local `qillqa_respaldo_<id>` con lo subido: igual,
 se retira; con algo más nuevo, toma la `version` que devolvió el servidor para que el editor lo ofrezca
 al abrir (antes se descartaba por «hay una versión más reciente» aunque su contenido fuera el que subió;
 regla pura `respaldoTrasSubir`, prueba en `pruebas/sinconexion.test.ts`).
@@ -1533,7 +1534,7 @@ aparte, contra su propio importe recibido.
   que la web muestra como pestañas por persona y «+ Nombre». La movilidad es compartida en los dos modos.
 
 **El documento.** Tipo nuevo del marco, `rendicion-viaticos` (clase delgada + estructura + plantilla de
-test; `marco_documental/docs/decisiones.md`): Anexo N.° 3, Formato 02-VN, y Anexo N.° 4, Formato 03-VN,
+test; `../qillqasqa/marco_documental/docs/decisiones.md`): Anexo N.° 3, Formato 02-VN, y Anexo N.° 4, Formato 03-VN,
 en el orden y con el texto del formato de referencia, sin membrete ni marca de agua ni sello (son
 formatos de la institución, como el Word), con la directiva en la cabecera y su procedencia y el folio en
 el pie. La unidad sale del perfil (`despacho del \meta{cargo} \meta{autor}`) salvo que la rendición diga
@@ -1601,13 +1602,13 @@ edita (y la movilidad de su comisión queda fija). Observada, se subsana en 72 h
 
 **Web**: módulo «Rendición de cuentas» (`navegacion.ts`, `/rendiciones`), lista en tarjetas y una
 rendición por pasos (`/rendiciones/:id`: Datos, Comprobantes, Movilidad, Revisión, Documento;
-`frontend/src/componentes/rendicion/`); desde la semana, la opción «Rendición» abre la suya (o, para el
+`../yupay/web/src/componentes/rendicion/`); desde la semana, la opción «Rendición» abre la suya (o, para el
 encargado, la primera que hizo) o la crea. Pestañas por persona de la comisión (modo encargado). El formulario
 del comprobante muestra la foto o el PDF a la DERECHA en escritorio (≥ 900 px; en el celular, debajo), como el
 visor del editor y el detalle de un recibido. **Calculadora** en hoja inferior (`componentes/Calculadora.tsx`,
-la cuenta en `calculadora.ts` sin `eval`, `pruebas/calculadora.test.ts`): desde la cabecera y desde cada campo de
+la cuenta en `calculadora.ts` sin `eval`, `../yupay/web/pruebas/calculadora.test.ts`): desde la cabecera y desde cada campo de
 importe (`rendicion/CampoImporte.tsx`), con «Usar S/ …». Lógica pura de la web en `componentes/rendicion/modelo.ts`
-(`pruebas/rendicion.test.ts`: `textoPlan`, `lineasParametros`, `textoRecibido`…). Los cambios compartidos de la
+(`../yupay/web/pruebas/rendicion.test.ts`: `textoPlan`, `lineasParametros`, `textoRecibido`…). Los cambios compartidos de la
 interfaz (2026-10-18): `ElegirEntrada` (la ventana «¿Cómo quiere empezar?» de todos los módulos: subtítulo, una
 línea por opción, «más rápido» en la de la IA; desde la segunda vuelta, en dos pasos; mismas props) y el campo
 «Hora» de todo el sistema (`theme.ts`, `MuiInputBase`: ancho mínimo y el reloj fuera del texto).
@@ -1721,7 +1722,7 @@ celular, correo y cargo), marca `datos_completos_en`. En Administración, `pedir
 o los da por hechos.
 
 **Compartir el acceso** (`frontend/src/acceso.ts`, puro; `componentes/admin/CompartirAcceso.tsx`;
-`GET /api/admin/enlace` da `SGDP_URL_PUBLICA`): el mensaje se arma en la web con la cuenta, el enlace y
+`GET /api/admin/enlace` da `QILLQA_URL_PUBLICA`): el mensaje se arma en la web con la cuenta, el enlace y
 la contraseña temporal recién entregada (al crear o restablecer) o generada en la ventana con
 `POST /api/admin/usuarios/{id}/clave`. Pruebas: `frontend/pruebas/acceso.test.ts`.
 
@@ -1737,10 +1738,10 @@ copia la dirección y el título de adentro a la ventana de afuera. Pruebas: `fr
 
 (2026-10-18; pedidos de Edison, decisión en `docs/decisiones.md` §Doce mejoras, puntos 1 y 9.)
 
-**Documentos desde un Word** (`backend/app/servicios/importar_word_documentos.py`, `POST
-/api/documentos/importar-word`, `frontend/src/componentes/CargarWordDocumentos.tsx`): fase 0 de
+**Documentos desde un Word** (`../qillqasqa/qillqasqa/servicios/importar_word_documentos.py`, `POST
+/api/documentos/importar-word`, `../qillqasqa/web/src/componentes/CargarWordDocumentos.tsx`): fase 0 de
 `docs/plataforma/formato-word.md`. Un `.docx` se lee con el único lector de Word del sistema
-(`scripts/importar_proyecto_ley.py` por `importar_word.lector()`: párrafos, numeración materializada,
+(`../qillqasqa/scripts/importar_proyecto_ley.py` por `importar_word.lector()`: párrafos, numeración materializada,
 notas al pie como «⟦id⟧», tablas) y se parte en documentos por su encabezado (`partir`: «OFICIO N.° …»,
 «CARTA …», «MEMORANDO …»); de cada trozo `leer_campos` saca por patrones lugar y fecha, tratamiento,
 destinatario, cargo e institución, asunto y referencia (los extractores de los recibidos), anexo, copias
@@ -1748,11 +1749,11 @@ e iniciales, y el cuerpo —de «Presente.-» (saltando los rótulos y sus conti
 como nodos del editor con sus notas en su lugar. Lo que no se reconoce queda vacío y se avisa; nada se
 adivina. El archivo espera una hora con un `token` (carpeta temporal del sistema); «Crear» hace un
 borrador por índice elegido con `_nuevo_borrador` (lo mismo que `POST /api/documentos`: lugar, fecha,
-formato predeterminado y copias por regla, y encima lo leído), `origen='sgdp'`, bitácora «desde un
+formato predeterminado y copias por regla, y encima lo leído), `origen='qillqa'`, bitácora «desde un
 Word». Cada documento sigue el trámite de siempre; aquí no se numera. Pruebas puras:
-`backend/tests/test_importar_word_documentos.py`.
+`../qillqasqa/tests/test_importar_word_documentos.py`.
 
-**Notas de sustento normativo** (`backend/app/servicios/notas_normativas.py`, `GET
+**Notas de sustento normativo** (`../qillqasqa/qillqasqa/servicios/notas_normativas.py`, `GET
 /api/documentos/{id}/notas-sugeridas`): un catálogo de notas con dónde aplican (tipos y una señal en el
 asunto o el cuerpo), cómo se reconoce que ya están, el texto fiel a la edición oficial y su fuente en la
 biblioteca (`calibre_id` del archivo y clave de cita de Zotero: N 9.6). Antes de ofrecer una nota se
@@ -1768,7 +1769,7 @@ un **ajuste** (Edison, 2026-10-19): `ajustes.notas_normativas` {clave → tipos}
 (Edison: «solo en oficios que piden información»).
 
 **Formato Word, el espacio de trabajo** (fase 2, aprobada y construida el 2026-10-19;
-`frontend/src/paginas/FormatoWord.tsx`, `frontend/src/componentes/word/`): la segunda modalidad de
+`../qillqasqa/web/src/paginas/FormatoWord.tsx`, `../qillqasqa/web/src/componentes/word/`): la segunda modalidad de
 Gestión documental («Nuevo documento → Formato Word», ruta `/documentos/word`). No es otro editor ni otra
 composición: cada **sección** del espacio es un documento real (`SeccionWord`), con el editor TipTap del
 formulario (`extensionesDocumento`) y su guardado (`PUT` con `version_base`; 409 → `guardarApartado` y
@@ -1779,17 +1780,17 @@ hoja sí ubica —tratamiento, cargo, Adj.— se muestran; `fmt_*` y `anexos` no
 insertar (`BarraFormato`) y el selector de estilo de párrafo actúan sobre la sección activa (la que tiene
 el foco); el **panel de estructura** (`PanelEstructura`) lista las secciones (asunto, estado, «sin
 guardar») y las notas al pie de la activa (un toque las selecciona y abre su editor por el evento
-`sgdp-nota`). «Añadir»: documento nuevo (`POST /api/documentos`), «Desde un Word» (fase 0), «Pegar el
+`qillqa-nota`). «Añadir»: documento nuevo (`POST /api/documentos`), «Desde un Word» (fase 0), «Pegar el
 resultado de un prompt» (`PegarDocumento` → se crea el documento y la sección aplica campos y cuerpo al
 cargar) y «Un borrador que ya existe». El espacio de cada cuenta (ids y activo) vive en
 `ajustes` como `espacio_word:<usuario_id>` (`GET/PUT /api/ajustes/espacio-word`, `api/ajustes.py`). Solo
-se edita un borrador `sgdp` sin número y sin firma en curso; lo demás se ve y manda al formulario
+se edita un borrador `qillqa` sin número y sin firma en curso; lo demás se ve y manda al formulario
 («Formulario» en cada franja), donde siguen numeración, firma, anexos, formato y vista PDF. Celular: hoja
 a todo el ancho con márgenes en proporción, estructura en hoja inferior. Pruebas puras:
-`frontend/pruebas/word.test.ts`.
+`../qillqasqa/web/pruebas/word.test.ts`.
 
 **Un editor para todos los módulos** (2026-10-19, Edison: «un editor documental integrado, potente y
-reutilizable en todo el SGDP»): la decisión y la matriz frente a Google Docs están en
+reutilizable en todo Qillqa»): la decisión y la matriz frente a Google Docs están en
 `docs/plataforma/formato-word.md` §«Editor documental integrado». En código: `useEditorWord` (local o
 Yjs: `doc:<id>:<gen>` y `pl:<pid>:<parte>:<gen>`, con Collaboration y cursores), `SeccionParte` (una
 parte de un proyecto de ley: `PUT /secciones/{clave}` con `version_base` y `generacion`, versiones y
@@ -1801,7 +1802,7 @@ formulario desde la franja de cada sección. Lo que llega por Yjs no ensucia ni 
 documentos y proyectos; notas al pie numeradas al cierre porque python-docx no escribe notas nativas).
 
 **Control de cambios** (2026-10-19, Edison: «modo sugerir: inserciones y supresiones por autor, aceptar
-o rechazar»; `frontend/src/extensiones/ControlCambios.ts`, parte pura en `cambios.ts`): dos marcas del
+o rechazar»; `../qillqasqa/web/src/extensiones/ControlCambios.ts`, parte pura en `cambios.ts`): dos marcas del
 esquema, `insercion` y `supresion` (`autor`, `en`), en las dos listas de `esquema.ts` (formulario,
 Proyectos, Formato Word y el servidor de texto compartido las conocen; viajan por Yjs como cualquier
 marca). Con «Sugerir» encendido (`BarraFormato`, por pestaña en `sessionStorage`), el plugin convierte
@@ -1836,7 +1837,7 @@ reiniciar el servidor de texto compartido y recargar las pestañas**: `y-prosemi
 `Y.Text` con una marca que su esquema no conoce, BORRA ese tramo del documento compartido (el `catch` de
 `createTextNodesFromYText`), no solo la marca; se comprobó el 2026-10-19 con el servidor de prueba viejo.
 
-**Comentarios anclados a un tramo** (2026-10-19, fase 5; `frontend/src/extensiones/Comentario.ts`, parte
+**Comentarios anclados a un tramo** (2026-10-19, fase 5; `../qillqasqa/web/src/extensiones/Comentario.ts`, parte
 pura `anclas.ts`): una marca `comentario` con el `id` del comentario sobre el tramo elegido; el
 comentario vive donde siempre (los del documento en `comentarios`, con `seccion='cuerpo'`; los del
 proyecto en la Conversación, `ProyectoActividad`), y el alta devuelve su `id` para anclarlo
@@ -1846,7 +1847,7 @@ toca su tramo en la hoja (`EVENTO_COMENTARIO` de `PaginaWord`) y retira la marca
 (`desanclarComentario`). El PDF y el Word no imprimen la marca.
 
 **La barra con la forma de Google Docs** (2026-10-19, Edison: «que se parezca a la imagen de Google Docs
-que mandé»; `frontend/src/componentes/word/BarraWord.tsx`, modelo puro en `menus.ts`): el Formato Word
+que mandé»; `../qillqasqa/web/src/componentes/word/BarraWord.tsx`, modelo puro en `menus.ts`): el Formato Word
 lleva los tres pisos de Google Docs sobre el mismo editor. (1) El título del documento o la parte
 activa (icono, nombre, estado, «Guardado» y palabras) con historial, comentarios y «Compartir» (copia el
 enlace del documento o del proyecto). (2) Los menús «Archivo · Editar · Ver · Insertar · Formato ·
@@ -1856,7 +1857,7 @@ lo demás se arma en la barra sobre el editor activo; los submenús se abren den
 («‹ Volver»), que funciona igual con el dedo; «Buscar en los menús» (la lupa, Alt+/) recorre ese árbol
 (`buscarEnMenus`). (3) La píldora de herramientas en el orden de Google Docs: deshacer, rehacer,
 imprimir (el PDF del sistema), ortografía (el corrector del navegador; se apaga y se recuerda,
-`sgdp_ortografia`), copiar formato, zoom (50–200 %), estilo de párrafo, letra (la fija la plantilla: solo
+`qillqa_ortografia`), copiar formato, zoom (50–200 %), estilo de párrafo, letra (la fija la plantilla: solo
 se muestra), tamaño −/+ e interlineado (los campos `fmt_tamano`/`fmt_interlineado` del documento, por
 `ManejadorSeccion.ponerCampo`; en un proyecto la plantilla manda), negrita, cursiva, subrayado, color de
 texto, resaltador, enlace, comentario (enfoca el campo del panel, `ID_COMENTARIO_NUEVO`), imagen (la
@@ -1868,21 +1869,21 @@ el título y los menús. La lógica con estado (pincel, nota al pie, buscar, cam
 Word) es `useHerramientasEditor` en `BarraFormato.tsx`: las dos barras pintan botones distintos sobre los
 mismos comandos y diálogos.
 
-**Color de texto** (`frontend/src/extensiones/ColorTexto.ts`): una marca `colorTexto` con un hex de la
+**Color de texto** (`../qillqasqa/web/src/extensiones/ColorTexto.ts`): una marca `colorTexto` con un hex de la
 paleta cerrada de la identidad (vino, dorado, grises, rojo, azul, verde); a diferencia del resaltado,
-**sale al PDF** (`\textcolor[HTML]{…}`, xcolor ya va en `marco_documental/core/config/colores.tex`; el
+**sale al PDF** (`\textcolor[HTML]{…}`, xcolor ya va en `../qillqasqa/marco_documental/core/config/colores.tex`; el
 serializador solo acepta seis hexadecimales) y al Word (`font.color`). El color que trae un pegado de
 Word se ignora, como todo estilo ajeno.
 
 ## 35. Visor rápido de la bandeja
 
-Tocar en la bandeja un documento de después de la firma (`abreVisorRapido` de `frontend/src/visorRapido.ts`) abre
-`frontend/src/componentes/VisorRapido.tsx` sin salir de `/documentos`: la imagen de la primera página del firmado (o
+Tocar en la bandeja un documento de después de la firma (`abreVisorRapido` de `../qillqasqa/web/src/visorRapido.ts`) abre
+`../qillqasqa/web/src/componentes/VisorRapido.tsx` sin salir de `/documentos`: la imagen de la primera página del firmado (o
 del PDF del sistema), dos acciones, la fila de archivos y el desplazamiento por la lista filtrada
 (decisión del 2026-10-19 en `docs/decisiones.md`). Piezas:
 
 - **Imagen de página**: `GET /api/documentos/{id}/imagen?pagina=&archivo=documento|expediente|<adjunto_id>&ancho=&formato=png|jpeg`
-  (`imagen_de_pagina` de `backend/app/api/adjuntos.py` → `imagen_de_pagina` de `backend/app/servicios/imagen.py`, pdftocairo a 150 ppp
+  (`imagen_de_pagina` de `../qillqasqa/qillqasqa/api/adjuntos.py` → `imagen_de_pagina` de `../qillqasqa/qillqasqa/servicios/imagen.py`, pdftocairo a 150 ppp
   o a la resolución que deja la A4 en `ancho` px; cabecera `X-Total-Paginas`). El navegador la pide con la sesión
   (`traerPaginaComoImagen` de `frontend/src/copiar.ts`, la misma de «Copiar como imagen») y la guarda en memoria (hasta 40 por
   sesión; la URL de blob se libera al desalojar). Un adjunto que ya es imagen (un cargo en JPG) se pide tal cual.
@@ -1892,14 +1893,14 @@ del PDF del sistema), dos acciones, la fila de archivos y el desplazamiento por 
   `Cache-Control: private, no-cache, must-revalidate` hace que el navegador guarde y pregunte siempre, así que un PDF
   recompilado (otra fecha) nunca se ve viejo. La página rasterizada se guarda además en un **caché en disco** con la
   clave como nombre (`leer_cache`/`guardar_cache`): `config.raiz_cache_imagenes()` = `IMAGENES_CACHE_DIR` o
-  `$XDG_CACHE_HOME/sgdp/imagenes` (`~/.cache/sgdp/imagenes`; la instancia de prueba, `~/.local/state/sgdp-prueba/cache-imagenes`),
+  `$XDG_CACHE_HOME/qillqa/imagenes` (`~/.cache/qillqa/imagenes`; la instancia de prueba, `~/.local/state/qillqa-prueba/cache-imagenes`),
   nunca dentro del archivo documental ni del repo. Es desechable: **se vacía borrando la carpeta** (se recrea sola) y se
   apaga con `IMAGENES_CACHE_MB=0`; `podar` borra lo más viejo que `IMAGENES_CACHE_DIAS` (30) y lo menos usado por encima
   de `IMAGENES_CACHE_MB` (200), como mucho una vez cada cinco minutos por proceso, tras guardar una imagen nueva. El visor
   pide `formato=jpeg` (`rutaImagen(…, 'jpeg')`); «Copiar imagen» y `BotonCopiar` siguen pidiendo PNG, lo único que admite
   el portapapeles. Cifras en `docs/decisiones.md` (visor rápido, punto 10).
 - **Secuencia y precarga**: `secuencia`, `vecinos` y `aPrecargar` de `visorRapido.ts` sobre `visibles` de
-  `frontend/src/paginas/Bandeja.tsx`. Al mostrarse una página se piden la siguiente del mismo archivo, la primera del
+  `../qillqasqa/web/src/paginas/Bandeja.tsx`. Al mostrarse una página se piden la siguiente del mismo archivo, la primera del
   documento siguiente y la del anterior (con el `firmado_id` que ya trae el listado, sin esperar
   `GET /adjuntos`) y el PDF del archivo actual, para «Compartir».
 - **Archivos**: `GET /api/documentos/{id}/adjuntos` → `archivosDe` (firmado, documento, cargos,
@@ -1907,7 +1908,7 @@ del PDF del sistema), dos acciones, la fila de archivos y el desplazamiento por 
 - **Gestos y teclas**: `interpretarGesto` (de lado = documento; de arriba abajo = página; diagonal o
   corto = nada) e `interpretarTecla`; eventos de puntero con `touch-action: none` y captura del puntero;
   doble toque = zoom 2,5× con arrastre.
-- **Historial**: una entrada `{sgdpVisorRapido: true}` al abrir; `popstate` cierra; «Abrir documento»
+- **Historial**: una entrada `{qillqaVisorRapido: true}` al abrir; `popstate` cierra; «Abrir documento»
   navega con `replace`.
 - **Pantalla fija**: el papel del diálogo lleva `touch-action: none` y `overscroll-behavior: none` (y se
   anula `gesturestart` mientras está abierto), así que ni el pellizco del sistema ni el rebote mueven la
@@ -1919,30 +1920,30 @@ del PDF del sistema), dos acciones, la fila de archivos y el desplazamiento por 
   miniatura (`&ancho=160`) al entrar en la vista; el pie es una cuadrícula `minmax(0, 1fr)` para que la
   tira nunca ensanche la barra de acciones.
 - **Dónde se engancha**: `tocar` de `Bandeja.tsx` (fila de la tabla, tarjeta del celular y, por
-  `Ficha` de `frontend/src/componentes/VistasBandeja.tsx`, las vistas por etapa, seguimiento, institución y cronología); `abrir` sigue
-  siendo la ficha completa (⋮, pulsación larga de `frontend/src/pulsacionLarga.ts`, ícono ↗, botón del visor).
+  `Ficha` de `../qillqasqa/web/src/componentes/VistasBandeja.tsx`, las vistas por etapa, seguimiento, institución y cronología); `abrir` sigue
+  siendo la ficha completa (⋮, pulsación larga de `../qillqasqa/web/src/pulsacionLarga.ts`, ícono ↗, botón del visor).
 
-Pruebas puras: `frontend/pruebas/visorRapido.test.ts`.
+Pruebas puras: `../qillqasqa/web/pruebas/visorRapido.test.ts`.
 
 ## 36. Partes editables de un proyecto de ley
 
 Desde el 2026-10-19 las partes de cada proyecto se añaden, quitan, renombran y reordenan (decisión
 «Partes editables en Proyectos de ley» en `docs/decisiones.md`). El modelo ya era por proyecto
 (`proyecto_secciones`: clave, título, grupo, orden, obligatoria); la plantilla
-(`backend/app/servicios/proyectos_plantillas.py`) solo dice con cuáles nace.
+(`../qillqasqa/qillqasqa/servicios/proyectos_plantillas.py`) solo dice con cuáles nace.
 
 | pieza | dónde | qué hace |
 |---|---|---|
-| lógica pura | `backend/app/servicios/proyectos_partes.py` | clave de una parte nueva (slug del título, única, nunca una de la plantilla), partes restaurables, orden normalizado (grupos sin cruzar, fijas de la fórmula en el orden oficial), dónde se inserta una nueva |
-| API | `backend/app/api/proyectos.py` | `GET /{pid}/partes-disponibles`, `POST /{pid}/secciones` (nueva o `plantilla`), `DELETE /{pid}/secciones/{clave}?confirmar=` (409 `parte_con_texto`), `PUT /{pid}/secciones-orden`; `PATCH …/secciones/{clave}` renombra todo menos `titulo` |
-| generador | `backend/app/latex/proyecto_ley.py` | compone en el orden del proyecto: la fórmula legal con `_plan_formula` (fijas en orden oficial, nuevas entre ellas), la exposición en el orden del panel con marcadores `\componente` solo hacia adelante (`\proyectoenavance` si alguno se salta), complementos nuevos tras el cuadro comparativo |
-| web | `frontend/src/componentes/PartesProyecto.tsx` (`usePartesProyecto`), `frontend/src/partesProyecto.ts` | un gancho para la pestaña Texto y el Formato Word: menú «Añadir», ⋮ (renombrar, subir, bajar, quitar) y arrastre; `PanelEstructura` pinta el ⋮ y el arrastre |
+| lógica pura | `../qillqasqa/qillqasqa/servicios/proyectos_partes.py` | clave de una parte nueva (slug del título, única, nunca una de la plantilla), partes restaurables, orden normalizado (grupos sin cruzar, fijas de la fórmula en el orden oficial), dónde se inserta una nueva |
+| API | `../qillqasqa/qillqasqa/api/proyectos.py` | `GET /{pid}/partes-disponibles`, `POST /{pid}/secciones` (nueva o `plantilla`), `DELETE /{pid}/secciones/{clave}?confirmar=` (409 `parte_con_texto`), `PUT /{pid}/secciones-orden`; `PATCH …/secciones/{clave}` renombra todo menos `titulo` |
+| generador | `../qillqasqa/qillqasqa/latex/proyecto_ley.py` | compone en el orden del proyecto: la fórmula legal con `_plan_formula` (fijas en orden oficial, nuevas entre ellas), la exposición en el orden del panel con marcadores `\componente` solo hacia adelante (`\proyectoenavance` si alguno se salta), complementos nuevos tras el cuadro comparativo |
+| web | `../qillqasqa/web/src/componentes/PartesProyecto.tsx` (`usePartesProyecto`), `../qillqasqa/web/src/partesProyecto.ts` | un gancho para la pestaña Texto y el Formato Word: menú «Añadir», ⋮ (renombrar, subir, bajar, quitar) y arrastre; `PanelEstructura` pinta el ⋮ y el arrastre |
 
 Invariantes: la clave no cambia (texto compartido `pl:<pid>:<clave>:<gen>`, relaciones `seccion:<clave>`,
 actividad, tareas); al quitar se borran las versiones (FK en cascada) y el estado Yjs, y las citas
 dejan de ser fuentes; `ver` devuelve por parte `id` (identidad estable para la web), `fija` y
-`de_plantilla`. Pruebas: `backend/tests/test_proyectos_partes.py`, `backend/tests/test_proyecto_ley.py`
-(orden del panel y partes nuevas), `frontend/pruebas/partesProyecto.test.ts`.
+`de_plantilla`. Pruebas: `../qillqasqa/tests/test_proyectos_partes.py`, `../qillqasqa/tests/test_proyecto_ley.py`
+(orden del panel y partes nuevas), `../qillqasqa/web/pruebas/partesProyecto.test.ts`.
 
 ## 37. Estadísticas de uso y presencia que se apaga
 

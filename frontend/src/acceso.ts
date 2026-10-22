@@ -21,10 +21,10 @@ export interface DatosAcceso {
 /** Alfabeto sin letras ni cifras que se confundan (0/O, 1/l/I). */
 const ALFABETO = 'abcdefghjkmnpqrstuvwxyz23456789'
 
-/** Una contraseña temporal legible: «sgdp-xxxx-xxxx» (sirve una sola vez). */
+/** Una contraseña temporal legible: «qillqa-xxxx-xxxx» (sirve una sola vez). */
 export function claveTemporal(azar: (n: number) => number = (n) => crypto.getRandomValues(new Uint32Array(1))[0] % n): string {
   const tramo = () => Array.from({ length: 4 }, () => ALFABETO[azar(ALFABETO.length)]).join('')
-  return `sgdp-${tramo()}-${tramo()}`
+  return `qillqa-${tramo()}-${tramo()}`
 }
 
 export function mensajeAcceso(d: DatosAcceso): string {

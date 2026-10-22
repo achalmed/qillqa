@@ -4,8 +4,8 @@ normas y reconocimiento del oficio que presenta un informe SR. Pruebas puras (si
 
 import pytest
 
-from app.latex.serializador import cuerpo_a_latex
-from app.servicios import referencias as ref
+from qillqasqa.latex.serializador import cuerpo_a_latex
+from qillqasqa.servicios import referencias as ref
 
 
 def _doc(*inline):
@@ -227,4 +227,6 @@ def test_unica_semana_del_mes_es_confiable():
     ("", ""),
 ])
 def test_cita_documento_solo_denominacion_y_numero(texto, esperado):
-    assert ref.cita_documento(texto) == esperado
+    from app.servicios.pegado.validar import cita_documento
+
+    assert cita_documento(texto) == esperado

@@ -1,3 +1,5 @@
+// Primero: los módulos aislados (Tiqsi web) piden su anfitrión al importarse (fase 10.2b).
+import './anfitrionWeb'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ThemeProvider } from '@mui/material/styles'

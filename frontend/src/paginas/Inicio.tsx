@@ -12,9 +12,8 @@
  * mano del pulgar.
  */
 import FechasProximas from '../componentes/FechasProximas'
-import ResumenRecibidos from '../componentes/entradas/ResumenRecibidos'
-import type { ResumenEntradas } from '../componentes/entradas/modelo'
-import PanelHoy from '../componentes/tareas/PanelHoy'
+import { ResumenRecibidos, type ResumenEntradas } from '@qillqa/punku/publico'
+import { PanelHoy } from '@qillqa/minka/publico'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import Typography from '@mui/material/Typography'
@@ -189,7 +188,7 @@ export default function Inicio() {
     if (moduloActivo('chat')) api<{ total: number }>('/api/chat/no-leidos').then((r) => setChatSinLeer(r.total)).catch(() => {})
     if (moduloActivo('recibidos')) api<ResumenEntradas>('/api/entradas/resumen').then(setRecibidos).catch(() => {})
   }, [])
-  const nombre = (localStorage.getItem('sgdp_nombre') ?? '').split(' ')[0]
+  const nombre = (localStorage.getItem('qillqa_nombre') ?? '').split(' ')[0]
   const hora = new Date().getHours()
   const saludo = hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches'
   const datos: Partial<Record<IdModulo, string | undefined>> = {

@@ -83,7 +83,7 @@ NO es el problema; revisar el balance del grupo `{\small}`.
 ## 3. Agenda / listas con literales a) b) c)
 
 El `enumerate` anidado del despacho sale numérico (`\arabic*.`, ver
-`marco_documental/core/config/listas.tex`). Para una **agenda con letras** a) b) c) —como pide
+`../qillqasqa/marco_documental/core/config/listas.tex`). Para una **agenda con letras** a) b) c) —como pide
 el Word— se sobreescribe por instancia con `enumitem`:
 
 ```latex
@@ -106,6 +106,6 @@ el Word— se sobreescribe por instancia con `enumitem`:
 **multipágina** (`fmt_multipagina=si`, donde la firma sigue al texto y puede
 caer alta en la última hoja), el generador **ignora `fmt_sello=fondo` y usa
 el sello COLGANTE** —omite `\sinsello`/`\selloalfondo`— para que NUNCA quede
-el hueco. Está en `backend/app/latex/generador.py` (`_preambulo_formato` y
+el hueco. Está en `../qillqasqa/qillqasqa/latex/generador.py` (`_preambulo_formato` y
 `_cierre_normativo`). Así el bug de la firma con hueco no se repite: sale bien
 solo, sin compactar a mano.

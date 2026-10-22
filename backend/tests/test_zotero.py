@@ -7,7 +7,7 @@ import sqlite3
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://x:y@127.0.0.1/z")
 os.environ.setdefault("JWT_SECRET", "prueba")
 
-from app.servicios import referencias as ref  # noqa: E402
+from qillqasqa.servicios import referencias as ref  # noqa: E402
 from app.servicios import zotero as z  # noqa: E402
 
 # Una obra como la devuelve GET /api/users/0/items/top?include=data,bib,citation&style=apa&locale=es-ES
@@ -57,7 +57,7 @@ def test_obra_de_la_api_local_usa_el_formato_de_zotero_y_el_archivo_de_calibre()
 def test_sin_bib_la_cita_es_del_respaldo_y_va_marcada():
     obra = {k: v for k, v in OBRA_API.items() if k not in ("bib", "citation", "links")}
     d = z.desde_api(obra)
-    assert d["formateado_por"] == "sgdp-respaldo"
+    assert d["formateado_por"] == "qillqa-respaldo"
     assert d["cita"] == "Cotler, J. y Grompone, R. (2000). El fujimorismo: ascenso y caída de un régimen autoritario. IEP."
     assert d["cita_corta"] == "(Cotler y Grompone, 2000)"
     assert d["calibre_id"] is None
@@ -131,7 +131,7 @@ def test_respaldo_lee_solo_obras_vivas_de_la_biblioteca_personal(tmp_path):
     assert libro["etiquetas"] == ["econometría"]
     assert libro["cita"] == "Wooldridge, J. M. (2010). Introducción a la econometría. Cengage."
     assert libro["cita_corta"] == "(Wooldridge, 2010)"
-    assert libro["formateado_por"] == "sgdp-respaldo" and libro["origen"] == "sqlite"
+    assert libro["formateado_por"] == "qillqa-respaldo" and libro["origen"] == "sqlite"
     ley = obras["LEY00001"]
     assert ley["titulo"].startswith("Ley de Demarcación") and ley["anio"] == "2002"
     assert ley["cita_corta"] == "(Congreso de la República, 2002)"

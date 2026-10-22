@@ -18,11 +18,7 @@ export type ModuloPdfJs = typeof PdfJs
  * en blanco. Edison 2026-10-01: «el diputado usa casi siempre el celular». En
  * esos navegadores la vista previa ofrece abrirlo en el visor completo (pdf.js).
  */
-export const pdfEnLinea = (): boolean => {
-  const n = navigator as Navigator & { pdfViewerEnabled?: boolean }
-  if (typeof n.pdfViewerEnabled === 'boolean') return n.pdfViewerEnabled
-  return !/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
-}
+export { pdfEnLinea } from '@qillqa/tiqsi/estilo'
 
 let cargando: Promise<ModuloPdfJs> | null = null
 

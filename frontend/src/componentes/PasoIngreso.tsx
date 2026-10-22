@@ -1,7 +1,7 @@
 /**
  * La carcasa de los pasos del PRIMER INGRESO (2026-10-18): elegir la contraseña (CambiarClave.tsx)
  * y confirmar los datos (Bienvenida.tsx). Una tarjeta al centro, sin menú, con «Paso 1 de 2» cuando
- * a la persona le tocan los dos. Cuántos le tocan lo anota el inicio de sesión (`sgdp_pasos_ingreso`).
+ * a la persona le tocan los dos. Cuántos le tocan lo anota el inicio de sesión (`qillqa_pasos_ingreso`).
  */
 import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
@@ -11,7 +11,7 @@ import Typography from '@mui/material/Typography'
 import { PALETA } from '../paleta'
 
 /** Cuántos pasos le tocan a quien acaba de entrar (1 o 2). */
-export const pasosDeIngreso = (): number => (localStorage.getItem('sgdp_pasos_ingreso') === '2' ? 2 : 1)
+export const pasosDeIngreso = (): number => (localStorage.getItem('qillqa_pasos_ingreso') === '2' ? 2 : 1)
 
 export default function PasoIngreso({
   icono,

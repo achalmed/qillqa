@@ -27,6 +27,7 @@ y, si el libro tiene DOI, se añade `https://doi.org/…` como manda APA 7.
 
 from __future__ import annotations
 
+import importlib.util
 import re
 import sqlite3
 import threading
@@ -191,9 +192,25 @@ def cita_corta(d: dict) -> str:
 
 
 # ---------------------------------------------------------------- la base
+def workspace() -> object | None:
+    """`core/env.py` del espacio de trabajo (las rutas de Calibre, Zotero y datafw), si Qillqa vive dentro de él; None
+    si no. Lo usan la biblioteca, Zotero y las fuentes enlazadas de un proyecto (antes en servicios/fuentes.py)."""
+    d = Path(__file__).resolve()
+    while d != d.parent and not (d / "core" / "env.py").exists():
+        d = d.parent
+    if not (d / "core" / "env.py").exists():
+        return None
+    try:
+        spec = importlib.util.spec_from_file_location("core_env", d / "core" / "env.py")
+        env = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(env)
+        return env
+    except Exception:
+        return None
+
+
 def _workspace_db() -> Path | None:
-    from app.servicios.fuentes import _workspace   # mismo resolutor que las fuentes enlazadas
-    env = _workspace()
+    env = workspace()
     return Path(env.CALIBRE_DB) if env else None
 
 
@@ -371,3 +388,28 @@ def buscar_en(libros: dict[int, dict], q: str, limite: int = LIMITE_DEFECTO) -> 
 def buscar(q: str, limite: int = LIMITE_DEFECTO) -> list[dict]:
     """Libros de la biblioteca que responden a `q` (vacío si la biblioteca no está)."""
     return buscar_en(_cache.obtener(), q, limite)
+
+
+# --- «biblioteca.v1»: la biblioteca y Zotero para quien los aprovecha (Gestión documental; Qillqasqa Q4c, 2026-10-21) --
+
+
+def _obra(key: str) -> dict | None:
+    from app.servicios import zotero
+
+    return zotero.obtener(key)
+
+
+def _buscar_obras(q: str, limite: int) -> list[dict]:
+    from app.servicios import zotero
+
+    return zotero.buscar(q, limite)
+
+
+def _biblioteca_v1():
+    from tiqsi import Superficie
+
+    return Superficie("biblioteca.v1", {"workspace": lambda: workspace, "libro": lambda: obtener, "obra": lambda: _obra,
+                                        "buscar_obras": lambda: _buscar_obras}, donde="servicios/biblioteca.py")
+
+
+BIBLIOTECA_V1 = _biblioteca_v1()

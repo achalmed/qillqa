@@ -17,7 +17,7 @@ from app.servicios import pegado  # noqa: E402
 from app.servicios.pegado import validar as v  # noqa: E402
 from app.servicios.pegado.asignar import con_anexos  # noqa: E402
 from app.servicios.pegado.comparar import aplicar, etiquetas_de  # noqa: E402
-from tests.test_entradas import AGENDA, COMUNICADO  # noqa: E402
+from tests.test_entradas_calendario import AGENDA, COMUNICADO  # noqa: E402  (textos de muestra; Punku tiene los suyos)
 
 RECIBIDO = """Aquí va el resultado del prompt:
 

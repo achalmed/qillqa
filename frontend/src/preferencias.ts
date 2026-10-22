@@ -11,7 +11,7 @@ import { limpiar, PREFERENCIAS_VACIAS as VACIAS, type Preferencias } from './mod
 
 export { MODALIDADES, limpiar, modalidadAlAbrir, type Modalidad, type Preferencias } from './modalidad'
 
-const CLAVE_LOCAL = 'sgdp_preferencias'
+const CLAVE_LOCAL = 'qillqa_preferencias'
 let cache: Preferencias | null = null
 let pendiente: Promise<Preferencias> | null = null
 

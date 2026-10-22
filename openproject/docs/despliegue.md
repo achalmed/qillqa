@@ -52,7 +52,7 @@ Otros equipos del despacho ──(WiFi/LAN)──▶  http://<host>:8080
 
 La suite declara el respaldo como timer de usuario `respaldo-openproject.timer` (02:00, `Persistent=true`,
 instalado en `~/.config/systemd/user/` en la Puerta P1 del programa, con copia al SSD si está montado). Su
-unidad trabaja en `%h/Documents/sgdp/openproject` y ejecuta `respaldar.sh --silencioso`:
+unidad trabaja en `%h/Documents/qillqa/openproject` y ejecuta `respaldar.sh --silencioso`:
 
 ```
 systemctl --user list-timers respaldo-openproject.timer
@@ -80,7 +80,7 @@ editar `docker-compose.yml`, y un respaldo de una serie nueva no vuelve a una an
   VPN, que este repo no configura.
 - **El `.env` de operaciones** contiene el secreto de sesión y el token de API: permisos `600`, fuera
   de git (`../.gitignore` ignora `.env` y `operaciones`).
-- **El token de API** que usa el SGDP es de una cuenta administradora (lo exige su integración); se
+- **El token de API** que usa Qillqa es de una cuenta administradora (lo exige su integración); se
   revoca en OpenProject, Mi cuenta → Tokens de acceso.
 
 Si la IP del equipo cambia (DHCP), edite `OPENPROJECT_HOST_NAME` en el `.env` y `./iniciar.sh`;

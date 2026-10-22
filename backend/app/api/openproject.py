@@ -67,7 +67,7 @@ async def mis_tareas(usuario: Usuario = Depends(usuario_actual), sesion: AsyncSe
             {"assignee": {"operator": "=", "values": [str(op_id)]}}, {"status": {"operator": "o", "values": []}},
             orden=[["dueDate", "asc"]], tope=100))
         clave_cf = cli.clave_campo(mapa.CAMPO_CLAVE)
-        tareas = [op.resumen_paquete(w) for w in paquetes if not (clave_cf and str(w.get(clave_cf) or "").startswith("sgdp:"))]
+        tareas = [op.resumen_paquete(w) for w in paquetes if not (clave_cf and mapa.es_propia(w.get(clave_cf)))]
         return {"activa": True, "vinculado": True, "tareas": tareas}
     except op.ErrorOP as e:
         _sin_conexion(e)
@@ -114,7 +114,7 @@ async def agenda(dias: int = 14, usuario: Usuario = Depends(usuario_actual), ses
 
 @router.get("/enlace")
 async def enlace(clave: str, usuario: Usuario = Depends(usuario_actual), sesion: AsyncSession = Depends(obtener_sesion)) -> dict:
-    """Dirección del reflejo en OpenProject de `sgdp:doc:12`, `sgdp:pl:3`…"""
+    """Dirección del reflejo en OpenProject de `qillqa:doc:12`, `qillqa:pl:3`…"""
     e = (await sesion.execute(select(OpEnlace).where(OpEnlace.clave == clave))).scalar_one_or_none()
     return {"activa": op.activa(), "url": op.url_wp(e.wp_id) if e and e.wp_id and op.activa() else ""}
 
@@ -151,13 +151,13 @@ async def estado(usuario: Usuario = Depends(solo_administrador), sesion: AsyncSe
         salida["version"] = await asyncio.to_thread(cli.version)
         cat = await asyncio.to_thread(cli.catalogo, True)
         salida["conexion"] = "ok"
-        sgdp = (await sesion.execute(select(Usuario).where(Usuario.activo.is_(True)).order_by(Usuario.nombre_completo))).scalars().all()
-        enlazados = mapa.usuarios_op([{"id": x.id, "email": x.email, "nombre_usuario": x.nombre_usuario} for x in sgdp], cat["usuarios"])
+        qillqa = (await sesion.execute(select(Usuario).where(Usuario.activo.is_(True)).order_by(Usuario.nombre_completo))).scalars().all()
+        enlazados = mapa.usuarios_op([{"id": x.id, "email": x.email, "nombre_usuario": x.nombre_usuario} for x in qillqa], cat["usuarios"])
         por_id = {x["id"]: x for x in cat["usuarios"]}
         salida["usuarios"] = [
             {"id": x.id, "nombre": x.nombre_completo, "usuario": x.nombre_usuario, "email": x.email,
              "op": (por_id.get(enlazados[x.id]) or {}).get("login", "") if x.id in enlazados else ""}
-            for x in sgdp
+            for x in qillqa
         ]
         # Proyectos de OpenProject que la integración necesita y la instancia no tiene.
         salida["faltan_en_op"] = [

@@ -7,7 +7,7 @@ nuevos = [
   # [nombre, cerrado?]
   ["Triage",        false],  # correo/solicitud recién capturada, sin analizar
   ["En revisión",   false],  # documento en revisión formal
-  ["Numerado",      false],  # documento con N° oficial (SGDP)
+  ["Numerado",      false],  # documento con N° oficial (Qillqa)
   ["En firma",      false],
   ["Enviado",       false],
   ["Recepcionado",  false],  # con cargo/constancia

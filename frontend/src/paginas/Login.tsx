@@ -56,24 +56,24 @@ export default function Login() {
         method: 'POST',
         body: JSON.stringify({ usuario: usuario.trim(), clave: clave.trim() }),
       })
-      localStorage.setItem('sgdp_token', datos.token)
-      localStorage.setItem('sgdp_usuario', usuario.trim())
-      localStorage.setItem('sgdp_nombre', datos.usuario.nombre)
-      localStorage.setItem('sgdp_rol', datos.usuario.rol)
+      localStorage.setItem('qillqa_token', datos.token)
+      localStorage.setItem('qillqa_usuario', usuario.trim())
+      localStorage.setItem('qillqa_nombre', datos.usuario.nombre)
+      localStorage.setItem('qillqa_rol', datos.usuario.rol)
       // Clave TEMPORAL (la puso el administrador y viajó por un mensaje): antes
       // de nada, la persona elige la suya. El servidor también lo exige, así
       // que esto solo evita el rebote feo de entrar y ser expulsado.
       // Datos al primer ingreso (2026-10-18): después de la contraseña (si es temporal), sus datos.
-      if (datos.usuario.debe_completar_datos) localStorage.setItem('sgdp_datos_pendientes', 'si')
-      else localStorage.removeItem('sgdp_datos_pendientes')
-      localStorage.setItem('sgdp_pasos_ingreso', datos.usuario.debe_cambiar_clave && datos.usuario.debe_completar_datos ? '2' : '1')
+      if (datos.usuario.debe_completar_datos) localStorage.setItem('qillqa_datos_pendientes', 'si')
+      else localStorage.removeItem('qillqa_datos_pendientes')
+      localStorage.setItem('qillqa_pasos_ingreso', datos.usuario.debe_cambiar_clave && datos.usuario.debe_completar_datos ? '2' : '1')
       if (datos.usuario.debe_cambiar_clave) {
-        localStorage.setItem('sgdp_clave_temporal', 'si')
+        localStorage.setItem('qillqa_clave_temporal', 'si')
         recordarClaveTemporal(clave.trim())
         navegar('/clave', { replace: true })
         return
       }
-      localStorage.removeItem('sgdp_clave_temporal')
+      localStorage.removeItem('qillqa_clave_temporal')
       navegar(datos.usuario.debe_completar_datos ? '/bienvenida' : '/', { replace: true })
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No se pudo iniciar sesión.')

@@ -5,7 +5,7 @@ El destinatario de un documento se guarda como texto (nombre, cargo, institució
 vínculo al directorio. Aquí se reconoce su institución y se busca su mesa de partes virtual:
 
 1. La PERSONA del directorio con ese nombre (nombre y dos apellidos al menos) → su institución.
-2. Si no, la institución nombrada en el texto (`entradas.cruzar_remitente`, el mismo cruce del
+2. Si no, la institución nombrada en el texto (`lectura.cruzar_remitente`, el mismo cruce del
    remitente de los recibidos).
 3. Si no, el CARGO de autoridad: «Alcalde Distrital de X» → «Municipalidad Distrital de X»,
    «Gobernador Regional de X» → «Gobierno Regional de X», «Ministro de X» → «Ministerio de X»,
@@ -24,7 +24,7 @@ from dataclasses import dataclass, field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.servicios.entradas import cruzar_remitente, normalizar
+from app.servicios.lectura import cruzar_remitente, normalizar
 
 NIVELES_ARRIBA = 4
 

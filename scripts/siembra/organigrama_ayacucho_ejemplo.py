@@ -101,7 +101,7 @@ def req(method, path, tok=None, body=None):
 
 
 def main():
-    tok = req("POST", "/api/auth/login", body={"usuario": os.environ.get("SGDP_USUARIO", "admin"), "clave": os.environ["SGDP_CLAVE"]})["token"]
+    tok = req("POST", "/api/auth/login", body={"usuario": os.environ.get("QILLQA_USUARIO", "admin"), "clave": os.environ["QILLQA_CLAVE"]})["token"]
     todas = req("GET", "/api/directorio/instituciones?q=&limite=500", tok)
     gore = next(i for i in todas if i["nombre"] == "Gobierno Regional de Ayacucho")
     print(f"GORE Ayacucho: id={gore['id']}")

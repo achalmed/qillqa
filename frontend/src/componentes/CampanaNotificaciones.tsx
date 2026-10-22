@@ -29,7 +29,7 @@ import { abrirPaquete } from '../openproject'
 import { api } from '../api'
 import { publicarCuenta, registrarApertura } from '../actividad'
 import { campanilla, notificarEscritorio, pedirPermisoEscritorio } from '../avisoLlegadas'
-import { rutaDestinoChat } from './chat/mensajes'
+import { rutaDestinoChat } from '@qillqa/rimay/publico'
 import { PALETA } from '../paleta'
 import { agruparAvisos, horaBreve, type GrupoAvisos } from '../avisos'
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline'
@@ -50,9 +50,9 @@ interface Aviso {
   creado_en: string | null
 }
 
-export const EVENTO_AVISOS = 'sgdp:avisos'
+export const EVENTO_AVISOS = 'qillqa:avisos'
 // El último aviso ya anunciado (por navegador): cambiar de página no repica.
-const CLAVE_ULTIMO = 'sgdp_ultimo_aviso'
+const CLAVE_ULTIMO = 'qillqa_ultimo_aviso'
 const leerUltimo = () => {
   try {
     return Number(localStorage.getItem(CLAVE_ULTIMO) ?? '') || 0

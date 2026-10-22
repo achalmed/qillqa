@@ -5,7 +5,7 @@
  *      publicación nunca deje la aplicación en blanco.
  *   2. NOTIFICACIONES (push y notificationclick, las del chat): al final del archivo.
  *
- * El build antepone `self.__SGDP_PUBLICACION__` con la versión y la lista exacta de archivos
+ * El build antepone `self.__QILLQA_PUBLICACION__` con la versión y la lista exacta de archivos
  * (vite.publicacion.ts): cada publicación produce un sw.js distinto y el navegador instala el
  * nuevo solo, que guarda la aplicación COMPLETA antes de tomar el control.
  */
@@ -22,7 +22,7 @@
  *
  * Reglas, todas aprendidas de ese día:
  *
- *   · La APLICACIÓN se guarda entera al instalarse, por versión (`sgdp-app-<versión>`), con el
+ *   · La APLICACIÓN se guarda entera al instalarse, por versión (`qillqa-app-<versión>`), con el
  *     index.html de ESA versión. Si algo falla, la instalación falla y sigue la anterior: nunca
  *     se activa una versión a medias.
  *   · Un archivo de /assets/ solo se guarda si es lo que dice ser: nunca un HTML en lugar de un
@@ -39,10 +39,10 @@
  *     cambiar de estado o subir un archivo jamás ocurren sin servidor.
  * ======================================================================================== */
 
-const PUBLICACION = self.__SGDP_PUBLICACION__ || { version: 'desarrollo', entrada: '', archivos: [] }
-const PREFIJO_APP = 'sgdp-app-'
+const PUBLICACION = self.__QILLQA_PUBLICACION__ || { version: 'desarrollo', entrada: '', archivos: [] }
+const PREFIJO_APP = 'qillqa-app-'
 const CACHE_APP = PREFIJO_APP + PUBLICACION.version
-const CACHE_OBS = 'sgdp-obs'
+const CACHE_OBS = 'qillqa-obs'
 /** Versiones de la aplicación que se conservan (la actual y la anterior). */
 const VERSIONES_CONSERVADAS = 2
 /** Lo que se espera a la red al abrir antes de abrir con lo guardado. */
@@ -101,9 +101,10 @@ self.addEventListener('activate', (evento) => {
       const conservar = new Set([CACHE_APP, ...versiones.filter((k) => k <= CACHE_APP).slice(0, VERSIONES_CONSERVADAS), CACHE_OBS])
       await Promise.all(
         claves
-          // Las de este worker: las versiones viejas y el caché anterior a 2026-10-13 (sgdp-v1-*,
+          // Las de este worker: las versiones viejas y el caché anterior a 2026-10-13 (qillqa-v1-*,
           // que guardaba /api sin separar por cuenta). Otras cachés no son de esta sección.
-          .filter((k) => (k.startsWith(PREFIJO_APP) || k.startsWith('sgdp-v1')) && !conservar.has(k))
+          // y las del nombre viejo (sgdp-app-*, sgdp-v1-*, hasta el 2026-10-22).
+          .filter((k) => (k.startsWith(PREFIJO_APP) || k.startsWith('qillqa-v1') || k.startsWith('sgdp-')) && !conservar.has(k))
           .map((k) => caches.delete(k)),
       )
       await self.clients.claim()
@@ -114,7 +115,10 @@ self.addEventListener('activate', (evento) => {
 self.addEventListener('message', (evento) => {
   // Compatibilidad: la aplicación lo manda al cerrar sesión. Desde 2026-10-13 este worker no
   // guarda /api; se borra el caché viejo por si quedó de antes.
-  if (evento.data === 'sgdp:limpiar-api') evento.waitUntil(caches.delete('sgdp-v1-api'))
+  // Con el nombre viejo lo manda una pestaña abierta antes del 2026-10-22 (sgdp:limpiar-api, caché sgdp-v1-api).
+  if (evento.data === 'qillqa:limpiar-api' || evento.data === 'sgdp:limpiar-api') {
+    evento.waitUntil(Promise.all([caches.delete('qillqa-v1-api'), caches.delete('sgdp-v1-api')]))
+  }
 })
 
 /** El index.html guardado: el de esta versión o, si no, el más reciente que haya. */
@@ -197,18 +201,11 @@ self.addEventListener('fetch', (evento) => {
   const url = new URL(peticion.url)
   if (url.origin !== self.location.origin) return
 
-  // API: la resuelve la aplicación («lo último visto», por cuenta, en IndexedDB). Incluye la mesa
-  // de partes pública (/api/publico/), que jamás se guarda en el equipo.
-  if (url.pathname.startsWith('/api/')) return
-  // Estudio de Prensa (/estudio/): otra aplicación, con su sesión, fotos y videos por rangos.
-  if (url.pathname.startsWith('/estudio/')) return
-  // Edición simultánea (WebSocket; por si algún navegador lo pasara por aquí).
-  if (url.pathname.startsWith('/colab')) return
-
-  // OBSERVATORIO (/obs/): la página de datos que genera scripts/observatorio.py. Va antes que la
-  // navegación porque su marco pide la página como una: sin red se devolvería la aplicación DENTRO
-  // del marco. Red primero y, sin conexión, la última copia (una sola, por ruta, sin ?v=).
-  if (url.pathname.startsWith('/obs/')) {
+  // OBSERVATORIO (/api/observatorio/, desde Qhawana Q1; antes /obs/): la página de datos y su estado.
+  // Va antes que la API y que la navegación porque su marco pide la página como una: sin red se
+  // devolvería la aplicación DENTRO del marco. Red primero y, sin conexión, la última copia (una
+  // sola, por ruta, sin ?v=).
+  if (url.pathname.startsWith('/api/observatorio/') || url.pathname.startsWith('/obs/')) {
     evento.respondWith(
       caches.open(CACHE_OBS).then((cache) =>
         fetch(peticion)
@@ -221,6 +218,12 @@ self.addEventListener('fetch', (evento) => {
     )
     return
   }
+
+  // API: la resuelve la aplicación («lo último visto», por cuenta, en IndexedDB). Incluye la mesa
+  // de partes pública (/api/publico/), que jamás se guarda en el equipo.
+  if (url.pathname.startsWith('/api/')) return
+  // Edición simultánea (WebSocket; por si algún navegador lo pasara por aquí).
+  if (url.pathname.startsWith('/colab')) return
 
   // NAVEGACIÓN: el router vive en el cliente («/documentos/148» no es un archivo); sin red se
   // devuelve el index guardado y el router resuelve la ruta en el navegador.
@@ -249,7 +252,7 @@ self.addEventListener('fetch', (evento) => {
 // que se renueva), la vibración propia de Qillqa, el ícono y la insignia. El SONIDO lo pone el
 // sistema operativo (en Android, el canal de notificaciones de Chrome): la Web no puede elegirlo.
 
-const VIBRACION_SGDP = [90, 60, 90, 60, 220] // la misma de servicios/push.py, por si el aviso no la trae
+const VIBRACION_QILLQA = [90, 60, 90, 60, 220] // la misma de servicios/push.py, por si el aviso no la trae
 
 self.addEventListener('push', (evento) => {
   let d = {}
@@ -258,7 +261,7 @@ self.addEventListener('push', (evento) => {
   } catch {
     d = { cuerpo: evento.data ? evento.data.text() : '' }
   }
-  const tag = d.tag || 'sgdp'
+  const tag = d.tag || 'qillqa'
   evento.waitUntil(
     (async () => {
       // Varios mensajes de la misma conversación: un solo aviso que cuenta cuántos van.
@@ -271,7 +274,7 @@ self.addEventListener('push', (evento) => {
         badge: d.insignia || '/notificaciones/insignia-96.png',
         tag,
         renotify: true,
-        vibrate: d.vibrar || VIBRACION_SGDP,
+        vibrate: d.vibrar || VIBRACION_QILLQA,
         timestamp: d.enviado_en ? Date.parse(d.enviado_en) : Date.now(),
         lang: 'es-PE',
         data: { url: d.url || '/', clase: d.clase || 'aviso', n },
@@ -294,10 +297,10 @@ self.addEventListener('notificationclick', (evento) => {
       const ventanas = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
       const propia = ventanas.find((v) => new URL(v.url).origin === self.location.origin)
       if (propia) {
-        // El Qillqa ya está abierto: se trae al frente y la propia aplicación va a la conversación
-        // (sin recargar: ContadorChat escucha `sgdp:abrir`).
+        // Qillqa ya está abierto: se trae al frente y la propia aplicación va a la conversación
+        // (sin recargar: ContadorChat escucha `qillqa:abrir`).
         await propia.focus().catch(() => undefined)
-        propia.postMessage({ tipo: 'sgdp:abrir', url })
+        propia.postMessage({ tipo: 'qillqa:abrir', url })
         return
       }
       await self.clients.openWindow(url)

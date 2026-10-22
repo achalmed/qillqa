@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
+# Entorno verde (fase 10.1 de docs/plataforma/propuesta-repositorios.md): esta copia NO opera producción;
+# su API se maneja con scripts/verde.sh. La marca .verde (local, sin versionar) lo indica.
+for _v in "$(dirname "${BASH_SOURCE[0]}")/.verde" "$(dirname "${BASH_SOURCE[0]}")/../.verde"; do
+  [[ -f "$_v" ]] && { echo "Entorno verde: este script opera producción; use scripts/verde.sh." >&2; exit 1; }
+done
 # =====================================================================
-#  enlace.sh  --  Publica el SGDP en internet con un enlace PERMANENTE.
+#  enlace.sh  --  Publica Qillqa en internet con un enlace PERMANENTE.
 # ---------------------------------------------------------------------
 #  El problema que resuelve: hasta ahora había que mandar un enlace NUEVO
 #  cada día (compartir.sh abre un túnel «trycloudflare» con nombre al
@@ -38,7 +43,7 @@ ACCION="${1:-abrir}"
 avisar_telegram() {
   local texto="$1"
   # shellcheck disable=SC1091
-  source "$DIR/entorno.sh" && sgdp_cargar_env 2>/dev/null || true
+  source "$DIR/entorno.sh" && qillqa_cargar_env 2>/dev/null || true
   [[ -z "${TELEGRAM_TOKEN:-}" || -z "${TELEGRAM_CHAT:-}" ]] && return 0
   curl -s -m 10 -X POST \
     "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
@@ -62,7 +67,7 @@ url_tailscale() {
 # ---------------------------------------------------------- --ver
 if [[ "$ACCION" == "--ver" ]]; then
   if url="$(url_tailscale)"; then
-    echo "Enlace permanente del SGDP:  $url"
+    echo "Enlace permanente de Qillqa:  $url"
     tailscale funnel status 2>/dev/null | sed 's/^/  /'
   else
     echo "Todavía no hay enlace permanente. Instálelo con: ./instalar_enlace_fijo.sh"
@@ -95,7 +100,7 @@ if ! web_viva; then
 fi
 if ! web_viva; then
   echo "[error] No se pudo arrancar la web. Revise logs/web.log y logs/api.log."
-  avisar_telegram "⚠️ SGDP: la laptop se encendió pero el sistema NO arrancó. Revisar."
+  avisar_telegram "⚠️ Qillqa: la laptop se encendió pero el sistema NO arrancó. Revisar."
   exit 1
 fi
 
@@ -115,13 +120,13 @@ if command -v tailscale >/dev/null 2>&1 && tailscale status >/dev/null 2>&1; the
   if funnel_activo || tailscale funnel --bg "${PUERTO_WEB}" >/dev/null 2>&1 || funnel_activo; then
     url="$(url_tailscale)"
     echo "======================================================================"
-    echo "  SGDP PUBLICADO EN INTERNET — ENLACE PERMANENTE"
+    echo "  Qillqa PUBLICADO EN INTERNET — ENLACE PERMANENTE"
     echo "      $url"
     echo ""
     echo "  Este enlace NO cambia. Mándelo una sola vez al grupo del despacho."
     echo "  Mientras la laptop esté encendida y con internet, el enlace abre."
     echo "======================================================================"
-    avisar_telegram "✅ SGDP encendido. Entren por: $url"
+    avisar_telegram "✅ Qillqa encendido. Entren por: $url"
     exit 0
   fi
   echo "[aviso] Tailscale está instalado pero Funnel no pudo activarse."
@@ -149,4 +154,4 @@ if [[ -z "${url:-}" ]]; then
   exit 1
 fi
 echo "Enlace TEMPORAL de hoy:  $url"
-avisar_telegram "🔗 SGDP encendido. Enlace de HOY (cambia cada vez): $url"
+avisar_telegram "🔗 Qillqa encendido. Enlace de HOY (cambia cada vez): $url"

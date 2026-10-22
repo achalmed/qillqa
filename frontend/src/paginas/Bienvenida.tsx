@@ -34,8 +34,8 @@ export default function Bienvenida() {
   const [guardando, setGuardando] = useState(false)
 
   const entrar = () => {
-    localStorage.removeItem('sgdp_datos_pendientes')
-    localStorage.removeItem('sgdp_pasos_ingreso')
+    localStorage.removeItem('qillqa_datos_pendientes')
+    localStorage.removeItem('qillqa_pasos_ingreso')
     navegar('/', { replace: true })
   }
 

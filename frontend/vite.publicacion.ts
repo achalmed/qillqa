@@ -95,7 +95,7 @@ export function publicacionSegura(): Plugin {
   let archivosBuild: string[] = []
   let entrada = ''
   return {
-    name: 'sgdp:publicacion-segura',
+    name: 'qillqa:publicacion-segura',
     apply: 'build',
     enforce: 'post',
     configResolved(c) {
@@ -146,7 +146,7 @@ export function publicacionSegura(): Plugin {
       const sw = readFileSync(path.join(publico, 'sw.js'), 'utf8')
       escribirAtomico(
         path.join(dist, 'sw.js'),
-        `// GENERADO por vite.publicacion.ts en cada build; la fuente es public/sw.js.\nself.__SGDP_PUBLICACION__ = ${JSON.stringify(publicacion)};\n${sw}`,
+        `// GENERADO por vite.publicacion.ts en cada build; la fuente es public/sw.js.\nself.__QILLQA_PUBLICACION__ = ${JSON.stringify(publicacion)};\n${sw}`,
       )
       escribirAtomico(path.join(dist, 'version.json'), JSON.stringify({ version, fecha: ahora.toISOString() }))
 
@@ -196,7 +196,7 @@ const TIPOS: Record<string, string> = {
  */
 export function servirAssets(): Plugin {
   return {
-    name: 'sgdp:servir-assets',
+    name: 'qillqa:servir-assets',
     configurePreviewServer(server) {
       const dist = path.resolve(server.config.root, server.config.build.outDir)
       server.middlewares.use((req, res, next) => {

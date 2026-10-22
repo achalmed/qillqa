@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
-# scripts/modo_servidor.sh — la laptop sigue sirviendo el SGDP con la tapa cerrada y sin que nadie
+# Entorno verde (fase 10.1 de docs/plataforma/propuesta-repositorios.md): esta copia NO opera producción;
+# su API se maneja con scripts/verde.sh. La marca .verde (local, sin versionar) lo indica.
+for _v in "$(dirname "${BASH_SOURCE[0]}")/.verde" "$(dirname "${BASH_SOURCE[0]}")/../.verde"; do
+  [[ -f "$_v" ]] && { echo "Entorno verde: este script opera producción; use scripts/verde.sh." >&2; exit 1; }
+done
+# scripts/modo_servidor.sh — la laptop sigue sirviendo Qillqa con la tapa cerrada y sin que nadie
 # la toque (Edison 2026-10-08: «dejé el laptop prendido en una comunidad y después de un tiempo
 # dejó de funcionar; quiero que funcione como servidor hasta que lo apague a mano, incluso con la
 # tapa cerrada»).
@@ -10,7 +15,7 @@
 #      pueden dormir la laptop por su cuenta.
 #   3. GNOME (si es el escritorio): sin suspensión automática por inactividad; la pantalla sí se
 #      apaga sola (eso no afecta al sistema).
-#   4. El servicio del SGDP queda con «linger»: arranca aunque nadie inicie sesión gráfica.
+#   4. El servicio de Qillqa queda con «linger»: arranca aunque nadie inicie sesión gráfica.
 #
 # Uso:
 #   scripts/modo_servidor.sh            aplica
@@ -18,11 +23,11 @@
 #   scripts/modo_servidor.sh --ver      muestra el estado actual, sin tocar nada
 set -euo pipefail
 
-CONF=/etc/systemd/logind.conf.d/sgdp-servidor.conf
+CONF=/etc/systemd/logind.conf.d/qillqa-servidor.conf
 
 ver() {
   echo "logind:"
-  if [[ -f $CONF ]]; then sed 's/^/  /' "$CONF"; else echo "  (sin ajuste del SGDP: la tapa suspende como de fábrica)"; fi
+  if [[ -f $CONF ]]; then sed 's/^/  /' "$CONF"; else echo "  (sin ajuste de Qillqa: la tapa suspende como de fábrica)"; fi
   echo "suspensión:"
   for u in sleep.target suspend.target hibernate.target hybrid-sleep.target; do
     printf '  %-22s %s\n' "$u" "$(systemctl is-enabled "$u" 2>/dev/null || true)"
@@ -33,7 +38,7 @@ ver() {
     echo "  con batería:  $(gsettings get org.gnome.settings-daemon.plugins.power sleep-inactive-battery-type 2>/dev/null || echo '?')"
   fi
   echo "linger: $(loginctl show-user "$USER" -p Linger --value 2>/dev/null || echo '?')"
-  echo "SGDP:   $(systemctl --user is-active sgdp.service 2>/dev/null || echo 'sin servicio')"
+  echo "Qillqa:   $(systemctl --user is-active qillqa.service 2>/dev/null || echo 'sin servicio')"
 }
 
 if [[ ${1:-} == --ver ]]; then
@@ -53,10 +58,10 @@ if [[ ${1:-} == --quitar ]]; then
   exit 0
 fi
 
-echo "Configurando la laptop como servidor del SGDP (pide la contraseña una vez)…"
+echo "Configurando la laptop como servidor de Qillqa (pide la contraseña una vez)…"
 sudo install -d -m 755 "$(dirname "$CONF")"
 sudo tee "$CONF" >/dev/null <<'EOF'
-# Puesto por scripts/modo_servidor.sh del SGDP: la laptop sirve el sistema con la tapa cerrada.
+# Puesto por scripts/modo_servidor.sh de Qillqa: la laptop sirve el sistema con la tapa cerrada.
 [Login]
 HandleLidSwitch=ignore
 HandleLidSwitchExternalPower=ignore
@@ -74,5 +79,5 @@ loginctl enable-linger "$USER" 2>/dev/null || sudo loginctl enable-linger "$USER
 echo
 ver
 echo
-echo "Listo. Con la tapa cerrada la pantalla se apaga, pero el SGDP sigue atendiendo."
+echo "Listo. Con la tapa cerrada la pantalla se apaga, pero Qillqa sigue atendiendo."
 echo "Déjela enchufada: con batería sola, el sistema se apaga cuando ella se agota."

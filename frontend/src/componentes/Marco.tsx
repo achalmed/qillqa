@@ -62,9 +62,10 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import LockResetIcon from '@mui/icons-material/LockReset'
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined'
 import LogoutIcon from '@mui/icons-material/Logout'
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import { cerrarSesion } from '../api'
-import { desactivarAvisos } from './chat/avisosPush'
+import { desactivarAvisos } from '../avisosPush'
 
 /** «Salir» a propósito (2026-10-13): primero da de baja los avisos de este equipo (si no, el
  * celular seguiría recibiendo los de esta cuenta), con un tope de 2 s para no trabar la salida;
@@ -74,13 +75,13 @@ async function salir() {
   cerrarSesion()
 }
 import CampanaNotificaciones from './CampanaNotificaciones'
-import ContadorChat from './chat/ContadorChat'
+import { ContadorChat } from '@qillqa/rimay/publico'
 import AnuncioCentral from './AnuncioCentral'
 import EquipoEnLinea from './EquipoEnLinea'
 import { abrirActividad, useActividad } from '../actividad'
 import AvatarPersona from './perfil/AvatarPersona'
 import TarjetaContacto from './perfil/TarjetaContacto'
-import { idDelToken } from './chat/mensajes'
+import { idDelToken } from '@qillqa/rimay/publico'
 import BotonModulo, { MARGEN_FLOTANTE, RESERVA_FLOTANTE } from './BotonModulo'
 import FranjaSinConexion, { IndicadorConexion } from './FranjaSinConexion'
 import AvisoAlVolver from './AvisoAlVolver'
@@ -102,6 +103,8 @@ import { useModulos } from './usarModulos'
 import ElegirVista from './ElegirVista'
 import ElegirApariencia from './ElegirApariencia'
 import { PALETA } from '../paleta'
+import { abrirAcercaDe, QILLQA } from '../acercaDe'
+import AcercaDe from './AcercaDe'
 
 /** Una opción de la franja contextual puesta por la propia página. */
 export interface OpcionPagina {
@@ -127,9 +130,9 @@ const ETIQUETA_ROL: Record<string, string> = {
 function MenuCuenta() {
   const navegar = useNavigate()
   const [ancla, setAncla] = useState<HTMLElement | null>(null)
-  const nombre = localStorage.getItem('sgdp_nombre') ?? ''
-  const rol = localStorage.getItem('sgdp_rol') ?? ''
-  const miId = useMemo(() => idDelToken(localStorage.getItem('sgdp_token')), [])
+  const nombre = localStorage.getItem('qillqa_nombre') ?? ''
+  const rol = localStorage.getItem('qillqa_rol') ?? ''
+  const miId = useMemo(() => idDelToken(localStorage.getItem('qillqa_token')), [])
   const ir = (r: string) => {
     setAncla(null)
     navegar(r, DESDE_MENU)
@@ -168,6 +171,10 @@ function MenuCuenta() {
           <ElegirApariencia />
         </Box>
         <Divider />
+        <MenuItem onClick={() => { setAncla(null); abrirAcercaDe() }}>
+          <ListItemIcon><InfoOutlinedIcon fontSize="small" /></ListItemIcon>
+          Acerca de {QILLQA.nombre}
+        </MenuItem>
         <MenuItem onClick={() => void salir()}>
           <ListItemIcon><LogoutIcon fontSize="small" /></ListItemIcon>
           Salir
@@ -192,7 +199,7 @@ function Cajon({ abierto, alCerrar, actual }: { abierto: boolean; alCerrar: () =
       {/* La cabecera del cajón, sin relleno de color (2026-10-19): el nombre en tinta y una línea fina. */}
       <Box sx={{ px: 2, pt: 2.25, pb: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
         <Typography sx={{ fontWeight: 700, fontSize: 15, lineHeight: 1.3, letterSpacing: -0.2 }}>{nombreDespacho()}</Typography>
-        <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>{localStorage.getItem('sgdp_nombre')}</Typography>
+        <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>{localStorage.getItem('qillqa_nombre')}</Typography>
       </Box>
       <List dense sx={{ py: 0.5 }}>
         {modulosVisibles().map((m) => {
@@ -241,6 +248,10 @@ function Cajon({ abierto, alCerrar, actual }: { abierto: boolean; alCerrar: () =
           <ListItemIcon sx={{ minWidth: 40 }}><LockResetIcon fontSize="small" /></ListItemIcon>
           <ListItemText primary="Cambiar mi contraseña" />
         </ListItemButton>
+        <ListItemButton onClick={() => { alCerrar(); abrirAcercaDe() }}>
+          <ListItemIcon sx={{ minWidth: 40 }}><InfoOutlinedIcon fontSize="small" /></ListItemIcon>
+          <ListItemText primary={`Acerca de ${QILLQA.nombre}`} />
+        </ListItemButton>
         <ListItemButton onClick={() => void salir()}>
           <ListItemIcon sx={{ minWidth: 40 }}><LogoutIcon fontSize="small" /></ListItemIcon>
           <ListItemText primary="Salir" />
@@ -285,7 +296,7 @@ const INFERIOR: EntradaInferior[] = [
 ]
 /** La cuenta de prensa no tramita documentos: su barra lleva lo suyo. */
 const inferior = (): EntradaInferior[] =>
-  (localStorage.getItem('sgdp_rol') === 'prensa' ? [{ id: 'inicio' }, { id: 'fototeca' }, { id: 'prensa' }, { id: 'recibidos' }, { id: 'chat' }] as EntradaInferior[] : INFERIOR)
+  (localStorage.getItem('qillqa_rol') === 'prensa' ? [{ id: 'inicio' }, { id: 'fototeca' }, { id: 'prensa' }, { id: 'recibidos' }, { id: 'chat' }] as EntradaInferior[] : INFERIOR)
     // Lo apagado en Administración (2026-10-18) no ocupa sitio en la barra.
     .filter((e) => moduloActivo(e.id))
 
@@ -342,7 +353,7 @@ export default function Marco({
   // El título de la pestaña del navegador dice dónde se está.
   useEffect(() => {
     const t = typeof titulo === 'string' ? `${titulo} · ` : ''
-    document.title = `${t}${m.nombre} · Qillqa`
+    document.title = `${t}${m.nombre} · ${QILLQA.nombre}`
   }, [titulo, m.nombre])
 
   // Las opciones: las de la página, o las del módulo como rutas.
@@ -559,6 +570,7 @@ export default function Marco({
       <Cajon abierto={cajon} alCerrar={() => setCajon(false)} actual={modulo} />
       {/* La tarjeta de contacto de quien se toque (chat, equipo): una sola, para todas las páginas. */}
       <TarjetaContacto />
+      <AcercaDe />
     </Box>
   )
 }

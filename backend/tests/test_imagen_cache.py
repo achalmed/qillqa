@@ -6,7 +6,7 @@ import os
 import time
 
 from app.api.archivos import coincide_etag
-from app.servicios import imagen
+from qillqasqa.servicios import imagen
 
 
 # --- la clave (ETag) --------------------------------------------------------------------------

@@ -12,9 +12,56 @@ import re
 from dataclasses import dataclass, field
 from datetime import date, datetime
 
-from ..entradas import _fecha_dma, _hora, normalizar
-from ..referencias import cita_documento
+from ..lectura import _fecha_dma, _hora, normalizar
 from .esquemas import Esquema
+
+# --- los vínculos ----------------------------------------------------------------------------------------------
+
+# Lo que se puede vincular a una tarea, un evento o un pegado («doc:12», «tarea:3»…; antes en servicios/referencias.py,
+# hasta Qillqasqa Q3d). Tareas y Agenda tiene la misma lista (servicios/tareas_reglas.py); tests/test_fronteras.py
+# comprueba que digan lo mismo (fase 10.2b).
+PREFIJOS_VINCULO = ("doc", "pl", "sr", "persona", "inst", "foto", "pedido", "evento", "tarea", "entrada", "rend")
+_VINCULO = re.compile(r"^(%s):\d{1,9}$" % "|".join(PREFIJOS_VINCULO))
+
+
+def vinculo_valido(destino: str) -> bool:
+    return bool(_VINCULO.match((destino or "").strip()))
+
+
+# --- la cita en la Referencia y en «Adj.» (antes en servicios/referencias.py, hasta Qillqasqa Q3d) ----------------
+# Edison, 2026-10-18: «de ahora en adelante no quiero esa información adicional». Un documento
+# se cita por su denominación y su número («Oficio Múltiple N.º 007-2026-FREDDEH-HUANTA/P»):
+# sin la fecha, sin «y anexos» y sin páginas ni folios. La fecha solo se queda cuando el
+# documento no tiene número (un memorial s/n): es lo único que lo identifica.
+
+_FECHA = (r"(?:\d{1,2}\s+de\s+(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|se?tiembre|octubre"
+          r"|noviembre|diciembre)(?:\s+(?:de|del)\s+\d{4})?|\d{1,2}/\d{1,2}/\d{2,4})")
+_RE_CON_NUMERO = re.compile(r"\bN\s*\.?\s*[°º]|\bN\.?\s*o\.?\s*\d|\bNro\.?\s*\d|\bNúm(?:ero)?\.?\s*\d", re.I)
+_RE_EXTENSION = re.compile(r"\s*\((?:[^()]*?\b(?:p[áa]ginas?|p[áa]gs?\.|pp\.|folios?|fs\.|hojas?)\b[^()]*)\)", re.I)
+_RE_ANEXOS = re.compile(r",?\s+(?:y|con|más)\s+(?:sus\s+|los\s+)?anexos(?:\s+adjuntos)?\b", re.I)
+_RE_FECHA = (
+    re.compile(rf"\s*\(\s*(?:de\s+fecha\s+|del?\s+|fecha\s*:?\s*)?{_FECHA}\s*\)", re.I),
+    re.compile(rf"\s*,?\s*(?:de\s+fecha|del?|fechad[oa]\s+(?:el\s+)?)\s+{_FECHA}", re.I),
+    re.compile(rf"\s*[–—-]\s*{_FECHA}(?=\s|$|[,.;/])", re.I),
+)
+
+
+def cita_documento(texto: str) -> str:
+    """Una línea de Referencia o de «Adj.» con solo la denominación y el número del documento:
+    «Oficio Múltiple Nº 007-2026-FREDDEH-HUANTA/P, de 15 de octubre de 2026, y anexos (31
+    páginas del archivo remitido).» → «Oficio Múltiple Nº 007-2026-FREDDEH-HUANTA/P». Lo que
+    no reconoce lo deja como está; la fecha de un documento sin número se conserva."""
+    original = (texto or "").strip()
+    t = _RE_EXTENSION.sub("", original)
+    t = _RE_ANEXOS.sub("", t)
+    if _RE_CON_NUMERO.search(t):
+        for patron in _RE_FECHA:
+            t = patron.sub("", t)
+    t = re.sub(r"\s{2,}", " ", t).strip()
+    if t != original:
+        t = t.rstrip(" ,;:–—-").removesuffix(".").rstrip(" ,;")
+    return t
+
 
 _RE_ISO = re.compile(r"^(\d{4})-(\d{2})-(\d{2})$")
 _RE_ISO_HORA = re.compile(r"^(\d{4}-\d{2}-\d{2})[ T](\d{1,2}):(\d{2})(?::\d{2})?(?:Z|[+-]\d{2}:?\d{2})?$")
@@ -138,16 +185,35 @@ def entero(v) -> int | None:
 
 def importe(v) -> float | None:
     """Un monto en soles → número con dos decimales; None si no hay cifras («S/ 2,345.60», «40»,
-    12.5, «12,50»). La regla de los separadores es la de servicios/rendicion.py (centimos)."""
+    12.5, «12,50»). La regla de los separadores es la de yupay/rendicion.py, en su repositorio (`centimos`): Rendición es un
+    módulo aislado (Yupay), así que el pegado tiene la suya y tests/test_fronteras.py comprueba que digan lo mismo."""
     if isinstance(v, bool):
         return None
     if isinstance(v, (int, float)):
         return round(float(v), 2)
     if not re.search(r"\d", str(v or "")):
         return None
-    from ..rendicion import centimos
-
     return centimos(v) / 100
+
+
+def centimos(valor) -> int:
+    """S/ como número o texto («S/ 2,345.60», «40», 12.5) → céntimos. Lo ilegible es 0. «2,345.60» y «2.345,60»:
+    el último separador es el decimal si lo siguen 1 o 2 cifras (la misma regla que yupay/rendicion.py, en su repositorio)."""
+    if valor is None or valor == "" or isinstance(valor, bool):
+        return 0
+    if isinstance(valor, int):
+        return valor * 100
+    if isinstance(valor, float):
+        return int(round(valor * 100))
+    s = re.sub(r"[^\d,.\-]", "", str(valor))
+    if not s or s in "-.,":
+        return 0
+    m = re.match(r"^(-?)([\d.,]*?)(?:[.,](\d{1,2}))?$", s)
+    if not m:
+        return 0
+    signo, entero, dec = m.group(1), re.sub(r"[.,]", "", m.group(2) or "0"), (m.group(3) or "0")
+    total = int(entero or "0") * 100 + int(dec.ljust(2, "0"))
+    return -total if signo else total
 
 
 def booleano(v) -> bool | None:

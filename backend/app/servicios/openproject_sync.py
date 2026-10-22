@@ -26,26 +26,16 @@ import logging
 from datetime import datetime, timezone
 
 from sqlalchemy import select
+from tiqsi.modulo import opcional
 
 from app.config import config
 from app.db import SesionAsincrona
-from app.modelos import (
-    Documento,
-    OpAsignacionVista,
-    OpEnlace,
-    Proyecto,
-    ProyectoActividad,
-    ProyectoFase,
-    ProyectoTarea,
-    Usuario,
-)
+from app.modelos import OpAsignacionVista, OpEnlace, Usuario
 from app.servicios import notificaciones as avisos
 from app.servicios import openproject as op
 from app.servicios import openproject_mapa as mapa
-from app.servicios import proyectos as reglas
-from app.tipos import asunto_de, es_externo, tipo_config
 
-log = logging.getLogger("sgdp.openproject")
+log = logging.getLogger("qillqa.openproject")
 
 TOPE_ESCRITURAS = 40
 # La última vuelta, para el panel del administrador.
@@ -59,40 +49,23 @@ def _ahora() -> datetime:
 # --- Lectura de Qillqa -----------------------------------------------------------
 
 
-async def items_sgdp(sesion) -> list[mapa.Item]:
-    """Todo lo que Qillqa refleja, con los padres antes que los hijos."""
-    base = config.sgdp_url_publica
+async def items_qillqa(sesion=None) -> list[mapa.Item]:
+    """Todo lo que Qillqa refleja, con los padres antes que los hijos. Los documentos y los proyectos de ley son de
+    Qillqasqa: por «documentos.v1» y «proyectos.v1» (Q3e, 2026-10-21); sin uno de ellos, no se refleja."""
+    base = config.qillqa_url_publica
     items: list[mapa.Item] = []
-    for d in (await sesion.execute(select(Documento).order_by(Documento.id))).scalars():
-        if d.oculto:
-            continue
-        recibido = d.tipo == "recibido"
-        if es_externo(d.tipo) and not recibido:
-            continue
+    documentos = opcional("documentos.v1")
+    for d in await documentos.para_openproject() if documentos is not None else ():
         it = mapa.item_documento(
-            {
-                "id": d.id, "tipo": d.tipo, "tipo_nombre": tipo_config(d.tipo)["nombre"], "numero": d.numero,
-                "periodo": d.periodo, "estado": d.estado, "asunto": asunto_de(d.tipo, d.campos),
-                "responsable_id": d.responsable_id, "recibido": recibido,
-            },
-            base_sgdp=base, proyecto_documentos=config.openproject_proyecto_documentos,
+            d, base_qillqa=base, proyecto_documentos=config.openproject_proyecto_documentos,
             proyecto_recibidos=config.openproject_proyecto_recibidos,
         )
         if it:
             items.append(it)
-    proyectos = (await sesion.execute(select(Proyecto).where(Proyecto.eliminado_en.is_(None)).order_by(Proyecto.id))).scalars().all()
-    for p in proyectos:
-        if p.tipo != "proyecto_de_ley":
-            continue
-        fases = (await sesion.execute(select(ProyectoFase).where(ProyectoFase.proyecto_id == p.id).order_by(ProyectoFase.orden))).scalars().all()
-        tareas = (await sesion.execute(select(ProyectoTarea).where(ProyectoTarea.proyecto_id == p.id).order_by(ProyectoTarea.id))).scalars().all()
-        items += mapa.items_proyecto(
-            {"id": p.id, "codigo": p.codigo, "titulo": p.titulo, "estado": p.estado, "responsable_id": p.responsable_id,
-             "numero_oficial": p.numero_oficial, "comisiones": (p.datos or {}).get("comisiones", "")},
-            [{"id": f.id, "nombre": f.nombre, "estado": f.estado, "responsable_id": f.responsable_id, "inicio": f.inicio, "limite": f.limite} for f in fases],
-            [{"id": t.id, "fase_id": t.fase_id, "titulo": t.titulo, "estado": t.estado, "responsable_id": t.responsable_id, "limite": t.limite} for t in tareas],
-            base_sgdp=base, proyecto_legislativo=config.openproject_proyecto_legislativo,
-        )
+    proyectos = opcional("proyectos.v1")
+    for pl in await proyectos.para_openproject() if proyectos is not None else ():
+        items += mapa.items_proyecto(pl["proyecto"], pl["fases"], pl["tareas"], base_qillqa=base,
+                                     proyecto_legislativo=config.openproject_proyecto_legislativo)
     return items
 
 
@@ -148,7 +121,7 @@ def escribir(cli: op.Cliente, cat: dict, it: mapa.Item, op_responsable: int | No
     if wp_id is None:
         pid, tid = cat["proyectos"].get(it.proyecto), cat["tipos"].get(it.tipo)
         clave_cf = cli.esquema(pid, tid).get(mapa.CAMPO_CLAVE, {}).get("clave") if pid and tid else None
-        existente = cli.buscar_por_clave(clave_cf, it.clave) if clave_cf else None
+        existente = (cli.buscar_por_clave(clave_cf, it.clave) or cli.buscar_por_clave(clave_cf, mapa.clave_vieja(it.clave))) if clave_cf else None
         if existente:
             wp_id = existente["id"]  # adoptado (p. ej. del puente manual de openproject/)
     cuerpo = cuerpo_paquete(cli, cat, it, op_responsable, padre_wp, crear=wp_id is None)
@@ -195,7 +168,7 @@ async def _ciclo() -> dict:
             # pisaría en la misma vuelta lo que alguien acaba de hacer en OpenProject.
             resumen["devueltos"] = await _devolver(s, cli, cat, enlaces)
             await s.commit()
-            items = await items_sgdp(s)
+            items = await items_qillqa(s)
             usuarios = await mapa_usuarios(s, cat)
             for it in items:
                 e = enlaces.get(it.clave)
@@ -236,7 +209,7 @@ async def _ciclo() -> dict:
 
 async def _devolver(s, cli: op.Cliente, cat: dict, enlaces: dict[str, OpEnlace]) -> int:
     """Fases y tareas de PL cerradas o reabiertas EN OpenProject → Qillqa."""
-    vigilados = {e.wp_id: e for e in enlaces.values() if e.wp_id and e.clave.startswith(("sgdp:pl-fase:", "sgdp:pl-tarea:"))}
+    vigilados = {e.wp_id: e for e in enlaces.values() if e.wp_id and e.clave.startswith(("qillqa:pl-fase:", "qillqa:pl-tarea:"))}
     cambios = 0
     ids = list(vigilados)
     for i in range(0, len(ids), 100):
@@ -251,26 +224,17 @@ async def _devolver(s, cli: op.Cliente, cat: dict, enlaces: dict[str, OpEnlace])
                 if e is not None:
                     e.op_cerrado = cerrado
                 continue
-            ident = int(e.clave.rsplit(":", 1)[1])
-            modelo = ProyectoTarea if e.clave.startswith("sgdp:pl-tarea:") else ProyectoFase
-            obj = await s.get(modelo, ident)
             e.op_cerrado = cerrado
-            if obj is None:
+            # La fase o la tarea es de Proyectos de ley: la cambia él, por «proyectos.v1» (Q3e), con su bitácora.
+            proyectos = opcional("proyectos.v1")
+            if proyectos is None:
                 continue
-            nuevo = mapa.cierre_desde_op(e.clave, cerrado, obj.estado)
-            if not nuevo:
+            clave = e.clave
+            cambio = await proyectos.cambiar_desde_openproject(
+                "tarea" if clave.startswith("qillqa:pl-tarea:") else "fase", int(clave.rsplit(":", 1)[1]),
+                lambda estado, clave=clave, cerrado=cerrado: mapa.cierre_desde_op(clave, cerrado, estado))
+            if not cambio:
                 continue
-            anterior = obj.estado
-            obj.estado = nuevo
-            if modelo is ProyectoTarea:
-                obj.hecha_en = _ahora() if nuevo == "hecha" else None
-            p = await s.get(Proyecto, obj.proyecto_id)
-            if p is not None:
-                quien = p.responsable_id or p.creado_por
-                nombre = getattr(obj, "titulo", None) or getattr(obj, "nombre", "")
-                s.add(ProyectoActividad(proyecto_id=p.id, usuario_id=quien, tipo="openproject",
-                                        texto=f"En OpenProject, «{nombre}»: {reglas.etiqueta(anterior)} → {reglas.etiqueta(nuevo)}."))
-                p.actualizado_en = _ahora()
             e.huella = ""  # se vuelve a escribir con el estado que quedó
             cambios += 1
     return cambios
@@ -296,7 +260,7 @@ async def _avisar(s, cli: op.Cliente, cat: dict, usuarios: dict[int, int]) -> in
         s.add(OpAsignacionVista(wp_id=0, op_usuario_id=0))
     nuevos = 0
     for wp in paquetes:
-        if clave_cf and str(wp.get(clave_cf) or "").startswith("sgdp:"):
+        if clave_cf and mapa.es_propia(wp.get(clave_cf)):
             continue  # reflejo de Qillqa: ya lo avisó Qillqa
         href = (wp.get("_links", {}).get("assignee") or {}).get("href") or ""
         op_usuario = int(href.rsplit("/", 1)[-1]) if href.rsplit("/", 1)[-1].isdigit() else None

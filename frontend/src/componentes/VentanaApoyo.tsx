@@ -76,7 +76,7 @@ export async function copiarEn(win: Window, texto: string): Promise<void> {
 
 // Lo copiado queda en verde mientras dure la sesión (por documento), para saber qué ya se pegó.
 const DocumentoCopiado = createContext(0)
-const claveCopiados = (doc: number) => `sgdp-copiados-${doc}`
+const claveCopiados = (doc: number) => `qillqa-copiados-${doc}`
 const leerCopiados = (doc: number): string[] => {
   try {
     return JSON.parse(sessionStorage.getItem(claveCopiados(doc)) || '[]')
@@ -335,7 +335,7 @@ export async function abrirVentanaApoyo(documentoId: number): Promise<void> {
     }
   }
   // Sin «siempre encima» (Firefox, Safari): una ventana emergente pequeña al lado.
-  win ??= window.open('', 'sgdp-apoyo-mesa', 'popup,width=420,height=760')
+  win ??= window.open('', 'qillqa-apoyo-mesa', 'popup,width=420,height=760')
   if (!win) throw new Error('El navegador bloqueó la ventana: permita las ventanas emergentes de este sitio.')
   ventana = win
   montar(win, documentoId)

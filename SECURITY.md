@@ -28,7 +28,7 @@ el arreglo esté publicado, te daremos crédito en el aviso si así lo deseas.
 
 ## Buenas prácticas para quien instala Qillqa
 
-- Cambia todas las claves de `.env.example` (`POSTGRES_PASSWORD`, `JWT_SECRET`, `SGDP_BOVEDA_CLAVE`) y
+- Cambia todas las claves de `.env.example` (`POSTGRES_PASSWORD`, `JWT_SECRET`, `QILLQA_BOVEDA_CLAVE`) y
   las cuentas de demostración antes de usarlo con datos reales.
 - No expongas el puerto de PostgreSQL a la red: el `docker-compose.yml` lo deja solo en `127.0.0.1`.
 - Publica la web detrás de HTTPS (un proxy inverso o un túnel con certificado).

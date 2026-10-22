@@ -14,7 +14,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import obtener_sesion
 from app.modelos import Usuario
 from app.seguridad import solo_administrador, usuario_actual
-from app.servicios import bitacora, modulos
+from app.servicios import modulos
+from app.servicios.eventos_bandeja import anotar_bitacora
 
 router = APIRouter(prefix="/api/modulos", tags=["módulos"])
 
@@ -38,9 +39,9 @@ async def cambiar(mid: str, datos: CambioModulo, usuario: Usuario = Depends(solo
     est = await modulos.guardar(sesion, mid, datos.activo, datos.mensaje)
     nombre = modulos.POR_ID[mid]["nombre"]
     if antes[mid]["activo"] != est[mid]["activo"]:
-        bitacora.registrar(sesion, None, usuario, "ajustes", f"Módulo «{nombre}» {'encendido' if est[mid]['activo'] else 'apagado'}")
+        await anotar_bitacora(sesion, usuario, "ajustes", f"Módulo «{nombre}» {'encendido' if est[mid]['activo'] else 'apagado'}")
     if antes[mid]["mensaje"] != est[mid]["mensaje"]:
-        bitacora.registrar(sesion, None, usuario, "ajustes", f"Mensaje de «{nombre}» apagado: «{est[mid]['mensaje']}»")
+        await anotar_bitacora(sesion, usuario, "ajustes", f"Mensaje de «{nombre}» apagado: «{est[mid]['mensaje']}»")
     await sesion.commit()
     modulos.invalidar()
     return modulos.vista(est)

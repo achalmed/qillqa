@@ -56,7 +56,7 @@ import Marco from '../componentes/Marco'
 import AvatarPersona from '../componentes/perfil/AvatarPersona'
 import AvisosYSonidos from '../componentes/perfil/AvisosYSonidos'
 import { abrirTarjeta, ponerVersion } from '../componentes/perfil/fotos'
-import { useVentanaVisible } from '../componentes/chat/teclado'
+import { useVentanaVisible } from '@qillqa/rimay/publico'
 import { PALETA } from '../paleta'
 import { ETIQUETA_ROL, MAX_ACERCA, celularLegible, errorDe, nombresParaEditar, normalizarCelular, type MiPerfil } from '../perfil'
 
@@ -291,7 +291,7 @@ export default function Perfil() {
     setCampo(null)
     setAviso('Guardado.')
     // El nombre de la barra y del chat sale de aquí.
-    localStorage.setItem('sgdp_nombre', p.nombre)
+    localStorage.setItem('qillqa_nombre', p.nombre)
   }
 
   const subirFoto = async (archivo: File) => {

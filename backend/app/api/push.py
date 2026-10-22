@@ -18,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import obtener_sesion
 from app.modelos import Usuario
-from app.modelos_chat import SuscripcionPush
+from app.modelos_push import SuscripcionPush
 from app.seguridad import usuario_actual
 from app.servicios import push as svc
 
@@ -76,7 +76,7 @@ async def probar(usuario: Usuario = Depends(usuario_actual), sesion: AsyncSessio
     """Un aviso de prueba a todos los dispositivos de la persona (aunque tenga Qillqa a la vista)."""
     if not svc.disponible():
         raise HTTPException(503, "El servidor no tiene instalado el envío de avisos (pywebpush).")
-    enviados = await svc.enviar({usuario.id}, svc.carga("Qillqa", "Así le llegarán los avisos de Qillqa.", "/perfil", "sgdp-prueba", clase="prueba"))
+    enviados = await svc.enviar({usuario.id}, svc.carga("Qillqa", "Así le llegarán los avisos de Qillqa.", "/perfil", "qillqa-prueba", clase="prueba"))
     return {"enviados": enviados}
 
 
@@ -88,14 +88,14 @@ class Acuse(BaseModel):
 
 
 @router.post("/recibido")
-async def recibido(datos: Acuse, sesion: AsyncSession = Depends(obtener_sesion)) -> dict:
-    """Sin sesión (el service worker no la tiene): vale la firma que Qillqa puso en el aviso."""
-    from app.servicios import chat as svc_chat
+async def recibido(datos: Acuse) -> dict:
+    """Sin sesión (el service worker no la tiene): vale la firma que Qillqa puso en el aviso. El ✓✓ lo pone el chat,
+    por su contrato (Rimay R2)."""
+    from tiqsi.modulo import opcional
 
     if not svc.acuse_valido(datos.u, datos.c, datos.m, datos.f):
         raise HTTPException(403, "Acuse sin firma válida.")
-    cambios = await svc_chat.marcar_recibidos(sesion, datos.u, {datos.c: datos.m})
-    if cambios:
-        await sesion.commit()
-        await svc_chat.difundir_lecturas(sesion, datos.c, list(cambios.values()))
+    conversaciones = opcional("conversaciones.v1")
+    if conversaciones is not None:
+        await conversaciones.acuse(datos.u, datos.c, datos.m)
     return {"ok": True}

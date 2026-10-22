@@ -6,7 +6,7 @@ estado: activo
 
 # Organigramas oficiales en el Directorio (Jerarquía)
 
-> Los PDF oficiales están en Calibre (serie «Organigramas oficiales») y las transcripciones (`<sigla>.json`), con su cargador `cargar_en_sgdp.py`, en `bookmarks/instituciones/_organigramas/`; aquí no se guardan copias.
+> Los PDF oficiales están en Calibre (serie «Organigramas oficiales») y las transcripciones (`<sigla>.json`), con su cargador `cargar_en_qillqa.py`, en `bookmarks/instituciones/_organigramas/`; aquí no se guardan copias.
 
 La pestaña **Directorio → Jerarquía** es el mapa navegable del Estado: cada
 institución puede tener su organigrama oficial cargado como datos (no como

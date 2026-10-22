@@ -1,15 +1,15 @@
 """Qué es cada cosa de Qillqa en OpenProject (2026-10-02). Puro: sin red ni base de datos.
 
-El Qillqa es el sistema de REGISTRO (documentos, proyectos de ley); OpenProject es el de
+Qillqa es el sistema de REGISTRO (documentos, proyectos de ley); OpenProject es el de
 PLANIFICACIÓN de la entidad. Para que el Gantt, el calendario y los tableros de OpenProject
 muestren el trabajo de Qillqa sin volver a cargarlo, cada elemento se REFLEJA como un paquete
 de trabajo con una clave estable en el campo «Ruta en disco»:
 
-    documento producido   → Documento en «documentos»            sgdp:doc:<id>
-    documento recibido    → Solicitud recibida en «correspondencia» sgdp:doc:<id>
-    proyecto de ley       → Proyecto de Ley en «legislativo»     sgdp:pl:<id>
-      └ fase              → Tarea hija, con inicio y límite      sgdp:pl-fase:<id>
-          └ tarea         → Tarea hija de su fase (o del PL)     sgdp:pl-tarea:<id>
+    documento producido   → Documento en «documentos»            qillqa:doc:<id>
+    documento recibido    → Solicitud recibida en «correspondencia» qillqa:doc:<id>
+    proyecto de ley       → Proyecto de Ley en «legislativo»     qillqa:pl:<id>
+      └ fase              → Tarea hija, con inicio y límite      qillqa:pl-fase:<id>
+          └ tarea         → Tarea hija de su fase (o del PL)     qillqa:pl-tarea:<id>
 
 Lo que Qillqa ESCRIBE en el reflejo (asunto, estado, responsable, fechas, número) es suyo
 y se rehace en cada cambio; la DESCRIPCIÓN solo se pone al crear, así los comentarios, los
@@ -72,6 +72,19 @@ TIPO_DOCUMENTAL = {
 
 # Campos personalizados (seed 13): la clave de enlace y los que se llenan.
 CAMPO_CLAVE = "Ruta en disco"
+# Las claves se escribían «sgdp:…» hasta el 2026-10-22 (fase 10.4): lo que aún esté así en OpenProject se reconoce y se
+# reescribe con la clave nueva al sincronizarlo (la tabla local op_enlaces ya se migró al arrancar).
+PREFIJOS_PROPIOS = ("qillqa:", "sgdp:")
+
+
+def es_propia(valor) -> bool:
+    """¿Es la clave de algo de Qillqa (nueva o vieja)?"""
+    return str(valor or "").startswith(PREFIJOS_PROPIOS)
+
+
+def clave_vieja(clave: str) -> str:
+    """La forma que tenía la clave antes del 2026-10-22, para adoptar lo que OpenProject aún guarda así."""
+    return "sgdp:" + clave.split(":", 1)[1]
 
 
 @dataclass
@@ -123,18 +136,18 @@ def numero_documento(tipo_nombre: str, numero: int | None, periodo: str) -> str:
     return f"{tipo_nombre.upper()} N° {int(numero):03d}-{periodo}"
 
 
-def item_documento(d: dict, *, base_sgdp: str, proyecto_documentos: str, proyecto_recibidos: str) -> Item | None:
+def item_documento(d: dict, *, base_qillqa: str, proyecto_documentos: str, proyecto_recibidos: str) -> Item | None:
     """`d`: id, tipo, tipo_nombre, numero, periodo, estado, asunto, responsable_id, recibido.
     Devuelve None para lo que no se refleja (anulados)."""
     estado = d.get("estado") or ""
     if estado == "ANULADO":
         return None
-    enlace = _enlace(base_sgdp, f"/documentos/{d['id']}")
+    enlace = _enlace(base_qillqa, f"/documentos/{d['id']}")
     numero = numero_documento(d.get("tipo_nombre") or d.get("tipo") or "documento", d.get("numero"), d.get("periodo") or "")
     asunto = (d.get("asunto") or "").strip() or f"{d.get('tipo_nombre') or 'Documento'} {numero}"
     if d.get("recibido"):
         return Item(
-            clave=f"sgdp:doc:{d['id']}", proyecto=proyecto_recibidos, tipo="Solicitud recibida",
+            clave=f"qillqa:doc:{d['id']}", proyecto=proyecto_recibidos, tipo="Solicitud recibida",
             asunto=asunto[:250], estado=ESTADO_RECIBIDO.get(estado, "Nuevo"),
             responsable_id=d.get("responsable_id"), textos={"N° Documento": numero}, enlace=enlace,
             descripcion=_descripcion(enlace, f"Documento recibido {numero}"),
@@ -144,20 +157,20 @@ def item_documento(d: dict, *, base_sgdp: str, proyecto_documentos: str, proyect
     if d.get("tipo") in TIPO_DOCUMENTAL:
         listas["Tipo documental"] = TIPO_DOCUMENTAL[d["tipo"]]
     return Item(
-        clave=f"sgdp:doc:{d['id']}", proyecto=proyecto_documentos, tipo="Documento",
+        clave=f"qillqa:doc:{d['id']}", proyecto=proyecto_documentos, tipo="Documento",
         asunto=asunto[:250], estado=ESTADO_DOCUMENTO.get(estado, "Nuevo"),
         responsable_id=d.get("responsable_id"), textos={"N° Documento": numero}, listas=listas,
         enlace=enlace, descripcion=_descripcion(enlace, numero if d.get("numero") not in (None, "") else f"{d.get('tipo_nombre') or 'Documento'} sin numerar"),
     )
 
 
-def items_proyecto(p: dict, fases: list[dict], tareas: list[dict], *, base_sgdp: str, proyecto_legislativo: str) -> list[Item]:
+def items_proyecto(p: dict, fases: list[dict], tareas: list[dict], *, base_qillqa: str, proyecto_legislativo: str) -> list[Item]:
     """El proyecto de ley y, debajo, sus fases y tareas, padres antes que hijos.
     `p`: id, codigo, titulo, estado, responsable_id, numero_oficial, comisiones.
     `fases`: id, nombre, estado, responsable_id, inicio, limite, ambito.
     `tareas`: id, fase_id, titulo, estado, responsable_id, limite."""
-    base = _enlace(base_sgdp, f"/proyectos/{p['id']}")
-    clave_pl = f"sgdp:pl:{p['id']}"
+    base = _enlace(base_qillqa, f"/proyectos/{p['id']}")
+    clave_pl = f"qillqa:pl:{p['id']}"
     textos = {"N° Documento": p.get("numero_oficial") or ""}
     if p.get("comisiones"):
         textos["Comisión"] = p["comisiones"][:250]
@@ -170,7 +183,7 @@ def items_proyecto(p: dict, fases: list[dict], tareas: list[dict], *, base_sgdp:
     for f in fases:
         enlace = f"{base}?ir=fase:{f['id']}" if base else ""
         salida.append(Item(
-            clave=f"sgdp:pl-fase:{f['id']}", proyecto=proyecto_legislativo, tipo="Tarea",
+            clave=f"qillqa:pl-fase:{f['id']}", proyecto=proyecto_legislativo, tipo="Tarea",
             asunto=f"{p['codigo']} · {f['nombre']}"[:250], estado=ESTADO_FASE.get(f.get("estado") or "", "Nuevo"),
             responsable_id=f.get("responsable_id"), inicio=_fecha(f.get("inicio")), fin=_fecha(f.get("limite")),
             padre=clave_pl, enlace=enlace,
@@ -179,22 +192,22 @@ def items_proyecto(p: dict, fases: list[dict], tareas: list[dict], *, base_sgdp:
     for t in tareas:
         enlace = f"{base}?ir=tarea:{t['id']}" if base else ""
         salida.append(Item(
-            clave=f"sgdp:pl-tarea:{t['id']}", proyecto=proyecto_legislativo, tipo="Tarea",
+            clave=f"qillqa:pl-tarea:{t['id']}", proyecto=proyecto_legislativo, tipo="Tarea",
             asunto=(t.get("titulo") or "Tarea")[:250], estado=ESTADO_TAREA.get(t.get("estado") or "", "Nuevo"),
             responsable_id=t.get("responsable_id"), fin=_fecha(t.get("limite")),
-            padre=f"sgdp:pl-fase:{t['fase_id']}" if t.get("fase_id") else clave_pl, enlace=enlace,
+            padre=f"qillqa:pl-fase:{t['fase_id']}" if t.get("fase_id") else clave_pl, enlace=enlace,
             descripcion=_descripcion(enlace, f"Tarea del proyecto {p['codigo']}"),
         ))
     return salida
 
 
-def usuarios_op(sgdp: list[dict], op: list[dict]) -> dict[int, int]:
+def usuarios_op(qillqa: list[dict], op: list[dict]) -> dict[int, int]:
     """Usuario de Qillqa → usuario de OpenProject: por correo y, si no, por nombre de usuario
-    (el «login» de OpenProject). `sgdp`: id, email, nombre_usuario. `op`: id, email, login."""
+    (el «login» de OpenProject). `qillqa`: id, email, nombre_usuario. `op`: id, email, login."""
     por_correo = {(u.get("email") or "").strip().lower(): u["id"] for u in op if u.get("email")}
     por_login = {(u.get("login") or "").strip().lower(): u["id"] for u in op if u.get("login")}
     salida: dict[int, int] = {}
-    for u in sgdp:
+    for u in qillqa:
         correo = (u.get("email") or "").strip().lower()
         login = (u.get("nombre_usuario") or "").strip().lower()
         op_id = por_correo.get(correo) if correo else None
@@ -205,17 +218,17 @@ def usuarios_op(sgdp: list[dict], op: list[dict]) -> dict[int, int]:
     return salida
 
 
-def cierre_desde_op(clave: str, cerrado: bool, estado_sgdp: str) -> str | None:
+def cierre_desde_op(clave: str, cerrado: bool, estado_qillqa: str) -> str | None:
     """Lo que vuelve de OpenProject: una fase o tarea de un PL cerrada o reabierta ALLÁ.
     Devuelve el estado nuevo de Qillqa, o None si ya coincide o no aplica."""
-    if clave.startswith("sgdp:pl-tarea:"):
-        if cerrado and estado_sgdp != "hecha":
+    if clave.startswith("qillqa:pl-tarea:"):
+        if cerrado and estado_qillqa != "hecha":
             return "hecha"
-        if not cerrado and estado_sgdp == "hecha":
+        if not cerrado and estado_qillqa == "hecha":
             return "por_hacer"
-    elif clave.startswith("sgdp:pl-fase:"):
-        if cerrado and estado_sgdp not in ("hecha", "omitida"):
+    elif clave.startswith("qillqa:pl-fase:"):
+        if cerrado and estado_qillqa not in ("hecha", "omitida"):
             return "hecha"
-        if not cerrado and estado_sgdp in ("hecha", "omitida"):
+        if not cerrado and estado_qillqa in ("hecha", "omitida"):
             return "en_curso"
     return None

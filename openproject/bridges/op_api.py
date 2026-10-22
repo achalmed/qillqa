@@ -138,8 +138,10 @@ class OpenProject:
 
     # ---- upsert idempotente ----
     def upsert(self, match_cf, match_value, subject, type_name, status_name,
-               priority_name, project_ident, text_cfs=None, list_cfs=None, due_date=None):
+               priority_name, project_ident, text_cfs=None, list_cfs=None, due_date=None, match_alternativos=()):
         existing = self.find_by_cf(match_cf, match_value)
+        for otro in match_alternativos:   # la forma vieja de la clave (p. ej. «sgdp:doc:N» hasta el 2026-10-22)
+            existing = existing or self.find_by_cf(match_cf, otro)
         payload = self._payload(subject, type_name, status_name, priority_name,
                                 project_ident=None if existing else project_ident,
                                 text_cfs=text_cfs, list_cfs=list_cfs, due_date=due_date)

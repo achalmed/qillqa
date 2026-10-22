@@ -13,9 +13,12 @@ os.environ.setdefault("JWT_SECRET", "prueba")
 
 import pytest  # noqa: E402
 
-from app import flujo  # noqa: E402
-from app.modelos import Documento, Usuario  # noqa: E402
-from app.servicios import entradas, envio, eventos_sistema, vigencia  # noqa: E402
+from qillqasqa import flujo  # noqa: E402
+from app.modelos import Usuario  # noqa: E402
+from qillqasqa.modelos import Documento
+from qillqasqa.servicios import conciliacion_recibidos, envio
+from qillqasqa import eventos as qillqasqa_eventos
+from qillqasqa.servicios import vigencia  # noqa: E402
 
 
 class _Sesion:
@@ -39,8 +42,8 @@ def anuncios(monkeypatch):
     async def conciliar(sesion, doc, usuario_id=None):
         hechos["conciliados"].append((doc.id, doc.estado))
 
-    monkeypatch.setattr(eventos_sistema, "emitir_seguro", emitir)
-    monkeypatch.setattr(entradas, "conciliar_seguro", conciliar)
+    monkeypatch.setattr(qillqasqa_eventos, "emitir", emitir)   # su bandeja (Qillqasqa Q4a)
+    monkeypatch.setattr(conciliacion_recibidos, "conciliar_seguro", conciliar)
     return hechos
 
 
@@ -138,8 +141,9 @@ def test_el_cambio_manual_sigue_disponible():
 
 
 def test_datos_del_evento_en_un_solo_lugar():
-    from app.api import documentos
+    from qillqasqa.api import documentos
+    from qillqasqa.servicios import documentos_contrato
 
-    assert documentos._datos_evento_doc is eventos_sistema.datos_documento
-    datos = eventos_sistema.datos_documento(_doc(), _usuario())
+    assert documentos._datos_evento_doc is documentos_contrato.datos_evento
+    datos = documentos_contrato.datos_evento(_doc(), _usuario())
     assert datos["tipo"] == "oficio" and datos["autor_id"] == 2 and "numero" in datos

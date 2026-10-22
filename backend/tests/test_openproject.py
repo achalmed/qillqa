@@ -19,7 +19,7 @@ from app.servicios import openproject as op  # noqa: E402
 from app.servicios import openproject_mapa as mapa  # noqa: E402
 from app.servicios import openproject_sync as sync  # noqa: E402
 
-BASE = "https://sgdp.ejemplo"
+BASE = "https://qillqa.ejemplo"
 
 
 # --- Mapeo ---------------------------------------------------------------------
@@ -29,15 +29,15 @@ def test_documento_producido_y_recibido():
     it = mapa.item_documento(
         {"id": 7, "tipo": "oficio", "tipo_nombre": "Oficio", "numero": 33, "periodo": "2026-2027", "estado": "ENVIADO",
          "asunto": "Pedido de información", "responsable_id": 3},
-        base_sgdp=BASE, proyecto_documentos="documentos", proyecto_recibidos="correspondencia")
-    assert (it.clave, it.proyecto, it.tipo, it.estado) == ("sgdp:doc:7", "documentos", "Documento", "Enviado")
+        base_qillqa=BASE, proyecto_documentos="documentos", proyecto_recibidos="correspondencia")
+    assert (it.clave, it.proyecto, it.tipo, it.estado) == ("qillqa:doc:7", "documentos", "Documento", "Enviado")
     assert it.textos["N° Documento"] == "OFICIO N° 033-2026-2027"
     assert it.listas == {"Pelota": "De tercero", "Tipo documental": "Oficio"}
     assert it.enlace == f"{BASE}/documentos/7" and it.enlace in it.descripcion
     rec = mapa.item_documento({"id": 8, "tipo": "recibido", "estado": "BORRADOR", "recibido": True},
-                              base_sgdp=BASE, proyecto_documentos="documentos", proyecto_recibidos="correspondencia")
+                              base_qillqa=BASE, proyecto_documentos="documentos", proyecto_recibidos="correspondencia")
     assert (rec.proyecto, rec.tipo, rec.estado) == ("correspondencia", "Solicitud recibida", "Nuevo")
-    assert mapa.item_documento({"id": 9, "estado": "ANULADO"}, base_sgdp="", proyecto_documentos="d", proyecto_recibidos="c") is None
+    assert mapa.item_documento({"id": 9, "estado": "ANULADO"}, base_qillqa="", proyecto_documentos="d", proyecto_recibidos="c") is None
 
 
 def test_proyecto_de_ley_con_fases_y_tareas_en_orden():
@@ -46,18 +46,18 @@ def test_proyecto_de_ley_con_fases_y_tareas_en_orden():
         [{"id": 40, "nombre": "Redacción", "estado": "en_curso", "inicio": "2026-10-01", "limite": "2026-10-20"}],
         [{"id": 7, "fase_id": 40, "titulo": "Revisar art. 2", "estado": "hecha", "limite": "2026-10-05"},
          {"id": 8, "fase_id": None, "titulo": "Suelta", "estado": "por_hacer", "limite": "mañana"}],
-        base_sgdp=BASE, proyecto_legislativo="legislativo")
+        base_qillqa=BASE, proyecto_legislativo="legislativo")
     claves = [i.clave for i in items]
-    assert claves == ["sgdp:pl:2", "sgdp:pl-fase:40", "sgdp:pl-tarea:7", "sgdp:pl-tarea:8"]
+    assert claves == ["qillqa:pl:2", "qillqa:pl-fase:40", "qillqa:pl-tarea:7", "qillqa:pl-tarea:8"]
     pl, fase, t7, t8 = items
     assert (pl.tipo, pl.estado, pl.textos.get("Comisión")) == ("Proyecto de Ley", "Redacción", "Transportes")
-    assert (fase.padre, fase.inicio, fase.fin, fase.estado) == ("sgdp:pl:2", "2026-10-01", "2026-10-20", "En curso")
-    assert (t7.padre, t7.estado, t7.fin) == ("sgdp:pl-fase:40", "Cerrado", "2026-10-05")
-    assert (t8.padre, t8.fin) == ("sgdp:pl:2", "")  # sin fase cuelga del PL; fecha inválida no viaja
+    assert (fase.padre, fase.inicio, fase.fin, fase.estado) == ("qillqa:pl:2", "2026-10-01", "2026-10-20", "En curso")
+    assert (t7.padre, t7.estado, t7.fin) == ("qillqa:pl-fase:40", "Cerrado", "2026-10-05")
+    assert (t8.padre, t8.fin) == ("qillqa:pl:2", "")  # sin fase cuelga del PL; fecha inválida no viaja
 
 
 def test_huella_cambia_solo_con_lo_que_se_escribe():
-    it = mapa.item_documento({"id": 1, "tipo": "oficio", "estado": "BORRADOR", "asunto": "A"}, base_sgdp="", proyecto_documentos="d", proyecto_recibidos="c")
+    it = mapa.item_documento({"id": 1, "tipo": "oficio", "estado": "BORRADOR", "asunto": "A"}, base_qillqa="", proyecto_documentos="d", proyecto_recibidos="c")
     h = it.huella(5)
     it.descripcion = "otra"
     assert it.huella(5) == h
@@ -67,18 +67,18 @@ def test_huella_cambia_solo_con_lo_que_se_escribe():
 
 
 def test_usuarios_por_correo_y_por_login():
-    sgdp = [{"id": 1, "email": "Ana@Despacho.pe", "nombre_usuario": "ana"}, {"id": 2, "email": "", "nombre_usuario": "luis"}, {"id": 3, "email": "x@y", "nombre_usuario": "nadie"}]
+    qillqa = [{"id": 1, "email": "Ana@Despacho.pe", "nombre_usuario": "ana"}, {"id": 2, "email": "", "nombre_usuario": "luis"}, {"id": 3, "email": "x@y", "nombre_usuario": "nadie"}]
     opu = [{"id": 10, "email": "ana@despacho.pe", "login": "aperez"}, {"id": 11, "email": "", "login": "luis"}]
-    assert mapa.usuarios_op(sgdp, opu) == {1: 10, 2: 11}
+    assert mapa.usuarios_op(qillqa, opu) == {1: 10, 2: 11}
 
 
 def test_cierre_desde_openproject():
-    assert mapa.cierre_desde_op("sgdp:pl-tarea:1", True, "por_hacer") == "hecha"
-    assert mapa.cierre_desde_op("sgdp:pl-tarea:1", False, "hecha") == "por_hacer"
-    assert mapa.cierre_desde_op("sgdp:pl-tarea:1", True, "hecha") is None
-    assert mapa.cierre_desde_op("sgdp:pl-fase:1", True, "omitida") is None
-    assert mapa.cierre_desde_op("sgdp:pl-fase:1", False, "hecha") == "en_curso"
-    assert mapa.cierre_desde_op("sgdp:doc:1", True, "BORRADOR") is None
+    assert mapa.cierre_desde_op("qillqa:pl-tarea:1", True, "por_hacer") == "hecha"
+    assert mapa.cierre_desde_op("qillqa:pl-tarea:1", False, "hecha") == "por_hacer"
+    assert mapa.cierre_desde_op("qillqa:pl-tarea:1", True, "hecha") is None
+    assert mapa.cierre_desde_op("qillqa:pl-fase:1", True, "omitida") is None
+    assert mapa.cierre_desde_op("qillqa:pl-fase:1", False, "hecha") == "en_curso"
+    assert mapa.cierre_desde_op("qillqa:doc:1", True, "BORRADOR") is None
 
 
 # --- Un OpenProject simulado ----------------------------------------------------
@@ -200,12 +200,12 @@ def test_escribir_crea_adopta_actualiza_y_tolera_un_estado_no_admitido():
         cat = cli.catalogo()
         assert cat["proyectos"]["documentos"] == 5 and cat["cerrados"] == {4} and cat["prioridad_defecto"] == 8
         it = mapa.item_documento({"id": 7, "tipo": "oficio", "tipo_nombre": "Oficio", "estado": "EN_REVISION", "asunto": "Pedido"},
-                                 base_sgdp=BASE, proyecto_documentos="documentos", proyecto_recibidos="correspondencia")
+                                 base_qillqa=BASE, proyecto_documentos="documentos", proyecto_recibidos="correspondencia")
         # Alta: proyecto, prioridad, descripción, clave y opción de lista.
         wp_id, cerrado, nota = sync.escribir(cli, cat, it, 21, None, None)
         alta = falso.escrituras[-1][1]
         assert falso.escrituras[-1][0] == "POST" and not cerrado and not nota
-        assert alta["customField1"] == "sgdp:doc:7" and alta["_links"]["project"]["href"].endswith("/5")
+        assert alta["customField1"] == "qillqa:doc:7" and alta["_links"]["project"]["href"].endswith("/5")
         assert alta["_links"]["customField3"]["href"].endswith("/31") and alta["_links"]["assignee"]["href"].endswith("/21")
         assert "abrir en Qillqa" in alta["description"]["raw"]
         # Sin wp_id guardado, la misma clave se ADOPTA (no se duplica) y se actualiza sin tocar la descripción.

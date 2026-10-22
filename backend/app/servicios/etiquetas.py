@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from tiqsi.modulo import opcional
 
 # Sinónimos de prefijo que circulan en el sistema → el canónico.
 ALIAS = {"institucion": "inst", "documento": "doc", "proyecto": "pl", "semana": "sr", "recibido": "entrada",
@@ -35,16 +36,6 @@ def etiqueta_documento(numero: str, asunto: str = "", largo: int = 80) -> str:
     """«Oficio N° 0012-… — Asunto» (el asunto recortado). Pura."""
     asunto = (asunto or "").strip()
     return f"{numero} — {asunto[:largo]}" if asunto else numero
-
-
-def numero_de(doc) -> str:
-    """El número vigente: el oficial si lo tiene (o el impreso de un heredado); «borrador» si no."""
-    from app.servicios.numeracion import numero_mostrado
-    from app.tipos import tipo_config
-
-    if doc.numero is not None or doc.origen != "sgdp":
-        return numero_mostrado(doc)
-    return f"{tipo_config(doc.tipo).get('nombre') or 'Documento'} (borrador)"
 
 
 def etiqueta_persona(nombre: str, cargo: str = "") -> str:
@@ -67,13 +58,27 @@ def remitente_vigente(texto: str, cargo: str, persona: tuple[str, str] | None = 
     return texto or "", cargo or ""
 
 
+async def _documentos(ids) -> dict[int, dict]:
+    """La descripción de cada documento, por «documentos.v1» (sin Gestión documental, ninguna)."""
+    documentos = opcional("documentos.v1") if ids else None
+    return await documentos.descripciones(list(ids)) if documentos is not None else {}
+
+
+async def _proyectos(ids) -> dict[int, dict]:
+    proyectos = opcional("proyectos.v1") if ids else None
+    return await proyectos.etiquetas(list(ids)) if proyectos is not None else {}
+
+
+async def _semanas(que: str, ids) -> dict[int, str]:
+    semanas = opcional("semanas.v1") if ids else None
+    return await getattr(semanas, que)(list(ids)) if semanas is not None else {}
+
+
 async def etiquetas_de(sesion: AsyncSession, destinos: set[str] | list[str]) -> dict[str, str]:
     """Nombre legible y VIGENTE de cada clave (`doc:12` → «Oficio N° 0012-… — Asunto»). La salida
     usa la clave tal como llegó (`institucion:4` y `inst:4` se resuelven igual). Lo que ya no
     existe no aparece: quien llama decide qué mostrar (normalmente la clave)."""
-    from app.modelos import Documento, Entrada, Institucion, PedidoSR, Persona, Proyecto, SemanaSR, Usuario
-    from app.modelos_tareas import EventoAgenda, Tarea
-    from app.tipos import asunto_de
+    from app.modelos import Institucion, Persona, Usuario
 
     por_tipo: dict[str, dict[int, list[str]]] = {}
     for d in destinos or ():
@@ -92,40 +97,54 @@ async def etiquetas_de(sesion: AsyncSession, destinos: set[str] | list[str]) -> 
             return []
         return (await sesion.execute(select(modelo).where(modelo.id.in_(list(ids))))).scalars().all()
 
-    for d in await filas(Documento, "doc"):
-        poner("doc", d.id, etiqueta_documento(numero_de(d), asunto_de(d.tipo, d.campos) or ""))
-    for p in await filas(Proyecto, "pl"):
-        poner("pl", p.id, f"{p.codigo} — {p.titulo[:80]}" if p.codigo else p.titulo[:100])
-    for s in await filas(SemanaSR, "sr"):
-        poner("sr", s.id, f"Semana de representación {s.codigo}")
+    # Los documentos, los proyectos, las semanas y sus pedidos son de Qillqasqa: por su contrato (Q3b, 2026-10-21).
+    for d in (await _documentos(por_tipo.get("doc"))).values():
+        poner("doc", d["id"], etiqueta_documento(d["vigente"], d["asunto"]))
+    for pid, p in (await _proyectos(por_tipo.get("pl"))).items():
+        poner("pl", pid, f"{p['codigo']} — {p['titulo'][:80]}" if p["codigo"] else p["titulo"][:100])
+    for sid, codigo in (await _semanas("etiquetas", por_tipo.get("sr"))).items():
+        poner("sr", sid, f"Semana de representación {codigo}")
     for p in await filas(Persona, "persona"):
         poner("persona", p.id, etiqueta_persona(p.nombre, p.cargo or ""))
     for i in await filas(Institucion, "inst"):
         poner("inst", i.id, etiqueta_institucion(i.nombre, i.siglas or ""))
     for u in await filas(Usuario, "usuario"):
         poner("usuario", u.id, etiqueta_persona(u.nombre_completo, u.cargo or ""))
-    for pe in await filas(PedidoSR, "pedido"):
-        poner("pedido", pe.id, f"Pedido {pe.codigo}")
+    for pid, codigo in (await _semanas("pedidos", por_tipo.get("pedido"))).items():
+        poner("pedido", pid, f"Pedido {codigo}")
     if por_tipo.get("foto"):
-        from app.modelos import Foto
+        # La Mediateca rotula sus fotos por referencia («fototeca:foto:<id>», fase 10.2b del contrato de
+        # Tiqsi): nada se importa de ella; sin la Mediateca, la foto queda sin rótulo, como una que no existe.
+        from tiqsi.modulo import resolver
 
-        for f in await filas(Foto, "foto"):
-            poner("foto", f.id, f.titulo or f.nombre_original or f"Foto {f.id}")
-    for en in await filas(Entrada, "entrada"):
-        nombre = en.documento or en.nombre_original or f"Recibido {en.id}"
-        poner("entrada", en.id, f"Recibido: {nombre}" + (f" — {en.asunto[:80]}" if en.asunto else ""))
-    for t in await filas(Tarea, "tarea"):
-        poner("tarea", t.id, f"Tarea: {t.titulo[:90]}")
-    for e in await filas(EventoAgenda, "evento"):
-        poner("evento", e.id, f"Evento: {e.titulo[:90]}")
+        for fid in por_tipo["foto"]:
+            r = await resolver(f"fototeca:foto:{fid}")
+            if r is not None:
+                poner("foto", fid, r["titulo"])
+    # Lo recibido es de la Mesa de Partes: por «recibidos.v1» (Punku P2).
+    if por_tipo.get("entrada"):
+        recibidos = opcional("recibidos.v1")
+        for en in (await recibidos.fichas(list(por_tipo["entrada"]))).values() if recibidos is not None else ():
+            nombre = en["documento"] or en["nombre_original"] or f"Recibido {en['id']}"
+            poner("entrada", en["id"], f"Recibido: {nombre}" + (f" — {en['asunto'][:80]}" if en["asunto"] else ""))
+    # Las tareas y los eventos son de Tareas y Agenda (fase 10.2b): por referencia («tareas:tarea:<id>»).
+    if por_tipo.get("tarea") or por_tipo.get("evento"):
+        from tiqsi.modulo import resolver
+
+        for tipo in ("tarea", "evento"):
+            for ident in por_tipo.get(tipo) or ():
+                r = await resolver(f"tareas:{tipo}:{ident}")
+                if r is not None:
+                    poner(tipo, ident, r["titulo"])
     if por_tipo.get("rend"):
-        # Rendición de cuentas (2026-10-18): el comisionado y la semana, vigentes.
-        from app.modelos_rendicion import Rendicion
+        # Rendición de cuentas (2026-10-18): el comisionado y la semana, vigentes. Por referencia
+        # («rendicion:rendicion:<id>», fase 10.2b): Rendición es un módulo aislado (Yupay); sin él, queda sin rótulo.
+        from tiqsi.modulo import resolver
 
-        for r in await filas(Rendicion, "rend"):
-            u = await sesion.get(Usuario, r.usuario_id)
-            s = await sesion.get(SemanaSR, r.semana_id) if r.semana_id else None
-            poner("rend", r.id, f"Rendición R-{r.id:03d} — {(u.nombre_completo if u else '')}" + (f" ({s.codigo})" if s else ""))
+        for rid in por_tipo["rend"]:
+            r = await resolver(f"rendicion:rendicion:{rid}")
+            if r is not None:
+                poner("rend", rid, r["titulo"])
     return salida
 
 
@@ -139,9 +158,6 @@ async def etiqueta_de(sesion: AsyncSession, clave: str, defecto: str | None = No
 async def cortas_de(sesion: AsyncSession, destinos: set[str] | list[str]) -> dict[str, str]:
     """El código corto y VIGENTE de cada clave, para chips y vínculos breves: `doc:12` → «OF-0012»
     (o «Oficio (borrador)»), `pl:3` → su código, `sr:2` → «SR-02». Lo demás, como `etiquetas_de`."""
-    from app.modelos import Documento, Proyecto, SemanaSR
-    from app.tipos import tipo_config
-
     salida: dict[str, str] = {}
     resto: set[str] = set()
     por: dict[str, dict[int, list[str]]] = {}
@@ -151,20 +167,12 @@ async def cortas_de(sesion: AsyncSession, destinos: set[str] | list[str]) -> dic
             por.setdefault(p[0], {}).setdefault(p[1], []).append(d)
         elif p:
             resto.add(d)
-    for modelo, tipo in ((Documento, "doc"), (Proyecto, "pl"), (SemanaSR, "sr")):
-        ids = por.get(tipo)
-        if not ids:
-            continue
-        for fila in (await sesion.execute(select(modelo).where(modelo.id.in_(list(ids))))).scalars().all():
-            if tipo == "doc":
-                serie = tipo_config(fila.tipo).get("serie") or fila.serie
-                texto = f"{serie}-{fila.numero:04d}" if fila.numero is not None else numero_de(fila)
-            elif tipo == "pl":
-                texto = fila.codigo or fila.titulo[:60]
-            else:
-                texto = fila.codigo
-            for original in ids[fila.id]:
-                salida[original] = texto
+    textos = {("doc", i): d["corta"] for i, d in (await _documentos(por.get("doc"))).items()}
+    textos |= {("pl", i): p["codigo"] or p["titulo"][:60] for i, p in (await _proyectos(por.get("pl"))).items()}
+    textos |= {("sr", i): codigo for i, codigo in (await _semanas("etiquetas", por.get("sr"))).items()}
+    for (tipo, ident), texto in textos.items():
+        for original in por[tipo][ident]:
+            salida[original] = texto
     if resto:
         salida.update(await etiquetas_de(sesion, resto))
     return salida
@@ -187,21 +195,14 @@ async def propagar(sesion: AsyncSession, entidad: str) -> int:
     try:
         async with sesion.begin_nested():
             if p[0] == "doc":
-                from app.modelos import Documento
-                from app.servicios import agenda_detectada
-
-                from app.servicios import tareas_automaticas
-
-                doc = await sesion.get(Documento, p[1])
-                if doc is None:
-                    return 0
-                cambios = (await agenda_detectada.recomponer_de_documento(sesion, doc)
-                           + await tareas_automaticas.recomponer_de_documento(sesion, doc.id))
+                # Las copias de Tareas y Agenda (eventos detectados, tareas automáticas) las pone al día ella misma al
+                # recibir «documento.numerado» o «documento.estado» por el bus (fase 10.2b).
+                pass
     except Exception:  # noqa: BLE001 — lo vinculado se repone en la reconciliación
-        logging.getLogger("sgdp.etiquetas").exception("No se pudo propagar el cambio de %s", entidad)
+        logging.getLogger("qillqa.etiquetas").exception("No se pudo propagar el cambio de %s", entidad)
     # Los mensajes del chat que presentan la entidad se ponen al día (2026-10-18, §27 y §25): para toda
     # entidad (`doc:`, `evento:`, `tarea:`, `entrada:`…), por su propio camino seguro.
-    from app.servicios import chat as svc_chat
+    from app.servicios import avisos_chat
 
-    cambios += await svc_chat.refrescar_mensajes_de(sesion, f"{p[0]}:{p[1]}")
+    cambios += await avisos_chat.refrescar_mensajes_de(sesion, f"{p[0]}:{p[1]}")
     return cambios

@@ -6,9 +6,10 @@ from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from app.servicios import cuentas, verificacion  # noqa: E402
+from qillqasqa.servicios import verificacion
+from app.servicios import cuentas  # noqa: E402
 from app.servicios.etiquetas import etiqueta_documento, etiqueta_institucion, etiqueta_persona, partir, remitente_vigente  # noqa: E402
-from app.servicios.tareas_automaticas import recomponer_titulo_tarea  # noqa: E402
+from minka.tareas_automaticas import recomponer_titulo_tarea  # noqa: E402
 
 
 def test_partir_y_alias():

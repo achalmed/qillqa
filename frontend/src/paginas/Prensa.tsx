@@ -1,126 +1,92 @@
 /**
- * PRENSA — el estudio de Identidad Visual dentro del sistema (2026-10-06).
+ * PRENSA — las piezas de prensa y los editores del estudio dentro del sistema (2026-10-06; editores E0–E4a, 2026-10-20).
  *
- * La página no se programa aquí: los editores de piezas (`editor.html`, tipo
- * Canva), fotos (`foto.html`, tipo Photoshop sobre miniPaint), video
- * (`video.html`, línea de tiempo multipista) y formatos y marcos (`media.html`)
- * son del repo identidad-visual y corren en su
- * propio servidor. La API los publica bajo /estudio/ (backend/app/api/prensa.py)
- * y aquí solo se muestran dentro del marco del sistema, como el Observatorio.
- *
- * El marco no puede mandar el token de la web: antes de abrirlo se pide la
- * sesión del estudio (`POST /api/prensa/sesion`), una cookie de vida corta solo
- * para /estudio/, que se renueva mientras la página siga abierta.
+ * La página no programa los editores: son módulos, cada uno con su API, su sesión (una cookie de vida corta solo para
+ * su carpeta: el marco no puede mandar el token de la web) y su pantalla, que llega por su manifiesto y se pinta en el
+ * marco de Prensa:
+ *   · el editor de piezas, Awana (`editor.html`, tipo Canva; /api/piezas/editor/, `AWANA.cargar`);
+ *   · el editor de fotos, Tullpu (`foto.html` sobre miniPaint y el revelado de `media.html`; /api/fotos/, `TULLPU.cargar`);
+ *   · el editor de videos, Kuyuy (`video.html`, línea de tiempo multipista; /api/videos/, `KUYUY.cargar`), que también
+ *     recorta los videos de `media.html`.
  *
  * Opciones del módulo (navegacion.ts):
- *   /prensa?ver=piezas                   → PIEZAS registradas (componentes/prensa/Piezas.tsx; fase 9.4), sin el estudio
- *   /prensa                              → estudio: editor de piezas (plantillas)
- *   /prensa?vista=foto[&imagen=<url>]    → editor de fotos («Usar en Prensa» de la Fototeca)
+ *   /prensa?ver=piezas                   → PIEZAS registradas (del editor de piezas, Awana: su pantalla del registro)
+ *   /prensa                              → editor de piezas (plantillas)
+ *   /prensa?pieza=N                      → el editor para la pieza N: lo que se exporte se le vincula en la Mediateca
+ *   /prensa?vista=foto[&imagen=<url>]    → editor de fotos («Usar en Prensa» de la Mediateca)
  *   /prensa?vista=video                  → editor de video
  *   /prensa?vista=media[&imagen=<url>]   → formatos y marcos rápidos
  *
- * Las fotos del estudio son las de la Fototeca (la única biblioteca) y lo que se
- * exporta vuelve a ella, al álbum «Piezas de prensa».
+ * Las fotos de los editores son las de la Mediateca (la única biblioteca) y lo que se exporta vuelve a ella.
  */
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect } from 'react'
 import { PALETA } from '../paleta'
 import { useSearchParams } from 'react-router'
-import { Alert, Box, Button, CircularProgress, Typography } from '@mui/material'
+import { Box, CircularProgress } from '@mui/material'
 import Marco from '../componentes/Marco'
-import Piezas from '../componentes/prensa/Piezas'
 import { api } from '../api'
+import { cargarPagina } from '../arranque'
+import { AWANA, REGISTRO } from '@qillqa/awana/modulo'
+import { TULLPU } from '@qillqa/tullpu/modulo'
+import { KUYUY } from '@qillqa/kuyuy/modulo'
 
-interface Sesion {
-  ok: boolean
-  estudio: boolean
-  vence: string
-  banco: boolean
-}
+// Los editores, por su manifiesto: su pantalla, sin su marco (va en el de Prensa).
+const EditorPiezas = cargarPagina(AWANA.cargar)
+const EditorFotos = cargarPagina(TULLPU.cargar)
+const EditorVideos = cargarPagina(KUYUY.cargar)
+// El registro de las piezas de prensa: otra pantalla del editor de piezas (Awana E4b), por su manifiesto.
+const RegistroPiezas = cargarPagina(AWANA.pantallas!.find((p) => p.ruta === REGISTRO)!.cargar)
+// Las sesiones de los editores: la del que se muestra la abre su pantalla; las otras, Prensa, porque sus páginas se
+// enlazan entre sí («Publicaciones», «Editor de video»). Abrir una limpia la caché de Prensa en la Mediateca.
+const SESIONES = { piezas: '/api/piezas/editor/sesion', fotos: '/api/fotos/sesion', videos: '/api/videos/sesion' } as const
+type Editor = keyof typeof SESIONES
 
-type Estado = { tipo: 'cargando' } | { tipo: 'listo'; banco: boolean } | { tipo: 'apagado' } | { tipo: 'error'; texto: string }
-
-/** Cada cuánto se renueva la cookie del estudio (vive 2 horas). */
+/** Cada cuánto se renuevan las cookies de los editores (viven 2 horas). */
 const RENOVAR_MS = 30 * 60 * 1000
 
 export default function Prensa() {
-  const [consulta] = useSearchParams()
-  const [estado, setEstado] = useState<Estado>({ tipo: 'cargando' })
-  const [intento, setIntento] = useState(0)
-  // La pestaña «Piezas» es del sistema (sin iframe): no pide sesión al estudio.
+  const [consulta, setConsulta] = useSearchParams()
+  // La pestaña «Piezas» es del sistema (sin marco): no pide sesión a ningún editor.
   const piezas = consulta.get('ver') === 'piezas'
+  // Con ?pieza=N lo que se exporte queda vinculado a esa pieza de prensa (2026-10-20; viaja en la cookie).
+  const pieza = Number(consulta.get('pieza')) || 0
+  const vista = consulta.get('vista') ?? ''
+  const mostrado: Editor = vista === 'foto' || vista === 'media' ? 'fotos' : vista === 'video' ? 'videos' : 'piezas'
 
   useEffect(() => {
     if (piezas) return
-    let vivo = true
-    const abrir = () =>
-      api<Sesion>('/api/prensa/sesion', { method: 'POST' })
-        .then((s) => vivo && setEstado(s.estudio ? { tipo: 'listo', banco: s.banco } : { tipo: 'apagado' }))
-        .catch((e) => vivo && setEstado({ tipo: 'error', texto: e instanceof Error ? e.message : 'No se pudo abrir el estudio.' }))
-    void abrir()
-    // Renovar sin tocar el estado: el marco sigue tal cual (no se recarga).
-    const reloj = window.setInterval(() => {
-      api<Sesion>('/api/prensa/sesion', { method: 'POST' }).catch(() => {})
-    }, RENOVAR_MS)
-    return () => {
-      vivo = false
-      window.clearInterval(reloj)
-    }
-  }, [intento, piezas])
+    const pedido = { method: 'POST', body: JSON.stringify(pieza ? { pieza } : {}) }
+    const otras = (Object.keys(SESIONES) as Editor[]).filter((k) => k !== mostrado)
+    const abrir = () => { for (const k of otras) api(SESIONES[k], pedido).catch(() => {}) }
+    abrir()
+    const reloj = window.setInterval(abrir, RENOVAR_MS)
+    return () => window.clearInterval(reloj)
+  }, [piezas, pieza, mostrado])
 
-  const PAGINAS: Record<string, string> = { foto: 'foto.html', video: 'video.html', media: 'media.html' }
-  const vista = consulta.get('vista') ?? ''
+  const quitarPieza = () => { const c = new URLSearchParams(consulta); c.delete('pieza'); setConsulta(c) }
+  // «Usar en Prensa» de la Mediateca da la foto ya en el banco del editor de fotos (/api/fotos/banco/…).
   const imagen = consulta.get('imagen')
-  const pagina = PAGINAS[vista] ?? 'editor.html'
-  const src = `/estudio/${pagina}${imagen && vista !== 'video' ? `?imagen=${encodeURIComponent(imagen)}` : ''}`
 
   if (piezas)
     return (
       <Marco modulo="prensa" fondo={PALETA.fondo}>
-        <Piezas />
+        <Suspense fallback={<Box sx={{ flex: 1, display: 'grid', placeItems: 'center' }}><CircularProgress size={28} /></Box>}>
+          <RegistroPiezas sinMarco rutaEditor={(id: number) => `/prensa?pieza=${id}`} />
+        </Suspense>
       </Marco>
     )
 
   return (
-    // El estudio ocupa todo el alto: el botón del módulo flota encima, sin franja vacía debajo.
+    // El editor ocupa todo el alto: el botón del módulo flota encima, sin franja vacía debajo.
     <Marco modulo="prensa" sinReservaFlotante>
-      {estado.tipo === 'cargando' && (
-        <Box sx={{ flex: 1, display: 'grid', placeItems: 'center' }}>
-          <CircularProgress size={28} />
-        </Box>
-      )}
-      {(estado.tipo === 'apagado' || estado.tipo === 'error') && (
-        <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 720 }}>
-          <Alert
-            severity={estado.tipo === 'apagado' ? 'warning' : 'error'}
-            action={<Button color="inherit" size="small" onClick={() => { setEstado({ tipo: 'cargando' }); setIntento((n) => n + 1) }}>Reintentar</Button>}
-          >
-            {estado.tipo === 'apagado' ? (
-              <>
-                <Typography sx={{ fontWeight: 600, mb: 0.5 }}>El estudio de Prensa no está encendido.</Typography>
-                Lo enciende <code>./iniciar.sh</code> si el <code>.env</code> tiene <code>IDENTIDAD_PERFIL</code>. Las fotos siguen en la Mediateca.
-              </>
-            ) : (
-              estado.texto
-            )}
-          </Alert>
-        </Box>
-      )}
-      {estado.tipo === 'listo' && (
-        <>
-          {!estado.banco && (
-            <Alert severity="info" sx={{ borderRadius: 0 }}>
-              Las fotos de la Fototeca no llegan al estudio: falta su banco (<code>IDENTIDAD_PERFIL</code> o <code>ESTUDIO_BANCO</code>).
-            </Alert>
-          )}
-          <Box
-            component="iframe"
-            key={src}
-            title={`Estudio de Prensa: ${({ foto: 'fotos', video: 'video', media: 'formatos y marcos' } as Record<string, string>)[vista] ?? 'piezas'}`}
-            src={src}
-            sx={{ flex: 1, width: '100%', border: 0, display: 'block', bgcolor: 'background.default' }}
-          />
-        </>
-      )}
+      <Suspense fallback={<Box sx={{ flex: 1, display: 'grid', placeItems: 'center' }}><CircularProgress size={28} /></Box>}>
+        {mostrado === 'fotos' && (
+          <EditorFotos sinMarco vista={vista === 'media' ? 'media' : 'foto'} pieza={pieza} imagen={imagen}
+            video="/api/videos/" alCerrarPieza={quitarPieza} />
+        )}
+        {mostrado === 'videos' && <EditorVideos sinMarco pieza={pieza} alCerrarPieza={quitarPieza} />}
+        {mostrado === 'piezas' && <EditorPiezas sinMarco pieza={pieza} alCerrarPieza={quitarPieza} />}
+      </Suspense>
     </Marco>
   )
 }

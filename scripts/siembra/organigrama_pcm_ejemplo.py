@@ -1,4 +1,4 @@
-"""Siembra el organigrama OFICIAL de la PCM en el directorio del SGDP.
+"""Siembra el organigrama OFICIAL de la PCM en el directorio de Qillqa.
 
 Fundamento: PDF «Organigrama PCM RM 234 2026 PCM Publicacion.pdf» publicado en
 gob.pe (página institucional de la PCM), transcrito íntegro: Anexo 2 del ROF,
@@ -148,7 +148,7 @@ def req(method, path, tok=None, body=None):
 
 
 def main():
-    tok = req("POST", "/api/auth/login", body={"usuario": os.environ.get("SGDP_USUARIO", "admin"), "clave": os.environ["SGDP_CLAVE"]})["token"]
+    tok = req("POST", "/api/auth/login", body={"usuario": os.environ.get("QILLQA_USUARIO", "admin"), "clave": os.environ["QILLQA_CLAVE"]})["token"]
     todas = req("GET", "/api/directorio/instituciones?q=&limite=500", tok)
     pcm = next(i for i in todas if i["siglas"] == "PCM")
     print(f"PCM: id={pcm['id']} «{pcm['nombre']}»")

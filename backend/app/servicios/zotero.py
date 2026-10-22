@@ -3,7 +3,7 @@
 Roles del ecosistema, corregidos por Edison el 2026-10-06 (`docs/decisiones.md` §Biblioteca y
 citas): CALIBRE organiza y administra los ARCHIVOS (dónde está el libro, el documento, el
 artículo); ZOTERO manda en los metadatos, las referencias y las citas, para escribir en
-cualquier contexto (escritura, este Qillqa, Obsidian, LibreOffice…). El Qillqa no reimplementa a
+cualquier contexto (escritura, Qillqa, Obsidian, LibreOffice…). Qillqa no reimplementa a
 Zotero: le pide la referencia y la cita ya formateadas con su propio procesador CSL (citeproc)
 y la clave de Better BibTeX.
 
@@ -20,7 +20,7 @@ Dos caminos, en este orden:
    leída y borrada al instante: nunca se abre la base viva (Zotero la bloquea y escribir es
    de `scripts-biblioteca`, por su puerta única). Se carga en memoria y se recarga solo si
    cambia el `mtime`. La referencia y la cita se arman entonces con el respaldo APA 7 del
-   Qillqa y van MARCADAS (`formateado_por = 'sgdp-respaldo'`): no son de Zotero.
+   Qillqa y van MARCADAS (`formateado_por = 'qillqa-respaldo'`): no son de Zotero.
 
 Sin ninguno de los dos, `estado()` lo dice («Zotero no está abierto…») y `buscar()` devuelve [].
 
@@ -31,7 +31,7 @@ ruta sale `calibre_id`, que Qillqa usa para ubicar el ARCHIVO, nunca para el tex
 Contrato de cada obra: `zotero_key`, `citekey`, `titulo`, `autores` (lista «Apellido, Nombre»),
 `anio`, `tipo`, `contenedor`, `editorial`, `doi`, `url`, `etiquetas`, `calibre_id`, `cita`
 (entrada de la bibliografía, texto plano), `cita_md` (con *cursivas*), `cita_corta` (cita en el
-texto, «(Cotler, 1978)»), `formateado_por` ('zotero' | 'sgdp-respaldo'), `origen` ('api' | 'sqlite').
+texto, «(Cotler, 1978)»), `formateado_por` ('zotero' | 'qillqa-respaldo'), `origen` ('api' | 'sqlite').
 """
 
 from __future__ import annotations
@@ -51,7 +51,7 @@ import httpx
 from app.config import config
 from app.servicios.biblioteca import norm, puntuar
 
-log = logging.getLogger("sgdp.zotero")
+log = logging.getLogger("qillqa.zotero")
 
 LIMITE_DEFECTO = 20
 LIMITE_MAXIMO = 50
@@ -198,7 +198,7 @@ def desde_api(obj: dict, rutas_adjuntos: dict[str, str] | None = None) -> dict:
         d["formateado_por"] = "zotero"
     else:
         d["cita"], d["cita_md"], d["cita_corta"] = cita_respaldo(d), cita_respaldo(d, True), cita_corta_respaldo(d)
-        d["formateado_por"] = "sgdp-respaldo"
+        d["formateado_por"] = "qillqa-respaldo"
     d["origen"] = "api"
     return d
 
@@ -218,8 +218,8 @@ def interpretar(q: str) -> tuple[str, list[str], bool]:
 
 # ---------------------------------------------------------------- respaldo: copia de zotero.sqlite
 def _workspace_dir() -> Path | None:
-    from app.servicios.fuentes import _workspace   # mismo resolutor que las fuentes enlazadas
-    env = _workspace()
+    from app.servicios.biblioteca import workspace   # el mismo resolutor que la biblioteca y las fuentes enlazadas
+    env = workspace()
     return Path(env.ZOTERO_DIR) if env and getattr(env, "ZOTERO_DIR", None) else None
 
 
@@ -283,7 +283,7 @@ def leer_sqlite(con: sqlite3.Connection) -> dict[str, dict]:
             "_numero": " ".join(f.get(c, "") for c in ("publicLawNumber", "number", "billNumber", "reportNumber") if f.get(c)),
         }
         d["cita"], d["cita_md"], d["cita_corta"] = cita_respaldo(d), cita_respaldo(d, True), cita_corta_respaldo(d)
-        d["formateado_por"], d["origen"] = "sgdp-respaldo", "sqlite"
+        d["formateado_por"], d["origen"] = "qillqa-respaldo", "sqlite"
         salida[d["zotero_key"]] = _indices(d)
     return salida
 
@@ -291,7 +291,7 @@ def leer_sqlite(con: sqlite3.Connection) -> dict[str, dict]:
 def cargar_copia(base: Path) -> dict[str, dict]:
     """Copia `zotero.sqlite` (y su `-wal`) a una carpeta temporal, la lee y la borra. La base
     viva no se abre nunca (Zotero la bloquea mientras corre)."""
-    with tempfile.TemporaryDirectory(prefix="sgdp-zotero-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="qillqa-zotero-") as tmp:
         copia = Path(tmp) / "zotero.sqlite"
         shutil.copy2(base, copia)
         wal = base.with_name(base.name + "-wal")

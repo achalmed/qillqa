@@ -1,0 +1,18 @@
+# sistema/qillqa.service.ejemplo — unidad systemd de usuario de Qillqa; copiar a ~/.config/systemd/user/qillqa.service
+# instalar_enlace_fijo.sh escribe la real con la ruta del repo; %h = home del usuario (lo expande systemd).
+[Unit]
+Description=Qillqa — sistema de gestión documental del despacho (arranque y publicación)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=%h/Documents/qillqa
+ExecStart="%h/Documents/qillqa/arranque_automatico.sh"
+ExecStop="%h/Documents/qillqa/detener.sh"
+# arranque_automatico.sh espera hasta 20 min a cada cosa y reintenta.
+TimeoutStartSec=3600
+
+[Install]
+WantedBy=default.target

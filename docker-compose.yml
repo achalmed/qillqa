@@ -1,4 +1,8 @@
 # Qillqa — despliegue completo con Docker Compose (demo y uso real).
+# Qillqa es el anfitrión de una plataforma de módulos que viven en sus propios repositorios (Tiqsi, el contrato; Qillqasqa,
+# con el marco documental y la edición simultánea; la Mediateca, Tareas y Agenda, el chat, la Mesa de Partes…). Se
+# clonan JUNTO a este (la misma carpeta madre; PLATAFORMA_DIR la cambia) y cada imagen los trae por `additional_contexts`
+# (Docker Compose 2.17 o más nuevo): ver «Probar la demo» en el README.
 #   cp .env.example .env            cambiar las claves
 #   docker compose up -d --build    base de datos, API con LuaLaTeX y web (con el servidor de edición simultánea)
 #   docker compose run --rm siembra datos ficticios de demostración (idempotente; no usar con datos reales)
@@ -22,15 +26,29 @@ services:
     restart: unless-stopped
 
   api:
-    build: ./backend
+    build:
+      context: ./backend
+      additional_contexts:
+        tiqsi: ${PLATAFORMA_DIR:-..}/tiqsi
+        rikchay: ${PLATAFORMA_DIR:-..}/rikchay
+        wayra: ${PLATAFORMA_DIR:-..}/wayra
+        ruray: ${PLATAFORMA_DIR:-..}/ruray
+        tullpu: ${PLATAFORMA_DIR:-..}/tullpu
+        kuyuy: ${PLATAFORMA_DIR:-..}/kuyuy
+        awana: ${PLATAFORMA_DIR:-..}/awana
+        qhawana: ${PLATAFORMA_DIR:-..}/qhawana
+        yupay: ${PLATAFORMA_DIR:-..}/yupay
+        minka: ${PLATAFORMA_DIR:-..}/minka
+        rimay: ${PLATAFORMA_DIR:-..}/rimay
+        punku: ${PLATAFORMA_DIR:-..}/punku
+        qillqasqa: ${PLATAFORMA_DIR:-..}/qillqasqa
     env_file: .env
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-qillqa}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-qillqa}
-      MDD_RUTA: /app/marco_documental
+      MDD_RUTA: /plataforma/qillqasqa/marco_documental     # el marco viaja con Qillqasqa (dentro de la imagen)
       MDD_DOCUMENTOS: /datos/documentos
       MDD_PERFIL: ${MDD_PERFIL_CONTENEDOR:-}
     volumes:
-      - ./marco_documental:/app/marco_documental:ro
       - datos:/datos
     depends_on:
       db:
@@ -46,13 +64,28 @@ services:
     restart: unless-stopped
 
   web:
-    build: ./frontend
+    build:
+      context: ./frontend
+      additional_contexts:
+        tiqsi: ${PLATAFORMA_DIR:-..}/tiqsi
+        rikchay: ${PLATAFORMA_DIR:-..}/rikchay
+        wayra: ${PLATAFORMA_DIR:-..}/wayra
+        tullpu: ${PLATAFORMA_DIR:-..}/tullpu
+        kuyuy: ${PLATAFORMA_DIR:-..}/kuyuy
+        awana: ${PLATAFORMA_DIR:-..}/awana
+        qhawana: ${PLATAFORMA_DIR:-..}/qhawana
+        yupay: ${PLATAFORMA_DIR:-..}/yupay
+        minka: ${PLATAFORMA_DIR:-..}/minka
+        rimay: ${PLATAFORMA_DIR:-..}/rimay
+        punku: ${PLATAFORMA_DIR:-..}/punku
+        qillqasqa: ${PLATAFORMA_DIR:-..}/qillqasqa
     environment:
       VITE_NOMBRE_DESPACHO: ${VITE_NOMBRE_DESPACHO:-Entidad de demostración}
       VITE_API_PROXY: http://api:8000
       VITE_COLAB_PROXY: ws://127.0.0.1:8001
-      SGDP_API: http://api:8000
+      QILLQA_API: http://api:8000
       COLAB_PUERTO: "8001"
+      JWT_SECRET: ${JWT_SECRET:?Defina JWT_SECRET en .env}   # el servidor de colab firma con él las salas (lo mismo que la API)
     ports:
       - "${QILLQA_PUERTO_WEB:-5173}:5173"
     depends_on:
@@ -62,7 +95,22 @@ services:
 
   # Datos ficticios de demostración: cuentas, directorio, documentos con PDF, tareas, agenda y chat.
   siembra:
-    build: ./backend
+    build:
+      context: ./backend
+      additional_contexts:
+        tiqsi: ${PLATAFORMA_DIR:-..}/tiqsi
+        rikchay: ${PLATAFORMA_DIR:-..}/rikchay
+        wayra: ${PLATAFORMA_DIR:-..}/wayra
+        ruray: ${PLATAFORMA_DIR:-..}/ruray
+        tullpu: ${PLATAFORMA_DIR:-..}/tullpu
+        kuyuy: ${PLATAFORMA_DIR:-..}/kuyuy
+        awana: ${PLATAFORMA_DIR:-..}/awana
+        qhawana: ${PLATAFORMA_DIR:-..}/qhawana
+        yupay: ${PLATAFORMA_DIR:-..}/yupay
+        minka: ${PLATAFORMA_DIR:-..}/minka
+        rimay: ${PLATAFORMA_DIR:-..}/rimay
+        punku: ${PLATAFORMA_DIR:-..}/punku
+        qillqasqa: ${PLATAFORMA_DIR:-..}/qillqasqa
     profiles: ["demo"]
     environment:
       QILLQA_API: http://api:8000

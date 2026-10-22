@@ -10,9 +10,10 @@ os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://x:y@127.0.0.1/z")
 os.environ.setdefault("JWT_SECRET", "prueba")
 
 from app import config as cfg  # noqa: E402
-from app.servicios import carpetas  # noqa: E402
-from app import semillas  # noqa: E402
-from app.tipos import TIPOS  # noqa: E402
+from qillqasqa import config as qillqasqa_config  # noqa: E402
+from qillqasqa.servicios import carpetas  # noqa: E402
+from qillqasqa import db as qillqasqa_db  # noqa: E402
+from qillqasqa.tipos import TIPOS  # noqa: E402
 
 
 def test_raiz_documentos_prefiere_mdd_documentos(tmp_path, monkeypatch):
@@ -26,7 +27,8 @@ def test_raiz_documentos_prefiere_mdd_documentos(tmp_path, monkeypatch):
 def test_reanclar_sobrevive_a_la_mudanza(tmp_path, monkeypatch):
     nueva = tmp_path / "despacho" / "documentos" / "oficios" / "OF-0001-20260101-x"
     nueva.mkdir(parents=True)
-    monkeypatch.setattr(cfg.config, "mdd_documentos", str(tmp_path / "despacho" / "documentos"))
+    # El re-anclaje es de Gestión documental: lee su propia configuración (Qillqasqa Q2).
+    monkeypatch.setattr(qillqasqa_config.config, "mdd_documentos", str(tmp_path / "despacho" / "documentos"))
     vieja = Path("/ruta/que/ya/no/existe/marco/documentos/oficios/OF-0001-20260101-x")
     assert carpetas.reanclar(vieja) == nueva
     assert carpetas.reanclar(nueva) == nueva
@@ -40,8 +42,9 @@ def test_siembra_lee_todas_las_series(tmp_path, monkeypatch):
                         ("cartas", "CARTA-0002-20260830-c"), ("bancada", "OMB-0001-20260823-d"),
                         ("memorandos", "MEM-0001-20260818-e")):
         (raiz / sub / nombre).mkdir(parents=True)
-    monkeypatch.setattr(cfg.config, "mdd_documentos", str(raiz))
-    maximos = semillas._maximos_en_framework()
+    # La siembra de los contadores es de Gestión documental (Qillqasqa Q5a): lee su propia configuración.
+    monkeypatch.setattr(qillqasqa_config.config, "mdd_documentos", str(raiz))
+    maximos = qillqasqa_db.maximos_en_el_archivo()
     assert maximos["OF"] == 88 and maximos["OM"] == 16 and maximos["CARTA"] == 2
     assert maximos["OMB"] == 1 and maximos["MEM"] == 1 and maximos["INF"] == 0
     assert set(maximos) == {t["serie"] for t in TIPOS.values()}
@@ -52,7 +55,7 @@ def test_siembra_lee_todas_las_series(tmp_path, monkeypatch):
 
 def test_tipos_externos_no_se_compilan():
     """ISR y REC se producen fuera de Qillqa: el registro los marca y compilar() los rechaza."""
-    from app.tipos import es_externo, lista_tipos
+    from qillqasqa.tipos import es_externo, lista_tipos
     assert es_externo("informe_sr") and es_externo("recibido") and not es_externo("oficio")
     externos = {t["codigo"] for t in lista_tipos() if t["externo"]}
     assert externos == {"informe_sr", "recibido"}

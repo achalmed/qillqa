@@ -19,7 +19,7 @@ function urlFoto(id: number, version: string): Promise<string | null> {
   const clave = `${id}:${version}`
   let p = urls.get(clave)
   if (!p) {
-    const token = localStorage.getItem('sgdp_token')
+    const token = localStorage.getItem('qillqa_token')
     p = fetch(`/api/directorio/personas/${id}/foto?v=${encodeURIComponent(version)}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
       .then((r) => (r.ok ? r.blob() : null))
       .then((b) => (b ? URL.createObjectURL(b) : null))

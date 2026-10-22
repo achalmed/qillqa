@@ -12,8 +12,8 @@ import EventBusyOutlinedIcon from '@mui/icons-material/EventBusyOutlined'
 import { api } from '../api'
 import { PALETA } from '../paleta'
 import type { Distrito } from './Distritos'
-import type { Feriado } from './tareas/tipos'
-import { isoDia, sumarDias, DIAS_CORTOS, MESES_CORTOS, desdeIso, diaSemana } from './tareas/calendario'
+import { isoDia, sumarDias, DIAS_CORTOS, MESES_CORTOS, desdeIso, diaSemana } from '@qillqa/minka/publico'
+import type { Feriado } from '@qillqa/minka/publico'
 
 interface Fecha {
   fecha: string
